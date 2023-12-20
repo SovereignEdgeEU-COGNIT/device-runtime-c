@@ -15,9 +15,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 /***************** DEFINES AND MACROS *********************/
+#define FAAS_VERSION "v1"
+#define FAAS_EXECUTE_SYNC_ENDPOINT "faas/execute-sync"
+#define FAAS_EXECUTE_ASYNC_ENDPOINT "faas/execute-async"
+#define FAAS_WAIT_ENDPOINT "faas/%s/status"
+
 #define MODE_IN  "IN"
 #define MODE_OUT "OUT"
 
+/**************** TYPEDEFS AND STRUCTS ********************/
 typedef enum
 {
     OK      = 0,
@@ -40,8 +46,8 @@ typedef enum
 typedef struct
 {
     exec_return_code_t ret_code;
-    char* res; // NULL if not present
-    char* err; // NULL if not present
+    char* res_payload; // NULL if not present
+    long http_err_code;
 } exec_response_t;
 
 typedef struct
@@ -55,7 +61,6 @@ typedef struct
     exec_response_t* res; // NULL if not present
     AsyncExecId exec_id;
 } async_exec_response_t;
-/**************** TYPEDEFS AND STRUCTS ********************/
 
 /******************* GLOBAL VARIABLES *********************/
 
@@ -72,5 +77,6 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len);
 async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_timeout_ms);
 
 /******************* PRIVATE METHODS ***********************/
-const char* m_c_endpoint;
+char* m_c_endpoint;
+
 #endif // SERVERLESS_RUNTIME_CLIENT_H

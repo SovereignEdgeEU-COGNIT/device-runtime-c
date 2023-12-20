@@ -19,16 +19,12 @@
 #define MODE_IN "IN"
 #define MODE_OUT "OUT"
 
-#define FAAS_EXECUTE_SYNC_ENDPOINT = "faas/execute-sync"
-#define FAAS_EXECUTE_ASYNC_ENDPOINT = "faas/execute-async"
-#define FAAS_WAIT_ENDPOINT = "faas/xx-xxx-xx/status"
-
 /**************** TYPEDEFS AND STRUCTS ********************/
 typedef struct {
-    char* type; // Float, int, char, bool
-    char* var_name;
-    char* value;  // Coded b64
-    char mode [4];  // "IN" or "OUT"
+    const char* type; // Float, int, char, bool
+    const char* var_name;
+    const char* value;  // Coded b64
+    const char mode [4];  // "IN" or "OUT"
 } param_t;
 
 typedef struct {
@@ -77,6 +73,6 @@ const char* wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
 void delete_serverless_runtime(const char* c_endpoint);
 
 /******************* PRIVATE METHODS ***********************/
-const char* m_c_endpoint;
+char* m_c_endpoint;
 serverless_runtime_context_t m_t_serverless_runtime_context;
 #endif // SERVERLESS_RUNTIME_CONTEXT_H
