@@ -9,7 +9,7 @@ void cognit_http_init(http_config_t* config)
     config->t_http_response.ui8_response_data_buffer = NULL;
     config->c_url                                    = NULL;
     config->c_method                                 = NULL;
-    config->timeout                                  = 2;
+    config->ui32_timeout_ms                          = 3000;
 }
 
 int cognit_http_send(const char* c_buffer, size_t size, http_config_t* config)

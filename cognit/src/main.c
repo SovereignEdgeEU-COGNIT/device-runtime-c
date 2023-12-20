@@ -48,13 +48,12 @@ int8_t my_http_send_req(const char* c_buffer, size_t size, http_config_t* config
         headers = curl_slist_append(headers, "charset: utf-8");
 
         if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers) != CURLE_OK
-            || curl_easy_setopt(curl, CURLOPT_TIMEOUT, config->timeout) != CURLE_OK
             // Configure URL and payload
             || curl_easy_setopt(curl, CURLOPT_URL, config->c_url) != CURLE_OK
             // Set the callback function to handle the response data
             || curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&config->t_http_response) != CURLE_OK
             || curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_response_data_cb) != CURLE_OK
-            || curl_easy_setopt(curl, CURLOPT_TIMEOUT, config->timeout) != CURLE_OK)
+            || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK)
         {
             fprintf(stderr, "[hhtp_send_req_cb] curl_easy_setopt() failed\n");
             return -1;

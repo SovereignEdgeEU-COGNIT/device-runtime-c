@@ -47,13 +47,12 @@ int8_t http_send_req(const char* c_buffer, size_t size, http_config_t* config)
         headers = curl_slist_append(headers, "charset: utf-8");
 
         if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers) != CURLE_OK
-            || curl_easy_setopt(curl, CURLOPT_TIMEOUT, config->timeout) != CURLE_OK
             // Configure URL and payload
             || curl_easy_setopt(curl, CURLOPT_URL, config->c_url) != CURLE_OK
             // Set the callback function to handle the response data
             || curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&config->t_http_response) != CURLE_OK
             || curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_response_data_cb) != CURLE_OK
-            || curl_easy_setopt(curl, CURLOPT_TIMEOUT, config->timeout) != CURLE_OK)
+            || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK)
         {
             fprintf(stderr, "[hhtp_send_req_cb] curl_easy_setopt() failed\n");
             return -1;
@@ -117,7 +116,7 @@ TEST_F(ITestHttp, TestHttpGet)
     http_config_t config;
     config.c_method = HTTP_METHOD_GET;
     config.c_url    = "https://jsonplaceholder.typicode.com/posts";
-    config.timeout  = 5;
+    config.ui32_timeout_ms  = 5000;
 
     i8_ret = http_send_req(c_buffer, size, &config);
 
@@ -141,7 +140,7 @@ TEST_F(ITestHttp, TestHttpPost)
     http_config_t config;
     config.c_method = HTTP_METHOD_POST;
     config.c_url    = "https://jsonplaceholder.typicode.com/posts";
-    config.timeout  = 5;
+    config.ui32_timeout_ms  = 5000;
 
     strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
     size = strlen(c_json_test);
@@ -160,7 +159,7 @@ TEST_F(ITestHttp, TestHttpPost)
 }
 
 // Must run a serverless runtime to test this
-TEST_F(ITestHttp, TestHttpPost3)
+TEST_F(ITestHttp, TestHttpPost2)
 {
     int8_t i8_ret           = 0;
     const char* c_json_test = "{\"lang\":\"C\",\"fc\":\"I2luY2x1ZGUgPHN0ZGlvLmg+IAp2b2lkIHN1bWEgKGludCBhLCBpbnQgYiwgZmxvYXQgKmMpCnsKKmMgPSBhICtiOwp9\",\"params\":[\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJhIiwKICAgICJ2YWx1ZSI6ICJNdz09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJiIiwKICAgICJ2YWx1ZSI6ICJOQT09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiZmxvYXQiLAogICAgInZhcl9uYW1lIjogImMiLAogICAgIm1vZGUiOiAiT1VUIgogICAgfQ==\"]}";
@@ -169,7 +168,7 @@ TEST_F(ITestHttp, TestHttpPost3)
     http_config_t config;
     config.c_method = HTTP_METHOD_POST;
     config.c_url    = "http://127.0.0.1:8000/v1/faas/execute-sync";
-    config.timeout  = 5;
+    config.ui32_timeout_ms  = 5000;
 
     strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
     size = strlen(c_json_test);
