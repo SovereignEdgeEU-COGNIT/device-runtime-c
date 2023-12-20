@@ -71,7 +71,7 @@ char* base64_decode(const char* data, size_t input_length, size_t* output_length
         (*output_length)--;
     }
 
-    unsigned char* decoded_data = malloc(*output_length);
+    char* decoded_data = malloc(*output_length);
     if (decoded_data == NULL)
     {
         return NULL;

@@ -1,5 +1,4 @@
 #include <utest_base64.h>
-#include <curl/curl.h>
 extern "C" {
 #include <base64.h>
 }
@@ -17,6 +16,7 @@ TEST_F(ITestBase64, TestEncode)
     printf("Encoded data size test: %ld\n", strlen(encoded_data_test));
 
     EXPECT_STREQ(encoded_data_test, encoded_data);
+    free(encoded_data);
 }
 
 TEST_F(ITestBase64, TestDecode)
@@ -31,4 +31,5 @@ TEST_F(ITestBase64, TestDecode)
     printf("Encoded data size test: %ld\n", strlen(data));
 
     EXPECT_STREQ(decoded_data_test, (const char*)decoded_data);
+    free(decoded_data);
 }
