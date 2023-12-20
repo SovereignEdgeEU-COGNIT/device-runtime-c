@@ -23,6 +23,7 @@ typedef struct
 {
     uint8_t* ui8_response_data_buffer;
     size_t size;
+    long l_http_code;
 } http_response_t;
 
 typedef struct

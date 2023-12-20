@@ -103,6 +103,7 @@ int8_t my_http_send_req(const char* c_buffer, size_t size, http_config_t* config
         curl_easy_cleanup(curl);
     }
 
+    config->t_http_response.l_http_code = http_code;
     // Clean global curl configuration
     curl_global_cleanup();
     // User must free(t_http_response.ui8_response_data_buffer) after reading content!!
