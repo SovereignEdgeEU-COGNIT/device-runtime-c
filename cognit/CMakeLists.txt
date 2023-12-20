@@ -9,6 +9,7 @@ set(SRC_FILES
     "${PROJECT_ROOT}/src/prov_engine_cli.c"
     "${PROJECT_ROOT}/src/serverless_runtime_client.c"
     "${PROJECT_ROOT}/src/serverless_runtime_context.c"
+    "${PROJECT_ROOT}/src/base64.c"
 )
 
 set(INCLUDE_PATHS "${PROJECT_ROOT}/include" "${PROJECT_ROOT}/src")
