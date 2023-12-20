@@ -14,24 +14,26 @@
 #include <stdint.h>
 #include <stddef.h>
 /***************** DEFINES AND MACROS *********************/
-#define HTTP_METHOD_GET "GET"
+#define HTTP_METHOD_GET  "GET"
 #define HTTP_METHOD_POST "POST"
 
 /**************** TYPEDEFS AND STRUCTS ********************/
 
-typedef struct {
-    uint8_t *ui8_response_data_buffer;
+typedef struct
+{
+    uint8_t* ui8_response_data_buffer;
     size_t size;
 } http_response_t;
 
-typedef struct {
+typedef struct
+{
     http_response_t t_http_response;
-    char *c_url;
-    char *c_method;
+    const char* c_url;
+    const char* c_method;
     uint8_t timeout;
 } http_config_t;
 
-typedef int (*send_http_req_cb_t)(uint8_t *ui8_buffer, size_t size, http_config_t *config);
+typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config_t* config);
 /******************* GLOBAL VARIABLES *********************/
 
 /******************* PUBLIC METHODS ***********************/
@@ -41,7 +43,7 @@ typedef int (*send_http_req_cb_t)(uint8_t *ui8_buffer, size_t size, http_config_
  * 
  * @param config HTTP client configuration
 ***********************************************************/
-void cognit_http_init(http_config_t *config);
+void cognit_http_init(http_config_t* config);
 
 /*******************************************************/ /**
  * @brief Send HTTP request
@@ -51,12 +53,11 @@ void cognit_http_init(http_config_t *config);
  * @param config HTTP client configuration
  * @return int 0 if success, -1 otherwise
 ***********************************************************/
-int cognit_http_send(uint8_t *buffer, size_t size, http_config_t *config);
+int cognit_http_send(const char* c_buffer, size_t size, http_config_t* config);
 
-extern send_http_req_cb_t http_send_req_cb();
+extern send_http_req_cb_t http_send_req_cb;
 
 // TODO: Add handle_errors and handle_response_data callbacks para hacer un unico free?
-
 
 /******************* PRIVATE METHODS ***********************/
 

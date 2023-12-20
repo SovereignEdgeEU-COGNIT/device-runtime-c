@@ -1,24 +1,23 @@
-
-#include <stdio.h>
-#include "cognit_http.h"
+#include <utest_http.h>
 #include <curl/curl.h>
-#include <stdlib.h>
-#include <string.h>
+extern "C" {
+#include <cognit_http.h>
+}
 
 size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, void* user_buffer)
 {
     size_t realsize           = size * nmemb;
     http_response_t* response = (http_response_t*)user_buffer;
 
-    uint8_t* ui8_buffer_ptr = (uint8_t*)realloc(response->ui8_response_data_buffer, response->size + realsize + 1);
+    uint8_t* c_buffer_ptr = (uint8_t*)realloc(response->ui8_response_data_buffer, response->size + realsize + 1);
 
-    if (ui8_buffer_ptr == NULL)
+    if (c_buffer_ptr == NULL)
     {
         fprintf(stderr, "[handle_response_data] Realloc() failed\n");
         return 0;
     }
 
-    response->ui8_response_data_buffer = ui8_buffer_ptr;
+    response->ui8_response_data_buffer = c_buffer_ptr;
     memcpy(&(response->ui8_response_data_buffer[response->size]), data_content, realsize);
     response->size += realsize;
     response->ui8_response_data_buffer[response->size] = '\0';
@@ -28,7 +27,7 @@ size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, vo
     return realsize;
 }
 
-int8_t my_http_send_req(const char* c_buffer, size_t size, http_config_t* config)
+int8_t http_send_req(const char* c_buffer, size_t size, http_config_t* config)
 {
     CURL* curl;
     CURLcode res;
@@ -110,11 +109,79 @@ int8_t my_http_send_req(const char* c_buffer, size_t size, http_config_t* config
     return (res == CURLE_OK) ? 0 : -1;
 }
 
-int main()
+TEST_F(ITestHttp, TestHttpGet)
 {
+    int8_t i8_ret        = 0;
+    char c_buffer[28000] = { 0 };
+    size_t size          = 0;
+    http_config_t config;
+    config.c_method = HTTP_METHOD_GET;
+    config.c_url    = "https://jsonplaceholder.typicode.com/posts";
+    config.timeout  = 5;
 
-    // Initialize HTTP client
-    // cognit_http_send
+    i8_ret = http_send_req(c_buffer, size, &config);
 
-    return 0;
+    // Print json response
+    printf("%s\n", config.t_http_response.ui8_response_data_buffer);
+    memcpy(c_buffer, config.t_http_response.ui8_response_data_buffer, config.t_http_response.size);
+    printf("size: %ld\n", config.t_http_response.size);
+
+    free(config.t_http_response.ui8_response_data_buffer);
+
+    ASSERT_EQ(i8_ret, CURLE_OK);
+}
+
+TEST_F(ITestHttp, TestHttpPost)
+{
+    int8_t i8_ret               = 0;
+    const char* c_json_response = "{\"title\":\"me\",\"body\":\"myproject\",\"userId\":9,\"id\":101}";
+    const char* c_json_test     = "{\"title\":\"me\",\"body\":\"myproject\",\"userId\":9}";
+    char c_buffer[28000]        = { 0 };
+    size_t size                 = 0;
+    http_config_t config;
+    config.c_method = HTTP_METHOD_POST;
+    config.c_url    = "https://jsonplaceholder.typicode.com/posts";
+    config.timeout  = 5;
+
+    strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
+    size = strlen(c_json_test);
+
+    i8_ret = http_send_req(c_buffer, size, &config);
+
+    // Print json response
+    printf("%s\n", config.t_http_response.ui8_response_data_buffer);
+    memcpy(c_buffer, config.t_http_response.ui8_response_data_buffer, config.t_http_response.size);
+    printf("size: %ld\n", config.t_http_response.size);
+
+    // TODO: make proper json comparison -> Problem with \n, '\0' and spaces but same content
+    EXPECT_EQ(i8_ret, CURLE_OK);
+
+    free(config.t_http_response.ui8_response_data_buffer);
+}
+
+// Must run a serverless runtime to test this
+TEST_F(ITestHttp, TestHttpPost3)
+{
+    int8_t i8_ret           = 0;
+    const char* c_json_test = "{\"lang\":\"C\",\"fc\":\"I2luY2x1ZGUgPHN0ZGlvLmg+IAp2b2lkIHN1bWEgKGludCBhLCBpbnQgYiwgZmxvYXQgKmMpCnsKKmMgPSBhICtiOwp9\",\"params\":[\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJhIiwKICAgICJ2YWx1ZSI6ICJNdz09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJiIiwKICAgICJ2YWx1ZSI6ICJOQT09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiZmxvYXQiLAogICAgInZhcl9uYW1lIjogImMiLAogICAgIm1vZGUiOiAiT1VUIgogICAgfQ==\"]}";
+    char c_buffer[28000]    = { 0 };
+    size_t size             = 0;
+    http_config_t config;
+    config.c_method = HTTP_METHOD_POST;
+    config.c_url    = "http://127.0.0.1:8000/v1/faas/execute-sync";
+    config.timeout  = 5;
+
+    strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
+    size = strlen(c_json_test);
+    printf("size: %ld\n", config.t_http_response.size);
+    i8_ret = http_send_req(c_buffer, size, &config);
+
+    // Print json response
+    printf("%s\n", config.t_http_response.ui8_response_data_buffer);
+    memcpy(c_buffer, config.t_http_response.ui8_response_data_buffer, config.t_http_response.size);
+    printf("size: %ld\n", config.t_http_response.size);
+
+    free(config.t_http_response.ui8_response_data_buffer);
+
+    ASSERT_EQ(i8_ret, CURLE_OK);
 }
