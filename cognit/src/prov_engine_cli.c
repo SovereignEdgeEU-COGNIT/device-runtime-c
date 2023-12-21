@@ -1,15 +1,13 @@
 #include <prov_engine_cli.h>
 #include <string.h>
 
-
-int8_t prov_eng_init(congnit_config_t* config)
+int8_t prov_eng_init(prov_eng_cli_context_t* t_pec_context)
 {
-    int8_t i8_ret = -1;
-    if (config != NULL)
-    {
-        memcpy(&m_t_prov_eng_cli_get_context.m_cognit_prov_engine_config, config, sizeof(congnit_config_t));
-        i8_ret = 0;
-    }
+    int8_t i8_ret = PE_ERR_CODE_SUCCESS;
+
+    m_t_pec_context = &t_pec_context;
+    // TODO: validate config
+
     return i8_ret;
 }
 
@@ -28,10 +26,9 @@ bool prov_eng_delete_runtime(uint32_t ui32_id)
     bool b_ret = false;
     return b_ret;
 }
-    // client->endpoint = malloc(256 * sizeof(char));
-    // snprintf(client->endpoint, 256, "http://%s:%d", config.prov_engine_endpoint, config.prov_engine_port);
-    // return client;
-
+// client->endpoint = malloc(256 * sizeof(char));
+// snprintf(client->endpoint, 256, "http://%s:%d", config.prov_engine_endpoint, config.prov_engine_port);
+// return client;
 
 // ProvEngineClient* prov_engine_client_create(CognitConfig config) {
 //     ProvEngineClient* client = malloc(sizeof(ProvEngineClient));
