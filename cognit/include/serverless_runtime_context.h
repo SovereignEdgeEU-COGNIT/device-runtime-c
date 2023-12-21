@@ -62,7 +62,7 @@ e_status_code_t init_serverless_runtime_context(cognit_config_t* config);
 e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basic_serverless_runtime_conf);
 
 // Make prov_engline_clie retreive with serverless runtime id
-const char* check_serverless_runtime_status(uint32_t ui32_serverless_runtime_id);
+const char* check_serverless_runtime_status();
 
 // Función para realizar una llamada sincrónica al servidor sin servidor
 exec_response_t call_sync(exec_faas_params_t* t_faas_params);

@@ -122,10 +122,29 @@ e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basi
     return SUCCESS;
 }
 
-const char* check_serverless_runtime_status(uint32_t ui32_serverless_runtime_id)
+const char* check_serverless_runtime_status()
 {
-    // Implementa la lógica aquí
-    return "PENDING";
+    serverless_runtime_conf_t t_sr_conf_pe = { 0 };
+    if (m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id == 0)
+    {
+        fprintf(stderr, "[sr_context] Serverless Runtime not created yet\n");
+        return FaaSState_NO_STATE;
+    }
+
+    // Create serverless runtime
+    t_sr_conf_pe = prov_eng_retreive_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf);
+
+    // if t_sr_conf_pe is == {0} then there was an error
+    if (memcmp(&t_sr_conf_pe, &(serverless_runtime_conf_t) { 0 }, sizeof(serverless_runtime_conf_t)) == 0)
+    {
+        fprintf(stderr, "[sr_context] Serverless Runtime creation request failed\n");
+        return FaaSState_NO_STATE;
+    }
+
+    // Copy the serverless runtime config to the context
+    m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf = t_sr_conf_pe;
+
+    return t_sr_conf_pe.faas_config.c_state;
 }
 
 exec_response_t call_sync(exec_faas_params_t* t_faas_params)
