@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <ip_utils.h>
 
+static serverless_runtime_context_t m_t_serverless_runtime_context;
+
 // Private functions
 static char* serialize_requirements(energy_scheduling_policy_t t_energy_scheduling_policy)
 {
@@ -147,12 +149,14 @@ const char* check_serverless_runtime_status()
     return t_sr_conf_pe.faas_config.c_state;
 }
 
-exec_response_t call_sync(exec_faas_params_t* t_faas_params)
+exec_response_t call_sync(uint8_t* ui8_off_func_data)
 {
+    // Llamar all call_sync del serverless_runtime_client.c con puntero a exec_faas_params_t pasado a string
+
     // Implementa la lógica aquí
 }
 
-async_exec_response_t call_async(exec_faas_params_t* t_faas_params)
+async_exec_response_t call_async(uint8_t* ui8_off_func_data)
 {
     // Implementa la lógica aquí
 }

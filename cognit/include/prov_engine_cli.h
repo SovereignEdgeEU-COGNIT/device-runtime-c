@@ -146,5 +146,4 @@ serverless_runtime_conf_t prov_eng_retreive_runtime(uint32_t ui32_id);
 bool prov_eng_delete_runtime(uint32_t ui32_id);
 
 /******************* PRIVATE METHODS ***********************/
-prov_eng_cli_context_t* m_t_pec_context;
 #endif // PROV_ENGINE_CLI_H

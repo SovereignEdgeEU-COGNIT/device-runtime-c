@@ -20,21 +20,6 @@
 #define MODE_OUT "OUT"
 
 /**************** TYPEDEFS AND STRUCTS ********************/
-typedef struct
-{
-    const char* type; // Float, int, char, bool
-    const char* var_name;
-    const char* value;  // Coded b64
-    const char mode[4]; // "IN" or "OUT"
-} param_t;
-
-typedef struct
-{
-    char lang[3]; // "PY", "C"
-    char* fc;
-    param_t* params;
-    size_t params_count;
-} exec_faas_params_t;
 
 typedef enum
 {
@@ -65,10 +50,10 @@ e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basi
 const char* check_serverless_runtime_status();
 
 // Función para realizar una llamada sincrónica al servidor sin servidor
-exec_response_t call_sync(exec_faas_params_t* t_faas_params);
+exec_response_t call_sync(uint8_t* ui8_off_func_data);
 
 // Función para realizar una llamada asíncrona al servidor sin servidor
-async_exec_response_t call_async(exec_faas_params_t* t_faas_params);
+async_exec_response_t call_async(uint8_t* ui8_off_func_data);
 
 // Función para esperar la finalización de una tarea
 const char* wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms);
@@ -77,6 +62,5 @@ const char* wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
 void delete_serverless_runtime(const char* c_endpoint);
 
 /******************* PRIVATE METHODS ***********************/
-serverless_runtime_context_t m_t_serverless_runtime_context;
 
 #endif // SERVERLESS_RUNTIME_CONTEXT_H

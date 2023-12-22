@@ -47,6 +47,7 @@ typedef struct
 {
     exec_return_code_t ret_code;
     char* res_payload; // NULL if not present
+    size_t res_payload_len;
     long http_err_code;
 } exec_response_t;
 
@@ -77,6 +78,5 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len);
 async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_timeout_ms);
 
 /******************* PRIVATE METHODS ***********************/
-char* m_c_endpoint;
 
 #endif // SERVERLESS_RUNTIME_CLIENT_H

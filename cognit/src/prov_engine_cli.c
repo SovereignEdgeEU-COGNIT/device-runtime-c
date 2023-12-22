@@ -1,6 +1,8 @@
 #include <prov_engine_cli.h>
 #include <string.h>
 
+static prov_eng_cli_context_t* m_t_pec_context;
+
 int8_t prov_eng_init(prov_eng_cli_context_t* t_pec_context)
 {
     int8_t i8_ret = PE_ERR_CODE_SUCCESS;
