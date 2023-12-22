@@ -13,7 +13,8 @@ set(UNIT_TEST_SRC_FILES
     ${PROJECT_ROOT}/test/unit/test_runner.cpp
     ${PROJECT_ROOT}/test/unit/utest_http.cpp
     ${PROJECT_ROOT}/test/unit/utest_base64.cpp
-    ${PROJECT_ROOT}/test/unit/utest_ip_utils.cpp)
+    ${PROJECT_ROOT}/test/unit/utest_ip_utils.cpp
+    ${PROJECT_ROOT}/test/unit/utest_faas_parser.cpp)
 add_executable(${UNIT_TESTS_TARGET} ${UNIT_TEST_SRC_FILES} ${SRC_FILES})
 
 target_include_directories(${UNIT_TESTS_TARGET} PRIVATE ${PROJECT_ROOT}/include ${PROJECT_ROOT}/test/unit)

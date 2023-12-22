@@ -11,6 +11,7 @@ set(SRC_FILES
     "${PROJECT_ROOT}/src/serverless_runtime_context.c"
     "${PROJECT_ROOT}/src/base64.c"
     "${PROJECT_ROOT}/src/ip_utils.c"
+    "${PROJECT_ROOT}/src/faas_parser.c"
 )
 
 set(INCLUDE_PATHS "${PROJECT_ROOT}/include" "${PROJECT_ROOT}/src")
