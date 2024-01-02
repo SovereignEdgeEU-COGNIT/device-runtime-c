@@ -8,35 +8,21 @@
 *
 *	\version $(date) ${user} $(remarks)
 ***********************************************************/
-#ifndef BASE64_H
-#define BASE64_H
-/********************** INCLUDES **************************/
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-/***************** DEFINES AND MACROS *********************/
+#ifndef _BASE64_H_
+#define _BASE64_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/**************** TYPEDEFS AND STRUCTS ********************/
+int base64_encode_len(int len);
+int base64_encode(char* coded_dst, const char* plain_src, int len_plain_src);
 
+int base64_decode_len(const char* coded_src);
+int base64_decode(char* plain_dst, const char* coded_src);
 
-/******************* GLOBAL VARIABLES *********************/
-static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                '4', '5', '6', '7', '8', '9', '+', '/'};
-static char *decoding_table = NULL;
-static int mod_table[] = {0, 2, 1};
-/******************* PUBLIC METHODS ***********************/
-char* base64_encode(const char* data, size_t input_length, size_t* output_length);
+#ifdef __cplusplus
+}
+#endif
 
-char* base64_decode(const char* data, size_t input_length, size_t* output_length);
-
-/******************* PRIVATE METHODS ***********************/
-
-#endif // BASE64_H
+#endif //_BASE64_H_
