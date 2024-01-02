@@ -12,10 +12,11 @@ FUNC_TO_STR(
 
 TEST_F(ITestFaasParser, TestParseExecParamsAsJson)
 {
+    const char* c_test_json        = "{\n\t\"lang\":\t\"C\",\n\t\"fc\":\t\"I2luY2x1ZGU8c3RkaW8uaD4gCnZvaWQgc3VtYShpbnQgYSwgaW50IGIsIGZsb2F0KiBjKSB7ICpjID0gYSArIGI7IH0=\",\n\t\"params\":\t[\"ewoJInR5cGUiOgkiaW50IiwKCSJ2YXJfbmFtZSI6CSJhIiwKCSJ2YWx1ZSI6CSJNdz09IiwKCSJtb2RlIjoJIklOIgp9\", \"ewoJInR5cGUiOgkiaW50IiwKCSJ2YXJfbmFtZSI6CSJiIiwKCSJ2YWx1ZSI6CSJOQT09IiwKCSJtb2RlIjoJIklOIgp9\", \"ewoJInR5cGUiOgkiZmxvYXQiLAoJInZhcl9uYW1lIjoJImMiLAoJInZhbHVlIjoJIk5VTEwiLAoJIm1vZGUiOgkiT1VUIgp9\"]\n}";
     exec_faas_params_t exec_params = { 0 };
     size_t base64_fc_len           = 0;
     uint8_t ui8_json_buffer[1024]  = { 0 };
-    size_t ui8_json_buffer_len     = 0;
+    size_t size_json_buff          = 0;
     int8_t i8_ret                  = 0;
 
     const char* includes = INCLUDE_HEADERS(#include<stdio.h> \n);
@@ -52,10 +53,25 @@ TEST_F(ITestFaasParser, TestParseExecParamsAsJson)
     exec_params.params[2].value    = NULL;
     strncpy(exec_params.params[2].mode, "OUT", sizeof(exec_params.params[0].mode));
 
-    i8_ret = parse_exec_faas_params_as_str_json(&exec_params, ui8_json_buffer, &ui8_json_buffer_len);
+    i8_ret = parse_exec_faas_params_as_str_json(&exec_params, ui8_json_buffer, &size_json_buff);
 
     printf("JSON: %s\n", (char*)ui8_json_buffer);
+    printf("JSON len: %ld\n", size_json_buff);
+
+    EXPECT_STREQ(c_test_json, (char*)ui8_json_buffer);
 
     free(c_raw_fc);
     free(exec_params.params);
+}
+
+// Test to parse json as exec_response_t
+TEST_F(ITestFaasParser, TestParseJsonAsExecResponse)
+{
+    const char* c_test_json = "{\"ret_code\":0,\"res\":\"Ny4w\",\"err\":null}";
+    int8_t i8_ret           = 0;
+    exec_response_t test_exec_response;
+    i8_ret = parse_json_str_as_exec_response(c_test_json, &test_exec_response);
+
+    EXPECT_EQ(test_exec_response.ret_code, 0);
+    EXPECT_STREQ(test_exec_response.res_payload, "7.0");
 }

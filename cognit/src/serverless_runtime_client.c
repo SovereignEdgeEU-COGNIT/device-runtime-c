@@ -45,7 +45,7 @@ exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
         snprintf(c_buffer, 2000, "%s", t_http_config.t_http_response.ui8_response_data_buffer);
 
         // Copy the response json to the response struct
-        i8_ret = parse_json_str_as_exec_faas_params(c_buffer, &t_exec_response);
+        i8_ret = parse_json_str_as_exec_response(c_buffer, &t_exec_response);
         
         if (i8_ret != 0)
         {
@@ -93,7 +93,7 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
         if (t_http_config.t_http_response.l_http_code == 200)
         {
             // Copy the response json to the response struct
-            i8_ret = parse_json_str_as_exec_faas_params(c_buffer, &t_async_exec_response.res);
+            i8_ret = parse_json_str_as_exec_response(c_buffer, &t_async_exec_response.res);
         
             if (i8_ret != 0)
             {

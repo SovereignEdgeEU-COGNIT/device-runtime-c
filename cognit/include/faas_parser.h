@@ -49,7 +49,7 @@ typedef struct
 /******************* PUBLIC METHODS ***********************/
 int8_t parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
 
-int8_t parse_json_str_as_exec_faas_params(const char* json_str, exec_response_t* t_exec_response);
+int8_t parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response);
 
 /******************* PRIVATE METHODS ***********************/
 
