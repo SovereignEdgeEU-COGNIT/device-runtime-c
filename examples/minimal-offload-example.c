@@ -1,7 +1,20 @@
 
 
 // TODO
-int main(int argc, char const *argv[])
+
+#include <stdio.h>
+#include "cognit_http.h"
+#include <curl/curl.h>
+#include <stdlib.h>
+#include <string.h>
+
+int8_t my_http_send_req(const char* c_buffer, size_t size, http_config_t* config)
 {
-	return 0;
+    printf("SEND HERE");
+}
+
+int main(int argc, char const* argv[])
+{
+
+    return 0;
 }

@@ -40,13 +40,6 @@ typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config
 /******************* PUBLIC METHODS ***********************/
 
 /*******************************************************/ /**
- * @brief Initialize HTTP client
- * 
- * @param config HTTP client configuration
-***********************************************************/
-void cognit_http_init(http_config_t* config);
-
-/*******************************************************/ /**
  * @brief Send HTTP request
  * 
  * @param buffer Buffer with the JSON payload
@@ -55,8 +48,6 @@ void cognit_http_init(http_config_t* config);
  * @return int 0 if success, -1 otherwise
 ***********************************************************/
 int cognit_http_send(const char* c_buffer, size_t size, http_config_t* config);
-
-extern send_http_req_cb_t http_send_req_cb;
 
 // TODO: Add handle_errors and handle_response_data callbacks para hacer un unico free?
 

@@ -39,6 +39,7 @@ e_status_code_t init_serverless_runtime_context(cognit_config_t* config)
     e_status_code_t e_ret = E_ST_CODE_SUCCESS;
     uint8_t ui8_pe_ret    = PE_ERR_CODE_SUCCESS;
 
+    // TODO memcpy instead of *config
     m_t_serverless_runtime_context.m_t_prov_eng_context.m_cognit_prov_engine_config = *config;
     snprintf(m_t_serverless_runtime_context.m_c_url_proto, sizeof(m_t_serverless_runtime_context.m_c_url_proto), "%s", "http://");
     ui8_pe_ret = prov_eng_init(&m_t_serverless_runtime_context.m_t_prov_eng_context);

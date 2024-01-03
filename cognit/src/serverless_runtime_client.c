@@ -9,6 +9,7 @@ static char* m_c_endpoint;
 
 void init_serverless_runtime_cli(const char* c_endpoint)
 {
+    // TODO: Avoid uninitialized memory access
     snprintf(m_c_endpoint, 256, "%s", c_endpoint);
     printf("Serverless runtime endpoint: %s\n", m_c_endpoint);
 }
@@ -86,7 +87,7 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
     t_http_config.ui32_timeout_ms = 10000;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-    printf("FaaS execute async [POST¯URL]: %s\n", c_exec_async_url);
+    printf("FaaS execute async [POST URL]: %s\n", c_exec_async_url);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL

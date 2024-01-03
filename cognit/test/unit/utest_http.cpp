@@ -27,7 +27,8 @@ size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, vo
     return realsize;
 }
 
-int8_t http_send_req(const char* c_buffer, size_t size, http_config_t* config)
+extern "C" {
+int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config)
 {
     CURL* curl;
     CURLcode res;
@@ -109,6 +110,7 @@ int8_t http_send_req(const char* c_buffer, size_t size, http_config_t* config)
     // User must free(t_http_response.ui8_response_data_buffer) after reading content!!
     return (res == CURLE_OK) ? 0 : -1;
 }
+}
 
 TEST_F(ITestHttp, TestHttpGet)
 {
@@ -116,11 +118,11 @@ TEST_F(ITestHttp, TestHttpGet)
     char c_buffer[28000] = { 0 };
     size_t size          = 0;
     http_config_t config;
-    config.c_method = HTTP_METHOD_GET;
-    config.c_url    = "https://jsonplaceholder.typicode.com/posts";
-    config.ui32_timeout_ms  = 5000;
+    config.c_method        = HTTP_METHOD_GET;
+    config.c_url           = "https://jsonplaceholder.typicode.com/posts";
+    config.ui32_timeout_ms = 5000;
 
-    i8_ret = http_send_req(c_buffer, size, &config);
+    i8_ret = cognit_http_send(c_buffer, size, &config);
 
     // Print json response
     printf("%s\n", config.t_http_response.ui8_response_data_buffer);
@@ -140,14 +142,14 @@ TEST_F(ITestHttp, TestHttpPost)
     char c_buffer[28000]        = { 0 };
     size_t size                 = 0;
     http_config_t config;
-    config.c_method = HTTP_METHOD_POST;
-    config.c_url    = "https://jsonplaceholder.typicode.com/posts";
-    config.ui32_timeout_ms  = 5000;
+    config.c_method        = HTTP_METHOD_POST;
+    config.c_url           = "https://jsonplaceholder.typicode.com/posts";
+    config.ui32_timeout_ms = 5000;
 
     strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
     size = strlen(c_json_test);
 
-    i8_ret = http_send_req(c_buffer, size, &config);
+    i8_ret = cognit_http_send(c_buffer, size, &config);
 
     // Print json response
     printf("%s\n", config.t_http_response.ui8_response_data_buffer);
@@ -168,14 +170,14 @@ TEST_F(ITestHttp, TestHttpPost2)
     char c_buffer[28000]    = { 0 };
     size_t size             = 0;
     http_config_t config;
-    config.c_method = HTTP_METHOD_POST;
-    config.c_url    = "http://127.0.0.1:8000/v1/faas/execute-sync";
-    config.ui32_timeout_ms  = 5000;
+    config.c_method        = HTTP_METHOD_POST;
+    config.c_url           = "http://127.0.0.1:8000/v1/faas/execute-sync";
+    config.ui32_timeout_ms = 5000;
 
     strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
     size = strlen(c_json_test);
     printf("size: %ld\n", config.t_http_response.size);
-    i8_ret = http_send_req(c_buffer, size, &config);
+    i8_ret = cognit_http_send(c_buffer, size, &config);
 
     // Print json response
     printf("%s\n", config.t_http_response.ui8_response_data_buffer);
