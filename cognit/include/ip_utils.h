@@ -29,6 +29,13 @@
 /******************* GLOBAL VARIABLES *********************/
 
 /******************* PUBLIC METHODS ***********************/
+
+/*******************************************************/ /**
+ * @brief Get the ip version object
+ * 
+ * @param ip String with the ip address
+ * @return int 4 if the ip is v4, 6 if the ip is v6, 0 if the ip is invalid
+***********************************************************/
 int get_ip_version(const char* ip);
 
 /******************* PRIVATE METHODS ***********************/

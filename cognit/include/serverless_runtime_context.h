@@ -28,7 +28,6 @@ typedef enum
     E_ST_CODE_ERROR   = 1,
     E_ST_CODE_PENDING = 2
 } e_status_code_t;
-// Estructura para el contexto del servidor sin servidor
 typedef struct
 {
     prov_eng_cli_context_t m_t_prov_eng_context;
@@ -41,25 +40,59 @@ typedef struct
 
 /******************* PUBLIC METHODS ***********************/
 
-// Init prov engine client with m_t_prov_eng_context.m_cognit_prov_engine_config
+/*******************************************************/ /**
+ * @brief Initialize the serverless runtime context and shares pec_context with prov_engine_cli
+ * 
+ * @param config Prov engine configuration
+ * @return e_status_code_t Status returned by prov engine client
+***********************************************************/
 e_status_code_t init_serverless_runtime_context(cognit_config_t* config);
 
-// Create m_t_prov_eng_context.m_serverless_runtime_context, then do prov_eng_create_runtime, look in prov engine response (JSON) the endpoint
+/*******************************************************/ /**
+ * @brief Creates default serverless runtime configuration
+ * 
+ * @param t_basic_serverless_runtime_conf Basic serverless runtime configuration
+ * @return e_status_code_t Status returned by prov engine client
+***********************************************************/
 e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basic_serverless_runtime_conf);
 
-// Make prov_engline_clie retreive with serverless runtime id
+/*******************************************************/ /**
+ * @brief Gets current serverless runtime status
+ * 
+ * @return const char* Serverless runtime status
+***********************************************************/
 const char* check_serverless_runtime_status();
 
-// Función para realizar una llamada sincrónica al servidor sin servidor
+/*******************************************************/ /**
+ * @brief Parses faas_params, generates the payload and calls the sync serverless runtime
+ * 
+ * @param exec_faas_params Execution parameters
+ * @return exec_response_t Execution response
+***********************************************************/
 exec_response_t call_sync(exec_faas_params_t* exec_faas_params);
 
-// Función para realizar una llamada asíncrona al servidor sin servidor
+/*******************************************************/ /**
+ * @brief Parses faas_params, generates the payload and calls the async serverless runtime
+ * 
+ * @param exec_faas_params Execution parameters
+ * @return async_exec_response_t Execution response
+***********************************************************/
 async_exec_response_t call_async(exec_faas_params_t* exec_faas_params);
 
-// Función para esperar la finalización de una tarea
+/*******************************************************/ /**
+ * @brief Ask periodically to the serverless runtime if the task has finished
+ * 
+ * @param c_async_task_id Task id to wait for
+ * @param ui32_timeout_ms Timeout in milliseconds
+ * @return async_exec_response_t Execution response
+***********************************************************/
 async_exec_response_t wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms);
 
-// Función para eliminar el servidor sin servidor
+/*******************************************************/ /**
+ * @brief Ask pec to delete the serverless runtime
+ * 
+ * @param c_endpoint Serverless runtime endpoint
+***********************************************************/
 void delete_serverless_runtime(const char* c_endpoint);
 
 /******************* PRIVATE METHODS ***********************/

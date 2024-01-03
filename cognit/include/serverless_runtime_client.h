@@ -68,16 +68,45 @@ typedef struct
 
 /******************* PUBLIC METHODS ***********************/
 
-// Función para inicializar el contexto del servidor sin servidor
+/*******************************************************/ /**
+ * @brief Init the serverless runtime client with the server endpoint
+ * 
+ * @param c_endpoint Server endpoint
+***********************************************************/
 void init_serverless_runtime_cli(const char* c_endpoint);
 
+/*******************************************************/ /**
+ * @brief Check if the serverless runtime is created
+ * 
+ * @return true if created, otherwise false
+***********************************************************/
 bool there_is_srv_runtime_created();
 
+/*******************************************************/ /**
+ * @brief Makes a POST petition to the serverless runtime for sync task execution
+ * 
+ * @param ui8_payload JSON payload with the parameters
+ * @param payload_len Length of the payload
+ * @return exec_response_t Response of the serverless runtime
+***********************************************************/
 exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len);
 
+/*******************************************************/ /**
+ * @brief Makes a POST petition to the serverless runtime for async task execution
+ * 
+ * @param ui8_payload JSON payload with the parameters
+ * @param payload_len Length of the payload
+ * @return async_exec_response_t Response of the serverless runtime
+***********************************************************/
 async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len);
 
-// Funcion wait que le pase un AsyncExecResponse y un intervalo de tiempo
+/*******************************************************/ /**
+ * @brief Makes a GET petition to the serverless runtime to know the status of an async task
+ * 
+ * @param c_async_task_id String with the async task ID
+ * @param ui32_timeout_ms Timeout in milliseconds
+ * @return async_exec_response_t Response of the serverless runtime
+***********************************************************/
 async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_timeout_ms);
 
 /******************* PRIVATE METHODS ***********************/
