@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <ip_utils.h>
+#include <unistd.h>
 
 static serverless_runtime_context_t m_t_serverless_runtime_context;
 
@@ -120,6 +121,7 @@ e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basi
 
     // Copy the serverless runtime config to the context
     m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf = t_sr_conf_pe;
+    init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
 
     return SUCCESS;
 }
@@ -134,7 +136,7 @@ const char* check_serverless_runtime_status()
     }
 
     // Create serverless runtime
-    t_sr_conf_pe = prov_eng_retreive_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf);
+    t_sr_conf_pe = prov_eng_retreive_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id);
 
     // if t_sr_conf_pe is == {0} then there was an error
     if (memcmp(&t_sr_conf_pe, &(serverless_runtime_conf_t) { 0 }, sizeof(serverless_runtime_conf_t)) == 0)
@@ -149,25 +151,123 @@ const char* check_serverless_runtime_status()
     return t_sr_conf_pe.faas_config.c_state;
 }
 
-exec_response_t call_sync(uint8_t* ui8_off_func_data)
+exec_response_t call_sync(exec_faas_params_t* exec_faas_params)
 {
-    // Llamar all call_sync del serverless_runtime_client.c con puntero a exec_faas_params_t pasado a string
+    exec_response_t t_exec_response;
+    uint8_t ui8_off_func_data[10000];
+    size_t payload_len;
 
-    // Implementa la lógica aquí
+    if (there_is_srv_runtime_created() == false)
+    {
+        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
+            && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
+        {
+            fprintf(stderr, "[sr_context] Serverless Runtime not created yet\n");
+            return (exec_response_t) { 0 };
+        }
+        else
+        {
+            init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
+        }
+    }
+
+    if (parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
+    {
+        printf("Params parsed successfully, generated JSON: %s\n", ui8_off_func_data);
+    }
+
+    t_exec_response = faas_exec_sync(ui8_off_func_data, payload_len);
+
+    return t_exec_response;
 }
 
-async_exec_response_t call_async(uint8_t* ui8_off_func_data)
+async_exec_response_t call_async(exec_faas_params_t* exec_faas_params)
 {
-    // Implementa la lógica aquí
+    async_exec_response_t t_async_exec_response;
+    uint8_t ui8_off_func_data[10000];
+    size_t payload_len;
+
+    if (there_is_srv_runtime_created() == false)
+    {
+        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
+            && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
+        {
+            fprintf(stderr, "[sr_context] Serverless Runtime not created yet\n");
+            return (async_exec_response_t) { 0 };
+        }
+        else
+        {
+            init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
+        }
+    }
+
+    if (parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
+    {
+        printf("Params parsed successfully, generated JSON: %s\n", ui8_off_func_data);
+    }
+
+    t_async_exec_response = faas_exec_async(ui8_off_func_data, payload_len);
+
+    return t_async_exec_response;
 }
 
-const char* wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
+async_exec_response_t wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
 {
-    // Implementa la lógica aquí
-    return "PENDING";
+    async_exec_response_t t_async_response;
+
+    if (there_is_srv_runtime_created() == false)
+    {
+        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
+            && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
+        {
+            fprintf(stderr, "[sr_context] Serverless Runtime not created yet\n");
+            return (async_exec_response_t) { 0 };
+        }
+        else
+        {
+            init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
+        }
+    }
+
+    // Timeout management loop.
+    while (ui32_timeout_ms > INTERVAL_1MS)
+    {
+        t_async_response = waitForTask(c_async_task_id, ui32_timeout_ms);
+        if (t_async_response.status == "READY")
+        {
+            if (t_async_response.res != NULL)
+            {
+                break;
+            }
+        }
+        usleep(INTERVAL_1MS * 1000);
+        ui32_timeout_ms -= INTERVAL_1MS;
+    }
+
+    return t_async_response;
 }
 
 void delete_serverless_runtime(const char* c_endpoint)
 {
-    // Implementa la lógica aquí
+    if (there_is_srv_runtime_created() == false)
+    {
+        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
+            || m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL
+            || m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id == 0)
+        {
+            fprintf(stderr, "[sr_context] Serverless Runtime not created yet\n");
+            return;
+        }
+        else
+        {
+            if (prov_eng_delete_runtime(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id) == true)
+            {
+                printf("[sr_context] Serverless Runtime deleted successfully\n");
+            }
+            else
+            {
+                fprintf(stderr, "[sr_context] Serverless Runtime deletion failed\n");
+            }
+        }
+    }
 }

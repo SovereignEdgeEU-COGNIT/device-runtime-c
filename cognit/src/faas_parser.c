@@ -164,3 +164,62 @@ int8_t parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_
 
     return JSON_ERR_CODE_OK;
 }
+
+int8_t parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response)
+{
+    cJSON* root   = cJSON_Parse(json_str);
+    int8_t i8_ret = 0;
+
+    if (root == NULL)
+    {
+        printf("Error parsing JSON\n");
+        cJSON_Delete(root);
+        return JSON_ERR_CODE_INVALID_JSON;
+    }
+
+    cJSON* status_item  = cJSON_GetObjectItem(root, "status");
+    cJSON* res_item     = cJSON_GetObjectItem(root, "res");
+    cJSON* exec_id_item = cJSON_GetObjectItem(root, "exec_id");
+
+    if (!cJSON_IsString(status_item)
+        || !cJSON_IsObject(exec_id_item))
+    {
+        printf("JSON content types are wrong\n");
+        cJSON_Delete(root);
+        return JSON_ERR_CODE_INVALID_JSON;
+    }
+
+    strncpy(t_async_exec_response->status, status_item->valuestring, sizeof(t_async_exec_response->status) - 1);
+    // Parse exec_id as an object
+    cJSON* faas_task_uuid_item = cJSON_GetObjectItem(exec_id_item, "faas_task_uuid");
+    if (!cJSON_IsString(faas_task_uuid_item))
+    {
+        printf("faas_task_uuid is not a string\n");
+        cJSON_Delete(root);
+        return JSON_ERR_CODE_INVALID_JSON;
+    }
+
+    // Copy task uuid to the response struct
+    strncpy(t_async_exec_response->exec_id.faas_task_uuid, faas_task_uuid_item->valuestring, sizeof(t_async_exec_response->exec_id.faas_task_uuid) - 1);
+
+    // If res is null means srv hasnt finished the execution
+    if (cJSON_IsNull(res_item))
+    {
+        printf("res_item is NULL\n");
+        t_async_exec_response->res = NULL;
+    }
+    else
+    {
+        i8_ret = parse_json_str_as_exec_response(cJSON_Print(res_item), t_async_exec_response->res);
+        if (i8_ret != JSON_ERR_CODE_OK)
+        {
+            printf("Error parsing JSON\n");
+            cJSON_Delete(root);
+            return JSON_ERR_CODE_INVALID_JSON;
+        }
+    }
+
+    cJSON_Delete(root);
+
+    return JSON_ERR_CODE_OK;
+}

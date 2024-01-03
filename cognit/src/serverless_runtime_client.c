@@ -13,6 +13,18 @@ void init_serverless_runtime_cli(const char* c_endpoint)
     printf("Serverless runtime endpoint: %s\n", m_c_endpoint);
 }
 
+bool there_is_srv_runtime_created()
+{
+    if (m_c_endpoint == NULL)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
 {
     int8_t i8_ret = 0;
@@ -46,7 +58,7 @@ exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
 
         // Copy the response json to the response struct
         i8_ret = parse_json_str_as_exec_response(c_buffer, &t_exec_response);
-        
+
         if (i8_ret != 0)
         {
             printf("Error parsing JSON\n");
@@ -93,8 +105,8 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
         if (t_http_config.t_http_response.l_http_code == 200)
         {
             // Copy the response json to the response struct
-            i8_ret = parse_json_str_as_exec_response(c_buffer, &t_async_exec_response.res);
-        
+            i8_ret = parse_json_str_as_async_exec_response(c_buffer, &t_async_exec_response);
+
             if (i8_ret != 0)
             {
                 printf("Error parsing JSON\n");
@@ -103,15 +115,15 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
         }
         else if (t_http_config.t_http_response.l_http_code == 400)
         {
-            t_async_exec_response.status                 = "FAILED";
-            t_async_exec_response.res->ret_code          = ERROR;
-            t_async_exec_response.exec_id.faas_task_uuid = "000-000-000";
+            strcpy(t_async_exec_response.status, "FAILED");
+            t_async_exec_response.res->ret_code = ERROR;
+            strcpy(t_async_exec_response.exec_id.faas_task_uuid, "000-000-000");
         }
         else
         {
-            t_async_exec_response.status                 = "READY";
-            t_async_exec_response.res->ret_code          = ERROR;
-            t_async_exec_response.exec_id.faas_task_uuid = "000-000-000";
+            strcpy(t_async_exec_response.status, "READY");
+            t_async_exec_response.res->ret_code = ERROR;
+            strcpy(t_async_exec_response.exec_id.faas_task_uuid, "000-000-000");
         }
     }
 
@@ -127,7 +139,7 @@ async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_tim
     int8_t i8_ret = 0;
     http_config_t t_http_config;
     char c_faas_wait_id[256];
-    char c_wait_for_task_url[256];
+    char c_wait_for_task_url[MAX_URL_LENGTH];
     char c_buffer[2000]    = { 0 };
     uint8_t ui8_payload[1] = { 0 };
     size_t payload_len     = 0;
@@ -137,7 +149,7 @@ async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_tim
 
     t_http_config.c_url           = c_wait_for_task_url;
     t_http_config.c_method        = HTTP_METHOD_GET;
-    t_http_config.ui32_timeout_ms = 10000;
+    t_http_config.ui32_timeout_ms = ui32_timeout_ms;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
     printf("FaaS wait [GET URL]: %s\n", c_wait_for_task_url);
@@ -158,26 +170,19 @@ async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_tim
 
         if (t_http_config.t_http_response.l_http_code == (200 || 400))
         {
-            cJSON* root = cJSON_Parse(c_buffer);
-            if (root)
-            {
-                // Get status from JSON previously to fully parse it
-                cJSON* status = cJSON_GetObjectItemCaseSensitive(root, "status");
-                if (cJSON_IsString(status))
-                {
-                    strncpy(t_async_exec_response.status, status->valuestring, sizeof(t_async_exec_response.status) - 1);
-                }
+            i8_ret = parse_json_str_as_async_exec_response(c_buffer, &t_async_exec_response);
 
-                cJSON_Delete(root);
+            if (i8_ret != 0)
+            {
+                printf("Error parsing JSON\n");
+                t_async_exec_response.res->ret_code = ERROR;
             }
-            // Copy the response json to the response struct
-            snprintf(t_async_exec_response.res->res_payload, t_http_config.t_http_response.size, "%s", c_buffer);
         }
         else
         {
-            t_async_exec_response.status                 = "READY";
-            t_async_exec_response.res->ret_code          = ERROR;
-            t_async_exec_response.exec_id.faas_task_uuid = "000-000-000";
+            strcpy(t_async_exec_response.status, "READY");
+            t_async_exec_response.res->ret_code = ERROR;
+            strcpy(t_async_exec_response.exec_id.faas_task_uuid, "000-000-000");
         }
     }
 

@@ -15,13 +15,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 /***************** DEFINES AND MACROS *********************/
-#define FAAS_VERSION "v1"
-#define FAAS_EXECUTE_SYNC_ENDPOINT "faas/execute-sync"
+#define FAAS_VERSION                "v1"
+#define FAAS_EXECUTE_SYNC_ENDPOINT  "faas/execute-sync"
 #define FAAS_EXECUTE_ASYNC_ENDPOINT "faas/execute-async"
-#define FAAS_WAIT_ENDPOINT "faas/%s/status"
+#define FAAS_WAIT_ENDPOINT          "faas/%s/status"
 
-#define MODE_IN  "IN"
-#define MODE_OUT "OUT"
+#define MODE_IN        "IN"
+#define MODE_OUT       "OUT"
+#define MAX_URL_LENGTH 512
 
 /**************** TYPEDEFS AND STRUCTS ********************/
 typedef enum
@@ -53,12 +54,12 @@ typedef struct
 
 typedef struct
 {
-    char* faas_task_uuid;
+    char faas_task_uuid[256];
 } AsyncExecId;
 
 typedef struct
 {
-    char* status;         // "WORKING", "READY", "FAILED"
+    char status[10];      // "WORKING", "READY", "FAILED"
     exec_response_t* res; // NULL if not present
     AsyncExecId exec_id;
 } async_exec_response_t;
@@ -69,6 +70,8 @@ typedef struct
 
 // Función para inicializar el contexto del servidor sin servidor
 void init_serverless_runtime_cli(const char* c_endpoint);
+
+bool there_is_srv_runtime_created();
 
 exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len);
 

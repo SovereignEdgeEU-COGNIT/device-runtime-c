@@ -15,10 +15,11 @@
 #include <stdbool.h>
 #include <prov_engine_cli.h>
 #include <serverless_runtime_client.h>
+#include <faas_parser.h>
 /***************** DEFINES AND MACROS *********************/
-#define MODE_IN  "IN"
-#define MODE_OUT "OUT"
-
+#define MODE_IN      "IN"
+#define MODE_OUT     "OUT"
+#define INTERVAL_1MS 1
 /**************** TYPEDEFS AND STRUCTS ********************/
 
 typedef enum
@@ -50,13 +51,13 @@ e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basi
 const char* check_serverless_runtime_status();
 
 // Función para realizar una llamada sincrónica al servidor sin servidor
-exec_response_t call_sync(uint8_t* ui8_off_func_data);
+exec_response_t call_sync(exec_faas_params_t* exec_faas_params);
 
 // Función para realizar una llamada asíncrona al servidor sin servidor
-async_exec_response_t call_async(uint8_t* ui8_off_func_data);
+async_exec_response_t call_async(exec_faas_params_t* exec_faas_params);
 
 // Función para esperar la finalización de una tarea
-const char* wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms);
+async_exec_response_t wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms);
 
 // Función para eliminar el servidor sin servidor
 void delete_serverless_runtime(const char* c_endpoint);

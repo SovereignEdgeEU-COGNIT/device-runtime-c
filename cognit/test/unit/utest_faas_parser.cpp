@@ -75,3 +75,45 @@ TEST_F(ITestFaasParser, TestParseJsonAsExecResponse)
     EXPECT_EQ(test_exec_response.ret_code, 0);
     EXPECT_STREQ(test_exec_response.res_payload, "7.0");
 }
+
+TEST_F(ITestFaasParser, TestParseJsonAsAsyncExecResponseNull)
+{
+    const char* c_test_json = "{\"status\":\"WORKING\",\"res\":null,\"exec_id\":{\"faas_task_uuid\":\"58035b11-aa14-11ee-a240-02008ac90074\"}}";
+    int8_t i8_ret           = 0;
+    async_exec_response_t test_async_exec_response;
+    i8_ret = parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
+
+    printf("Status: %s\n", test_async_exec_response.status);
+    printf("Exec ID: %s\n", test_async_exec_response.exec_id.faas_task_uuid);
+
+    EXPECT_STREQ(test_async_exec_response.status, "WORKING");
+    if (test_async_exec_response.res == NULL)
+    {
+        printf("Res is NULL\n");
+        EXPECT_EQ(0, 0);
+    }
+    else
+    {
+        printf("Res is NOT NULL\n");
+        EXPECT_EQ(0, 1);
+    }
+    EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
+}
+
+TEST_F(ITestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
+{
+    const char* c_test_json = "{\"status\":\"READY\",\"res\":{\"ret_code\":0,\"res\":\"MTA=\",\"err\":null},\"exec_id\":{\"faas_task_uuid\":\"58035b11-aa14-11ee-a240-02008ac90074\"}}";
+    int8_t i8_ret           = 0;
+    async_exec_response_t test_async_exec_response;
+    i8_ret = parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
+
+    printf("Status: %s\n", test_async_exec_response.status);
+    printf("Exec ID: %s\n", test_async_exec_response.exec_id.faas_task_uuid);
+    printf("Ret code: %d\n", test_async_exec_response.res->ret_code);
+    printf("Res: %s\n", test_async_exec_response.res->res_payload);
+
+    EXPECT_STREQ(test_async_exec_response.status, "READY");
+    EXPECT_EQ(test_async_exec_response.res->ret_code, 0);
+    EXPECT_STREQ(test_async_exec_response.res->res_payload, "10");
+    EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
+}
