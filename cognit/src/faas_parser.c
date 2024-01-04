@@ -54,7 +54,7 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
         param = cJSON_CreateObject();
         if (param == NULL)
         {
-            COGNIT_LOG_ERROR(stderr, "Error creating cJSON object\n");
+            COGNIT_LOG_ERROR("Error creating cJSON object\n");
             cJSON_Delete(root);
             return JSON_ERR_CODE_INVALID_JSON;
         }
@@ -74,7 +74,7 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
             str_b64_value = malloc(base64_encode_len(strlen(exec_faas_params->params[i].value)));
             if (str_b64_value == NULL)
             {
-                COGNIT_LOG_ERROR(stderr, "Failed to allocate memory for encoded param\n");
+                COGNIT_LOG_ERROR("Failed to allocate memory for encoded param\n");
             }
 
             i_coded_value_len = base64_encode(str_b64_value, exec_faas_params->params[i].value, strlen(exec_faas_params->params[i].value));
@@ -92,7 +92,7 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
         str_b64_param = malloc(base64_encode_len(strlen(str_param)));
         if (str_b64_param == NULL)
         {
-            COGNIT_LOG_ERROR(stderr, "Failed to allocate memory for encoded param\n");
+            COGNIT_LOG_ERROR("Failed to allocate memory for encoded param\n");
         }
 
         i_coded_param_len = base64_encode(str_b64_param, str_param, strlen(str_param));
