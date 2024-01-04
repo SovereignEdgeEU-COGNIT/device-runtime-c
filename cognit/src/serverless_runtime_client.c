@@ -10,7 +10,7 @@ static char m_c_endpoint[256];
 void srcli_init(const char* c_endpoint)
 {
     snprintf(m_c_endpoint, 256, "%s", c_endpoint);
-    printf("Serverless runtime endpoint: %s\n", m_c_endpoint);
+    COGNIT_LOG_INFO("Serverless runtime endpoint: %s\n", m_c_endpoint);
 }
 
 bool srcli_there_is_srv_runtime_created()
@@ -38,28 +38,28 @@ exec_response_t srcli_faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
     t_http_config.ui32_timeout_ms = 10000;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-    printf("FaaS execute sync [POST¯URL]: %s\n", c_exec_sync_url);
+    COGNIT_LOG_DEBUG("FaaS execute sync [POST-URL]: %s\n", c_exec_sync_url);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL
         || t_http_config.t_http_response.size == 0
         || t_http_config.t_http_response.l_http_code != 200)
     {
-        printf("Error sending HTTP request, HTTP code: %d\n", i8_ret);
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d\n", i8_ret);
         t_exec_response.ret_code = ERROR;
     }
     else
     {
         // Print json response
-        printf("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
-        printf("JSON received size: %ld\n", t_http_config.t_http_response.size);
+        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("JSON received size: %ld\n", t_http_config.t_http_response.size);
 
         // Copy the response json to the response struct
         i8_ret = faasparser_parse_json_str_as_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_exec_response);
 
         if (i8_ret != 0)
         {
-            printf("Error parsing JSON\n");
+            COGNIT_LOG_ERROR("Error parsing JSON\n");
             t_exec_response.ret_code = ERROR;
         }
     }
@@ -82,20 +82,20 @@ async_exec_response_t srcli_faas_exec_async(uint8_t* ui8_payload, size_t payload
     t_http_config.ui32_timeout_ms = 10000;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-    printf("FaaS execute async [POST URL]: %s\n", c_exec_async_url);
+    COGNIT_LOG_DEBUG("FaaS execute async [POST-URL]: %s\n", c_exec_async_url);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL
         || t_http_config.t_http_response.size == 0)
     {
-        printf("Error sending HTTP request, HTTP code: %d\n", i8_ret);
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d\n", i8_ret);
         t_async_exec_response.res->ret_code = ERROR;
     }
     else
     {
         // Print json response
-        printf("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
-        printf("JSON received size: %ld\n", t_http_config.t_http_response.size);
+        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("JSON received size: %ld\n", t_http_config.t_http_response.size);
 
         if (t_http_config.t_http_response.l_http_code == 200)
         {
@@ -104,7 +104,7 @@ async_exec_response_t srcli_faas_exec_async(uint8_t* ui8_payload, size_t payload
 
             if (i8_ret != 0)
             {
-                printf("Error parsing JSON\n");
+                COGNIT_LOG_ERROR("Error parsing JSON\n");
                 t_async_exec_response.res->ret_code = ERROR;
             }
         }
@@ -145,20 +145,20 @@ async_exec_response_t srcli_wait_for_task(const char* c_async_task_id, uint32_t 
     t_http_config.ui32_timeout_ms = ui32_timeout_ms;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-    printf("FaaS wait [GET URL]: %s\n", c_wait_for_task_url);
+    COGNIT_LOG_DEBUG("FaaS wait [GET-URL]: %s\n", c_wait_for_task_url);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL
         || t_http_config.t_http_response.size == 0)
     {
-        printf("Error sending HTTP request, HTTP code: %d\n", i8_ret);
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d\n", i8_ret);
         t_async_exec_response.res->ret_code = ERROR;
     }
     else
     {
         // Print json response
-        printf("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
-        printf("JSON received size: %ld\n", t_http_config.t_http_response.size);
+        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("JSON received size: %ld\n", t_http_config.t_http_response.size);
 
         if (t_http_config.t_http_response.l_http_code == (200 || 400))
         {
@@ -166,7 +166,7 @@ async_exec_response_t srcli_wait_for_task(const char* c_async_task_id, uint32_t 
 
             if (i8_ret != 0)
             {
-                printf("Error parsing JSON\n");
+                COGNIT_LOG_ERROR("Error parsing JSON\n");
                 t_async_exec_response.res->ret_code = ERROR;
             }
         }

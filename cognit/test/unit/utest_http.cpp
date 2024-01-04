@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 extern "C" {
 #include <cognit_http.h>
+#include <logger.h>
 }
 
 size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, void* user_buffer)
@@ -11,7 +12,7 @@ size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, vo
 
     if (response->size + realsize >= sizeof(response->ui8_response_data_buffer))
     {
-        fprintf(stderr, "Response buffer too small\n");
+        COGNIT_LOG_ERROR("Response buffer too small\n");
         return 0;
     }
 
@@ -50,7 +51,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
             || curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_response_data_cb) != CURLE_OK
             || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK)
         {
-            fprintf(stderr, "[hhtp_send_req_cb] curl_easy_setopt() failed\n");
+            COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt() failed\n");
             return -1;
         }
 
@@ -58,7 +59,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         {
             if (curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L) != CURLE_OK)
             {
-                fprintf(stderr, "[hhtp_send_req_cb] curl_easy_setopt()->get() failed\n");
+                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->get() failed\n");
                 return -1;
             }
         }
@@ -69,13 +70,13 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, size) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_POSTFIELDS, c_buffer) != CURLE_OK)
             {
-                fprintf(stderr, "[hhtp_send_req_cb] curl_easy_setopt()->post() failed\n");
+                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed\n");
                 return -1;
             }
         }
         else
         {
-            fprintf(stderr, "[hhtp_send_req_cb] Invalid HTTP method\n");
+            COGNIT_LOG_ERROR("[hhtp_send_req_cb] Invalid HTTP method\n");
             return -1;
         }
 
@@ -83,15 +84,15 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         res = curl_easy_perform(curl);
 
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-        fprintf(stderr, "HTTP err code %ld \n", http_code);
+        COGNIT_LOG_ERROR("HTTP err code %ld \n", http_code);
 
         // Check errors
         if (res != CURLE_OK)
         {
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-            fprintf(stderr, "HTTP err code %ld \n", http_code);
+            COGNIT_LOG_ERROR("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            COGNIT_LOG_ERROR("HTTP err code %ld \n", http_code);
         }
 
         // Clean and close CURL session
@@ -120,8 +121,8 @@ TEST_F(UTestHttp, TestHttpGet)
     i8_ret = cognit_http_send(c_buffer, size, &config);
 
     // Print json response
-    printf("%s\n", config.t_http_response.ui8_response_data_buffer);
-    printf("size: %ld\n", config.t_http_response.size);
+    COGNIT_LOG_DEBUG("%s\n", config.t_http_response.ui8_response_data_buffer);
+    COGNIT_LOG_DEBUG("size: %ld\n", config.t_http_response.size);
 
     ASSERT_EQ(i8_ret, CURLE_OK);
 }
@@ -144,8 +145,8 @@ TEST_F(UTestHttp, TestHttpPost)
     i8_ret = cognit_http_send(c_buffer, size, &config);
 
     // Print json response
-    printf("%s\n", config.t_http_response.ui8_response_data_buffer);
-    printf("size: %ld\n", config.t_http_response.size);
+    COGNIT_LOG_DEBUG("%s\n", config.t_http_response.ui8_response_data_buffer);
+    COGNIT_LOG_DEBUG("size: %ld\n", config.t_http_response.size);
 
     // TODO: make proper json comparison -> Problem with \n, '\0' and spaces but same content
     EXPECT_EQ(i8_ret, CURLE_OK);
@@ -165,12 +166,12 @@ TEST_F(UTestHttp, TestHttpPost2)
 
     strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
     size = strlen(c_json_test);
-    printf("size: %ld\n", config.t_http_response.size);
+    COGNIT_LOG_DEBUG("size: %ld\n", config.t_http_response.size);
     i8_ret = cognit_http_send(c_buffer, size, &config);
 
     // Print json response
-    printf("%s\n", config.t_http_response.ui8_response_data_buffer);
-    printf("size: %ld\n", config.t_http_response.size);
+    COGNIT_LOG_DEBUG("%s\n", config.t_http_response.ui8_response_data_buffer);
+    COGNIT_LOG_DEBUG("size: %ld\n", config.t_http_response.size);
 
     ASSERT_EQ(i8_ret, CURLE_OK);
 }
