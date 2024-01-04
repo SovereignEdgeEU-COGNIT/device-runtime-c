@@ -52,8 +52,6 @@ typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config
 ***********************************************************/
 int cognit_http_send(const char* c_buffer, size_t size, http_config_t* config);
 
-// TODO: Add handle_errors and handle_response_data callbacks para hacer un unico free?
-
 /******************* PRIVATE METHODS ***********************/
 
 #endif // COGNIT_HTTP_H

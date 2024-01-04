@@ -5,11 +5,10 @@
 #include <string.h>
 #include <faas_parser.h>
 
-static char* m_c_endpoint;
+static char m_c_endpoint [256];
 
 void init_serverless_runtime_cli(const char* c_endpoint)
 {
-    // TODO: Avoid uninitialized memory access
     snprintf(m_c_endpoint, 256, "%s", c_endpoint);
     printf("Serverless runtime endpoint: %s\n", m_c_endpoint);
 }
