@@ -9,20 +9,15 @@ size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, vo
     size_t realsize           = size * nmemb;
     http_response_t* response = (http_response_t*)user_buffer;
 
-    uint8_t* c_buffer_ptr = (uint8_t*)realloc(response->ui8_response_data_buffer, response->size + realsize + 1);
-
-    if (c_buffer_ptr == NULL)
+    if (response->size + realsize >= sizeof(response->ui8_response_data_buffer))
     {
-        fprintf(stderr, "[handle_response_data] Realloc() failed\n");
+        fprintf(stderr, "Response buffer too small\n");
         return 0;
     }
 
-    response->ui8_response_data_buffer = c_buffer_ptr;
     memcpy(&(response->ui8_response_data_buffer[response->size]), data_content, realsize);
     response->size += realsize;
     response->ui8_response_data_buffer[response->size] = '\0';
-
-    // TODO: free(ui8_response_data_buffer) after reading content
 
     return realsize;
 }
@@ -32,10 +27,10 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 {
     CURL* curl;
     CURLcode res;
-    long http_code                                   = 0;
-    struct curl_slist* headers                       = NULL;
-    config->t_http_response.ui8_response_data_buffer = (uint8_t*)malloc(1);
-    config->t_http_response.size                     = 0;
+    long http_code             = 0;
+    struct curl_slist* headers = NULL;
+    memset(&config->t_http_response.ui8_response_data_buffer, 0, sizeof(config->t_http_response.ui8_response_data_buffer));
+    config->t_http_response.size = 0;
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
@@ -107,40 +102,37 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
     // Clean global curl configuration
     curl_global_cleanup();
-    // User must free(t_http_response.ui8_response_data_buffer) after reading content!!
+
     return (res == CURLE_OK) ? 0 : -1;
 }
 }
 
 TEST_F(ITestHttp, TestHttpGet)
 {
-    int8_t i8_ret        = 0;
-    char c_buffer[28000] = { 0 };
-    size_t size          = 0;
-    http_config_t config;
-    config.c_method        = HTTP_METHOD_GET;
-    config.c_url           = "https://jsonplaceholder.typicode.com/posts";
-    config.ui32_timeout_ms = 5000;
+    int8_t i8_ret                             = 0;
+    char c_buffer[MAX_HTTP_TRANSMISSION_SIZE] = { 0 };
+    size_t size                               = 0;
+    http_config_t config                      = { 0 };
+    config.c_method                           = HTTP_METHOD_GET;
+    config.c_url                              = "https://jsonplaceholder.typicode.com/posts";
+    config.ui32_timeout_ms                    = 5000;
 
     i8_ret = cognit_http_send(c_buffer, size, &config);
 
     // Print json response
     printf("%s\n", config.t_http_response.ui8_response_data_buffer);
-    memcpy(c_buffer, config.t_http_response.ui8_response_data_buffer, config.t_http_response.size);
     printf("size: %ld\n", config.t_http_response.size);
-
-    free(config.t_http_response.ui8_response_data_buffer);
 
     ASSERT_EQ(i8_ret, CURLE_OK);
 }
 
 TEST_F(ITestHttp, TestHttpPost)
 {
-    int8_t i8_ret               = 0;
-    const char* c_json_response = "{\"title\":\"me\",\"body\":\"myproject\",\"userId\":9,\"id\":101}";
-    const char* c_json_test     = "{\"title\":\"me\",\"body\":\"myproject\",\"userId\":9}";
-    char c_buffer[28000]        = { 0 };
-    size_t size                 = 0;
+    int8_t i8_ret                             = 0;
+    const char* c_json_response               = "{\"title\":\"me\",\"body\":\"myproject\",\"userId\":9,\"id\":101}";
+    const char* c_json_test                   = "{\"title\":\"me\",\"body\":\"myproject\",\"userId\":9}";
+    char c_buffer[MAX_HTTP_TRANSMISSION_SIZE] = { 0 };
+    size_t size                               = 0;
     http_config_t config;
     config.c_method        = HTTP_METHOD_POST;
     config.c_url           = "https://jsonplaceholder.typicode.com/posts";
@@ -153,22 +145,19 @@ TEST_F(ITestHttp, TestHttpPost)
 
     // Print json response
     printf("%s\n", config.t_http_response.ui8_response_data_buffer);
-    memcpy(c_buffer, config.t_http_response.ui8_response_data_buffer, config.t_http_response.size);
     printf("size: %ld\n", config.t_http_response.size);
 
     // TODO: make proper json comparison -> Problem with \n, '\0' and spaces but same content
     EXPECT_EQ(i8_ret, CURLE_OK);
-
-    free(config.t_http_response.ui8_response_data_buffer);
 }
 
 // Must run a serverless runtime to test this
 TEST_F(ITestHttp, TestHttpPost2)
 {
-    int8_t i8_ret           = 0;
-    const char* c_json_test = "{\"lang\":\"C\",\"fc\":\"I2luY2x1ZGUgPHN0ZGlvLmg+IAp2b2lkIHN1bWEgKGludCBhLCBpbnQgYiwgZmxvYXQgKmMpCnsKKmMgPSBhICtiOwp9\",\"params\":[\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJhIiwKICAgICJ2YWx1ZSI6ICJNdz09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJiIiwKICAgICJ2YWx1ZSI6ICJOQT09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiZmxvYXQiLAogICAgInZhcl9uYW1lIjogImMiLAogICAgIm1vZGUiOiAiT1VUIgogICAgfQ==\"]}";
-    char c_buffer[28000]    = { 0 };
-    size_t size             = 0;
+    int8_t i8_ret                             = 0;
+    const char* c_json_test                   = "{\"lang\":\"C\",\"fc\":\"I2luY2x1ZGUgPHN0ZGlvLmg+IAp2b2lkIHN1bWEgKGludCBhLCBpbnQgYiwgZmxvYXQgKmMpCnsKKmMgPSBhICtiOwp9\",\"params\":[\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJhIiwKICAgICJ2YWx1ZSI6ICJNdz09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJiIiwKICAgICJ2YWx1ZSI6ICJOQT09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiZmxvYXQiLAogICAgInZhcl9uYW1lIjogImMiLAogICAgIm1vZGUiOiAiT1VUIgogICAgfQ==\"]}";
+    char c_buffer[MAX_HTTP_TRANSMISSION_SIZE] = { 0 };
+    size_t size                               = 0;
     http_config_t config;
     config.c_method        = HTTP_METHOD_POST;
     config.c_url           = "http://127.0.0.1:8000/v1/faas/execute-sync";
@@ -181,10 +170,7 @@ TEST_F(ITestHttp, TestHttpPost2)
 
     // Print json response
     printf("%s\n", config.t_http_response.ui8_response_data_buffer);
-    memcpy(c_buffer, config.t_http_response.ui8_response_data_buffer, config.t_http_response.size);
     printf("size: %ld\n", config.t_http_response.size);
-
-    free(config.t_http_response.ui8_response_data_buffer);
 
     ASSERT_EQ(i8_ret, CURLE_OK);
 }

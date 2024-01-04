@@ -17,11 +17,14 @@
 #define HTTP_METHOD_GET  "GET"
 #define HTTP_METHOD_POST "POST"
 
+#define MAX_HTTP_RESPONSE_SIZE     30000
+#define MAX_HTTP_TRANSMISSION_SIZE 20000
+
 /**************** TYPEDEFS AND STRUCTS ********************/
 
 typedef struct
 {
-    uint8_t* ui8_response_data_buffer;
+    uint8_t ui8_response_data_buffer[MAX_HTTP_RESPONSE_SIZE];
     size_t size;
     long l_http_code;
 } http_response_t;

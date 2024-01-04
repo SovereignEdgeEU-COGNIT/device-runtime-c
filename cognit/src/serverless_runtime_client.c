@@ -30,9 +30,8 @@ exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
 {
     int8_t i8_ret = 0;
     exec_response_t t_exec_response;
-    http_config_t t_http_config;
+    http_config_t t_http_config = { 0 };
     char c_exec_sync_url[256];
-    char c_buffer[2000] = { 0 };
     snprintf(c_exec_sync_url, 256, "%s/%s/%s", m_c_endpoint, FAAS_VERSION, FAAS_EXECUTE_SYNC_ENDPOINT);
 
     t_http_config.c_url           = c_exec_sync_url;
@@ -55,10 +54,9 @@ exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
         // Print json response
         printf("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
         printf("JSON received size: %ld\n", t_http_config.t_http_response.size);
-        snprintf(c_buffer, 2000, "%s", t_http_config.t_http_response.ui8_response_data_buffer);
 
         // Copy the response json to the response struct
-        i8_ret = parse_json_str_as_exec_response(c_buffer, &t_exec_response);
+        i8_ret = parse_json_str_as_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_exec_response);
 
         if (i8_ret != 0)
         {
@@ -67,7 +65,6 @@ exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
         }
     }
 
-    free(t_http_config.t_http_response.ui8_response_data_buffer);
     t_exec_response.http_err_code = t_http_config.t_http_response.l_http_code;
 
     return t_exec_response;
@@ -79,7 +76,6 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
     int8_t i8_ret = 0;
     http_config_t t_http_config;
     char c_exec_async_url[256];
-    char c_buffer[2000] = { 0 };
     snprintf(c_exec_async_url, 256, "%s/%s/%s", m_c_endpoint, FAAS_VERSION, FAAS_EXECUTE_ASYNC_ENDPOINT);
 
     t_http_config.c_url           = c_exec_async_url;
@@ -101,12 +97,11 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
         // Print json response
         printf("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
         printf("JSON received size: %ld\n", t_http_config.t_http_response.size);
-        snprintf(c_buffer, 2000, "%s", t_http_config.t_http_response.ui8_response_data_buffer);
 
         if (t_http_config.t_http_response.l_http_code == 200)
         {
             // Copy the response json to the response struct
-            i8_ret = parse_json_str_as_async_exec_response(c_buffer, &t_async_exec_response);
+            i8_ret = parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
 
             if (i8_ret != 0)
             {
@@ -128,7 +123,6 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
         }
     }
 
-    free(t_http_config.t_http_response.ui8_response_data_buffer);
     t_async_exec_response.res->http_err_code = t_http_config.t_http_response.l_http_code;
 
     return t_async_exec_response;
@@ -141,7 +135,6 @@ async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_tim
     http_config_t t_http_config;
     char c_faas_wait_id[256];
     char c_wait_for_task_url[MAX_URL_LENGTH];
-    char c_buffer[2000]    = { 0 };
     uint8_t ui8_payload[1] = { 0 };
     size_t payload_len     = 0;
 
@@ -167,11 +160,10 @@ async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_tim
         // Print json response
         printf("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
         printf("JSON received size: %ld\n", t_http_config.t_http_response.size);
-        snprintf(c_buffer, 2000, "%s", t_http_config.t_http_response.ui8_response_data_buffer);
 
         if (t_http_config.t_http_response.l_http_code == (200 || 400))
         {
-            i8_ret = parse_json_str_as_async_exec_response(c_buffer, &t_async_exec_response);
+            i8_ret = parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
 
             if (i8_ret != 0)
             {
@@ -187,7 +179,6 @@ async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_tim
         }
     }
 
-    free(t_http_config.t_http_response.ui8_response_data_buffer);
     t_async_exec_response.res->http_err_code = t_http_config.t_http_response.l_http_code;
 
     return t_async_exec_response;
