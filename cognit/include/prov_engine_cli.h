@@ -119,7 +119,7 @@ typedef struct
  * @param config Configuration to load
  * @return int8_t 0 if success, -1 otherwise
 ***********************************************************/
-int8_t prov_eng_init(prov_eng_cli_context_t* t_pec_context);
+int8_t pec_init(prov_eng_cli_context_t* t_pec_context);
 
 /*******************************************************/ /**
  * @brief Create a runtime object in the provisioning engine and make HTTP request
@@ -127,7 +127,7 @@ int8_t prov_eng_init(prov_eng_cli_context_t* t_pec_context);
  * @param serverless_runtime_context Serverless runtime context to create
  * @return cJSON JSON response from provisioning engine
 ***********************************************************/
-serverless_runtime_conf_t prov_eng_create_runtime(serverless_runtime_conf_t* serverless_runtime_context);
+serverless_runtime_conf_t pec_create_runtime(serverless_runtime_conf_t* serverless_runtime_context);
 
 /*******************************************************/ /**
  * @brief Retreives serverless runtime status
@@ -135,7 +135,7 @@ serverless_runtime_conf_t prov_eng_create_runtime(serverless_runtime_conf_t* ser
  * @param ui32_id Serverless runtime id
  * @return cJSON JSON response from provisioning engine
 ***********************************************************/
-serverless_runtime_conf_t prov_eng_retreive_runtime(uint32_t ui32_id);
+serverless_runtime_conf_t pec_retreive_runtime(uint32_t ui32_id);
 
 /*******************************************************/ /**
  * @brief Deletes serverless runtime
@@ -143,7 +143,7 @@ serverless_runtime_conf_t prov_eng_retreive_runtime(uint32_t ui32_id);
  * @param ui32_id Serverless runtime id
  * @return cJSON JSON response from provisioning engine
 ***********************************************************/
-bool prov_eng_delete_runtime(uint32_t ui32_id);
+bool pec_delete_runtime(uint32_t ui32_id);
 
 /******************* PRIVATE METHODS ***********************/
 #endif // PROV_ENGINE_CLI_H

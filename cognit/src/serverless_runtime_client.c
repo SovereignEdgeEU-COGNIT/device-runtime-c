@@ -5,15 +5,15 @@
 #include <string.h>
 #include <faas_parser.h>
 
-static char m_c_endpoint [256];
+static char m_c_endpoint[256];
 
-void init_serverless_runtime_cli(const char* c_endpoint)
+void srcli_init(const char* c_endpoint)
 {
     snprintf(m_c_endpoint, 256, "%s", c_endpoint);
     printf("Serverless runtime endpoint: %s\n", m_c_endpoint);
 }
 
-bool there_is_srv_runtime_created()
+bool srcli_there_is_srv_runtime_created()
 {
     if (m_c_endpoint == NULL)
     {
@@ -25,7 +25,7 @@ bool there_is_srv_runtime_created()
     }
 }
 
-exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
+exec_response_t srcli_faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
 {
     int8_t i8_ret = 0;
     exec_response_t t_exec_response;
@@ -55,7 +55,7 @@ exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
         printf("JSON received size: %ld\n", t_http_config.t_http_response.size);
 
         // Copy the response json to the response struct
-        i8_ret = parse_json_str_as_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_exec_response);
+        i8_ret = faasparser_parse_json_str_as_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_exec_response);
 
         if (i8_ret != 0)
         {
@@ -69,7 +69,7 @@ exec_response_t faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
     return t_exec_response;
 }
 
-async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
+async_exec_response_t srcli_faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
 {
     async_exec_response_t t_async_exec_response;
     int8_t i8_ret = 0;
@@ -100,7 +100,7 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
         if (t_http_config.t_http_response.l_http_code == 200)
         {
             // Copy the response json to the response struct
-            i8_ret = parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
+            i8_ret = faasparser_parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
 
             if (i8_ret != 0)
             {
@@ -127,7 +127,7 @@ async_exec_response_t faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
     return t_async_exec_response;
 }
 
-async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_timeout_ms)
+async_exec_response_t srcli_wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
 {
     async_exec_response_t t_async_exec_response;
     int8_t i8_ret = 0;
@@ -162,7 +162,7 @@ async_exec_response_t waitForTask(const char* c_async_task_id, uint32_t ui32_tim
 
         if (t_http_config.t_http_response.l_http_code == (200 || 400))
         {
-            i8_ret = parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
+            i8_ret = faasparser_parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
 
             if (i8_ret != 0)
             {

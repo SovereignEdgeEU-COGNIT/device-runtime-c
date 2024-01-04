@@ -2,7 +2,7 @@
 #include <base64.h>
 #include <cJSON.h>
 
-int8_t parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len)
+int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len)
 {
     cJSON* root           = NULL;
     cJSON* param          = NULL;
@@ -116,7 +116,7 @@ int8_t parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, 
     return JSON_ERR_CODE_OK;
 }
 
-int8_t parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response)
+int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response)
 {
     cJSON* root = cJSON_Parse(json_str);
 
@@ -165,7 +165,7 @@ int8_t parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_
     return JSON_ERR_CODE_OK;
 }
 
-int8_t parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response)
+int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response)
 {
     cJSON* root   = cJSON_Parse(json_str);
     int8_t i8_ret = 0;
@@ -210,7 +210,7 @@ int8_t parse_json_str_as_async_exec_response(const char* json_str, async_exec_re
     }
     else
     {
-        i8_ret = parse_json_str_as_exec_response(cJSON_Print(res_item), t_async_exec_response->res);
+        i8_ret = faasparser_parse_json_str_as_exec_response(cJSON_Print(res_item), t_async_exec_response->res);
         if (i8_ret != JSON_ERR_CODE_OK)
         {
             printf("Error parsing JSON\n");

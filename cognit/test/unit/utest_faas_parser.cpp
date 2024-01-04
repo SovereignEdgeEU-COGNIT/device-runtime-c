@@ -53,7 +53,7 @@ TEST_F(UTestFaasParser, TestParseExecParamsAsJson)
     exec_params.params[2].value    = NULL;
     strncpy(exec_params.params[2].mode, "OUT", sizeof(exec_params.params[0].mode));
 
-    i8_ret = parse_exec_faas_params_as_str_json(&exec_params, ui8_json_buffer, &size_json_buff);
+    i8_ret = faasparser_parse_exec_faas_params_as_str_json(&exec_params, ui8_json_buffer, &size_json_buff);
 
     printf("JSON: %s\n", (char*)ui8_json_buffer);
     printf("JSON len: %ld\n", size_json_buff);
@@ -70,7 +70,7 @@ TEST_F(UTestFaasParser, TestParseJsonAsExecResponse)
     const char* c_test_json = "{\"ret_code\":0,\"res\":\"Ny4w\",\"err\":null}";
     int8_t i8_ret           = 0;
     exec_response_t test_exec_response;
-    i8_ret = parse_json_str_as_exec_response(c_test_json, &test_exec_response);
+    i8_ret = faasparser_parse_json_str_as_exec_response(c_test_json, &test_exec_response);
 
     EXPECT_EQ(test_exec_response.ret_code, 0);
     EXPECT_STREQ(test_exec_response.res_payload, "7.0");
@@ -81,7 +81,7 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseNull)
     const char* c_test_json = "{\"status\":\"WORKING\",\"res\":null,\"exec_id\":{\"faas_task_uuid\":\"58035b11-aa14-11ee-a240-02008ac90074\"}}";
     int8_t i8_ret           = 0;
     async_exec_response_t test_async_exec_response;
-    i8_ret = parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
+    i8_ret = faasparser_parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
 
     printf("Status: %s\n", test_async_exec_response.status);
     printf("Exec ID: %s\n", test_async_exec_response.exec_id.faas_task_uuid);
@@ -105,7 +105,7 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
     const char* c_test_json = "{\"status\":\"READY\",\"res\":{\"ret_code\":0,\"res\":\"MTA=\",\"err\":null},\"exec_id\":{\"faas_task_uuid\":\"58035b11-aa14-11ee-a240-02008ac90074\"}}";
     int8_t i8_ret           = 0;
     async_exec_response_t test_async_exec_response;
-    i8_ret = parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
+    i8_ret = faasparser_parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
 
     printf("Status: %s\n", test_async_exec_response.status);
     printf("Exec ID: %s\n", test_async_exec_response.exec_id.faas_task_uuid);

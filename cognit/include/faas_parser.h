@@ -56,7 +56,7 @@ typedef struct
  * @param payload_len Length of the JSON string
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-int8_t parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
+int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
 
 /*******************************************************/ /**
  * @brief Parse JSON string to exec_response_t struct
@@ -65,7 +65,7 @@ int8_t parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, 
  * @param t_exec_response Struct to store the response
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-int8_t parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response);
+int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response);
 
 /*******************************************************/ /**
  * @brief Parse JSON string to async_exec_response_t struct
@@ -74,7 +74,7 @@ int8_t parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_
  * @param t_async_exec_response Struct to store the response 
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-int8_t parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response);
+int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response);
 
 /******************* PRIVATE METHODS ***********************/
 

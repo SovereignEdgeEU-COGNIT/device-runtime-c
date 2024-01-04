@@ -34,14 +34,14 @@ static void init_xaas_config(xaas_config_t* t_xaas_config)
 }
 
 // Public functions
-e_status_code_t init_serverless_runtime_context(cognit_config_t* config)
+e_status_code_t srcontext_init(cognit_config_t* config)
 {
     e_status_code_t e_ret = E_ST_CODE_SUCCESS;
     uint8_t ui8_pe_ret    = PE_ERR_CODE_SUCCESS;
 
     memcpy(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_cognit_prov_engine_config, config, sizeof(cognit_config_t));
     snprintf(m_t_serverless_runtime_context.m_c_url_proto, sizeof(m_t_serverless_runtime_context.m_c_url_proto), "%s", "http://");
-    ui8_pe_ret = prov_eng_init(&m_t_serverless_runtime_context.m_t_prov_eng_context);
+    ui8_pe_ret = pec_init(&m_t_serverless_runtime_context.m_t_prov_eng_context);
 
     if (ui8_pe_ret != PE_ERR_CODE_SUCCESS)
     {
@@ -52,7 +52,7 @@ e_status_code_t init_serverless_runtime_context(cognit_config_t* config)
     return e_ret;
 }
 
-e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basic_serverless_runtime_conf)
+e_status_code_t srconext_create(basic_serverless_runtime_conf_t t_basic_serverless_runtime_conf)
 {
     serverless_runtime_conf_t t_sr_conf_pe = { 0 };
     char c_policies[SR_POLICY_MAX_LEN]     = "";
@@ -86,7 +86,7 @@ e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basi
     m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.device_info = (device_info_t) { 0 };
 
     // Create serverless runtime
-    t_sr_conf_pe = prov_eng_create_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf);
+    t_sr_conf_pe = pec_create_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf);
 
     // if t_sr_conf_pe is == {0} then there was an error
     if (memcmp(&t_sr_conf_pe, &(serverless_runtime_conf_t) { 0 }, sizeof(serverless_runtime_conf_t)) == 0)
@@ -121,12 +121,12 @@ e_status_code_t create_serverless_runtime(basic_serverless_runtime_conf_t t_basi
 
     // Copy the serverless runtime config to the context
     m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf = t_sr_conf_pe;
-    init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
+    srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
 
     return SUCCESS;
 }
 
-const char* check_serverless_runtime_status()
+const char* srcontext_check_serverless_runtime_status()
 {
     serverless_runtime_conf_t t_sr_conf_pe = { 0 };
     if (m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id == 0)
@@ -136,7 +136,7 @@ const char* check_serverless_runtime_status()
     }
 
     // Create serverless runtime
-    t_sr_conf_pe = prov_eng_retreive_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id);
+    t_sr_conf_pe = pec_retreive_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id);
 
     // if t_sr_conf_pe is == {0} then there was an error
     if (memcmp(&t_sr_conf_pe, &(serverless_runtime_conf_t) { 0 }, sizeof(serverless_runtime_conf_t)) == 0)
@@ -151,13 +151,13 @@ const char* check_serverless_runtime_status()
     return t_sr_conf_pe.faas_config.c_state;
 }
 
-exec_response_t call_sync(exec_faas_params_t* exec_faas_params)
+exec_response_t srcontext_call_sync(exec_faas_params_t* exec_faas_params)
 {
     exec_response_t t_exec_response;
     uint8_t ui8_off_func_data[10000];
     size_t payload_len;
 
-    if (there_is_srv_runtime_created() == false)
+    if (srcli_there_is_srv_runtime_created() == false)
     {
         if (m_t_serverless_runtime_context.m_c_endpoint == NULL
             && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
@@ -167,27 +167,27 @@ exec_response_t call_sync(exec_faas_params_t* exec_faas_params)
         }
         else
         {
-            init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
+            srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
         }
     }
 
-    if (parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
+    if (faasparser_parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
     {
         printf("Params parsed successfully, generated JSON: %s\n", ui8_off_func_data);
     }
 
-    t_exec_response = faas_exec_sync(ui8_off_func_data, payload_len);
+    t_exec_response = srcli_faas_exec_sync(ui8_off_func_data, payload_len);
 
     return t_exec_response;
 }
 
-async_exec_response_t call_async(exec_faas_params_t* exec_faas_params)
+async_exec_response_t srcontext_call_async(exec_faas_params_t* exec_faas_params)
 {
     async_exec_response_t t_async_exec_response;
     uint8_t ui8_off_func_data[10000];
     size_t payload_len;
 
-    if (there_is_srv_runtime_created() == false)
+    if (srcli_there_is_srv_runtime_created() == false)
     {
         if (m_t_serverless_runtime_context.m_c_endpoint == NULL
             && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
@@ -197,25 +197,25 @@ async_exec_response_t call_async(exec_faas_params_t* exec_faas_params)
         }
         else
         {
-            init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
+            srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
         }
     }
 
-    if (parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
+    if (faasparser_parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
     {
         printf("Params parsed successfully, generated JSON: %s\n", ui8_off_func_data);
     }
 
-    t_async_exec_response = faas_exec_async(ui8_off_func_data, payload_len);
+    t_async_exec_response = srcli_faas_exec_async(ui8_off_func_data, payload_len);
 
     return t_async_exec_response;
 }
 
-async_exec_response_t wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
+async_exec_response_t srcontext_wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
 {
     async_exec_response_t t_async_response;
 
-    if (there_is_srv_runtime_created() == false)
+    if (srcli_there_is_srv_runtime_created() == false)
     {
         if (m_t_serverless_runtime_context.m_c_endpoint == NULL
             && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
@@ -225,14 +225,14 @@ async_exec_response_t wait_for_task(const char* c_async_task_id, uint32_t ui32_t
         }
         else
         {
-            init_serverless_runtime_cli(m_t_serverless_runtime_context.m_c_endpoint);
+            srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
         }
     }
 
     // Timeout management loop.
     while (ui32_timeout_ms > INTERVAL_1MS)
     {
-        t_async_response = waitForTask(c_async_task_id, ui32_timeout_ms);
+        t_async_response = srcli_wait_for_task(c_async_task_id, ui32_timeout_ms);
         if (t_async_response.status == "READY")
         {
             if (t_async_response.res != NULL)
@@ -249,7 +249,7 @@ async_exec_response_t wait_for_task(const char* c_async_task_id, uint32_t ui32_t
 
 void delete_serverless_runtime(const char* c_endpoint)
 {
-    if (there_is_srv_runtime_created() == false)
+    if (srcli_there_is_srv_runtime_created() == false)
     {
         if (m_t_serverless_runtime_context.m_c_endpoint == NULL
             || m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL
@@ -260,7 +260,7 @@ void delete_serverless_runtime(const char* c_endpoint)
         }
         else
         {
-            if (prov_eng_delete_runtime(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id) == true)
+            if (pec_delete_runtime(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id) == true)
             {
                 printf("[sr_context] Serverless Runtime deleted successfully\n");
             }
