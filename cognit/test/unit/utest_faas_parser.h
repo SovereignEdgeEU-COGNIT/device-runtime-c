@@ -3,15 +3,15 @@
 
 #include <gtest/gtest.h>
 
-class ITestFaasParser : public testing::Test
+class UTestFaasParser : public testing::Test
 {
 
 protected:
-    ITestFaasParser()
+    UTestFaasParser()
     {
     }
 
-    ~ITestFaasParser() {}
+    ~UTestFaasParser() {}
 };
 
 #endif // ITEST_FAAS_PARSER_HEADER_

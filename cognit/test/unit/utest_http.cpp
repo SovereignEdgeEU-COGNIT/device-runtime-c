@@ -107,7 +107,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 }
 }
 
-TEST_F(ITestHttp, TestHttpGet)
+TEST_F(UTestHttp, TestHttpGet)
 {
     int8_t i8_ret                             = 0;
     char c_buffer[MAX_HTTP_TRANSMISSION_SIZE] = { 0 };
@@ -126,7 +126,7 @@ TEST_F(ITestHttp, TestHttpGet)
     ASSERT_EQ(i8_ret, CURLE_OK);
 }
 
-TEST_F(ITestHttp, TestHttpPost)
+TEST_F(UTestHttp, TestHttpPost)
 {
     int8_t i8_ret                             = 0;
     const char* c_json_response               = "{\"title\":\"me\",\"body\":\"myproject\",\"userId\":9,\"id\":101}";
@@ -152,7 +152,7 @@ TEST_F(ITestHttp, TestHttpPost)
 }
 
 // Must run a serverless runtime to test this
-TEST_F(ITestHttp, TestHttpPost2)
+TEST_F(UTestHttp, TestHttpPost2)
 {
     int8_t i8_ret                             = 0;
     const char* c_json_test                   = "{\"lang\":\"C\",\"fc\":\"I2luY2x1ZGUgPHN0ZGlvLmg+IAp2b2lkIHN1bWEgKGludCBhLCBpbnQgYiwgZmxvYXQgKmMpCnsKKmMgPSBhICtiOwp9\",\"params\":[\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJhIiwKICAgICJ2YWx1ZSI6ICJNdz09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJiIiwKICAgICJ2YWx1ZSI6ICJOQT09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiZmxvYXQiLAogICAgInZhcl9uYW1lIjogImMiLAogICAgIm1vZGUiOiAiT1VUIgogICAgfQ==\"]}";

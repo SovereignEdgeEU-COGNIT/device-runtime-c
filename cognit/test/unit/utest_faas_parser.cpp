@@ -10,7 +10,7 @@ FUNC_TO_STR(
         *c = a + b;
     })
 
-TEST_F(ITestFaasParser, TestParseExecParamsAsJson)
+TEST_F(UTestFaasParser, TestParseExecParamsAsJson)
 {
     const char* c_test_json        = "{\n\t\"lang\":\t\"C\",\n\t\"fc\":\t\"I2luY2x1ZGU8c3RkaW8uaD4gCnZvaWQgc3VtYShpbnQgYSwgaW50IGIsIGZsb2F0KiBjKSB7ICpjID0gYSArIGI7IH0=\",\n\t\"params\":\t[\"ewoJInR5cGUiOgkiaW50IiwKCSJ2YXJfbmFtZSI6CSJhIiwKCSJ2YWx1ZSI6CSJNdz09IiwKCSJtb2RlIjoJIklOIgp9\", \"ewoJInR5cGUiOgkiaW50IiwKCSJ2YXJfbmFtZSI6CSJiIiwKCSJ2YWx1ZSI6CSJOQT09IiwKCSJtb2RlIjoJIklOIgp9\", \"ewoJInR5cGUiOgkiZmxvYXQiLAoJInZhcl9uYW1lIjoJImMiLAoJInZhbHVlIjoJIk5VTEwiLAoJIm1vZGUiOgkiT1VUIgp9\"]\n}";
     exec_faas_params_t exec_params = { 0 };
@@ -65,7 +65,7 @@ TEST_F(ITestFaasParser, TestParseExecParamsAsJson)
 }
 
 // Test to parse json as exec_response_t
-TEST_F(ITestFaasParser, TestParseJsonAsExecResponse)
+TEST_F(UTestFaasParser, TestParseJsonAsExecResponse)
 {
     const char* c_test_json = "{\"ret_code\":0,\"res\":\"Ny4w\",\"err\":null}";
     int8_t i8_ret           = 0;
@@ -76,7 +76,7 @@ TEST_F(ITestFaasParser, TestParseJsonAsExecResponse)
     EXPECT_STREQ(test_exec_response.res_payload, "7.0");
 }
 
-TEST_F(ITestFaasParser, TestParseJsonAsAsyncExecResponseNull)
+TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseNull)
 {
     const char* c_test_json = "{\"status\":\"WORKING\",\"res\":null,\"exec_id\":{\"faas_task_uuid\":\"58035b11-aa14-11ee-a240-02008ac90074\"}}";
     int8_t i8_ret           = 0;
@@ -100,7 +100,7 @@ TEST_F(ITestFaasParser, TestParseJsonAsAsyncExecResponseNull)
     EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
 }
 
-TEST_F(ITestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
+TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
 {
     const char* c_test_json = "{\"status\":\"READY\",\"res\":{\"ret_code\":0,\"res\":\"MTA=\",\"err\":null},\"exec_id\":{\"faas_task_uuid\":\"58035b11-aa14-11ee-a240-02008ac90074\"}}";
     int8_t i8_ret           = 0;

@@ -3,15 +3,15 @@
 
 #include <gtest/gtest.h>
 
-class ITestIpUtils : public testing::Test
+class UTestIpUtils : public testing::Test
 {
 
 protected:
-    ITestIpUtils()
+    UTestIpUtils()
     {
     }
 
-    ~ITestIpUtils() {}
+    ~UTestIpUtils() {}
 };
 
 #endif // ITEST_IP_UTILS_HEADER_

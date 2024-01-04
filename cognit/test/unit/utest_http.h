@@ -3,15 +3,15 @@
 
 #include <gtest/gtest.h>
 
-class ITestHttp : public testing::Test
+class UTestHttp : public testing::Test
 {
 
 protected:
-    ITestHttp()
+    UTestHttp()
     {
     }
 
-    ~ITestHttp() {}
+    ~UTestHttp() {}
 };
 
 #endif // ITEST_HTTP_HEADER_

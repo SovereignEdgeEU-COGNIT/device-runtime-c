@@ -4,7 +4,7 @@ extern "C" {
 }
 
 
-TEST_F(ITestIpUtils, TestGetIpVersion)
+TEST_F(UTestIpUtils, TestGetIpVersion)
 {
     // Test IPv4
     const char* ipv4 = "192.168.1.0";

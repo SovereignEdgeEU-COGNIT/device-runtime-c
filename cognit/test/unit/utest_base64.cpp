@@ -3,7 +3,7 @@ extern "C" {
 #include <base64.h>
 }
 
-TEST_F(ITestBase64, TestEncode)
+TEST_F(UTestBase64, TestEncode)
 {
     const char* data              = "¡Hola, 你好, مرحبًا, Γεια σας, こんにちは, שלום, Привет!";
     const char* encoded_data_test = "wqFIb2xhLCDkvaDlpb0sINmF2LHYrdio2YvYpywgzpPOtc65zrEgz4POsc+CLCDjgZPjgpPjgavjgaHjga8sINep15zXldedLCDQn9GA0LjQstC10YIh";
@@ -26,7 +26,7 @@ TEST_F(ITestBase64, TestEncode)
     free(encoded_data);
 }
 
-TEST_F(ITestBase64, TestDecode)
+TEST_F(UTestBase64, TestDecode)
 {
     const char* decoded_data_test = "¡Hola, 你好, مرحبًا, Γεια σας, こんにちは, שלום, Привет!";
     const char* data              = "wqFIb2xhLCDkvaDlpb0sINmF2LHYrdio2YvYpywgzpPOtc65zrEgz4POsc+CLCDjgZPjgpPjgavjgaHjga8sINep15zXldedLCDQn9GA0LjQstC10YIh";

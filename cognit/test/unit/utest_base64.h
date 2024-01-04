@@ -3,15 +3,15 @@
 
 #include <gtest/gtest.h>
 
-class ITestBase64 : public testing::Test
+class UTestBase64 : public testing::Test
 {
 
 protected:
-    ITestBase64()
+    UTestBase64()
     {
     }
 
-    ~ITestBase64() {}
+    ~UTestBase64() {}
 };
 
 #endif // ITEST_BASE64_HEADER_
