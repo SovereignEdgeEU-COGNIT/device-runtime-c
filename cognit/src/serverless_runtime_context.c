@@ -6,22 +6,32 @@
 #include <ip_utils.h>
 #include <unistd.h>
 
-static serverless_runtime_context_t m_t_serverless_runtime_context;
-
 // Private functions
-static char* serialize_requirements(energy_scheduling_policy_t t_energy_scheduling_policy)
+static int serialize_energy_requirements(energy_scheduling_policy_t t_energy_scheduling_policy, char* pch_serialized_energy_requirements, const size_t ui32_serialized_energy_requirements_len)
 {
-    cJSON* json = cJSON_CreateObject();
+    cJSON* pt_json  = cJSON_CreateObject();
+    int i_json_size = 0;
 
-    cJSON_AddNumberToObject(json, t_energy_scheduling_policy.c_policy_name, t_energy_scheduling_policy.ui32_energy_percentage);
-    char* json_string = cJSON_Print(json);
-    // Free JSON obj (not the string)
-    cJSON_Delete(json);
+    cJSON_AddNumberToObject(pt_json, "energy", t_energy_scheduling_policy.ui32_energy_percentage);
+    char* pch_json_string = cJSON_Print(pt_json);
 
-    return json_string;
+    i_json_size = strlen(pch_json_string);
+
+    if (i_json_size > ui32_serialized_energy_requirements_len)
+    {
+        COGNIT_LOG_ERROR("[sr_context] serialize_energy_requirements: serialized string is too big, %d bytes, max allowed %d bytes\n", i_json_size, ui32_serialized_energy_requirements_len);
+        return -1;
+    }
+
+    memcpy(pch_serialized_energy_requirements, pch_json_string, i_json_size);
+
+    cJSON_Delete(pt_json);
+    free(pch_json_string);
+
+    return 0;
 }
 
-static void init_xaas_config(xaas_config_t* t_xaas_config)
+static void init_faas_config(faas_config_t* t_xaas_config)
 {
     // Initialize the values in the structure
     t_xaas_config->ui8_cpu        = 1;
@@ -34,121 +44,103 @@ static void init_xaas_config(xaas_config_t* t_xaas_config)
 }
 
 // Public functions
-e_status_code_t srcontext_init(cognit_config_t* config)
+e_status_code_t serverless_runtime_ctx_init(serverless_runtime_context_t* pt_sr_ctx, const cognit_config_t* pt_cfg)
 {
-    e_status_code_t e_ret = E_ST_CODE_SUCCESS;
-    uint8_t ui8_pe_ret    = PE_ERR_CODE_SUCCESS;
+    e_status_code_t e_ret = E_ST_CODE_ERROR;
 
-    memcpy(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_cognit_prov_engine_config, config, sizeof(cognit_config_t));
-    snprintf(m_t_serverless_runtime_context.m_c_url_proto, sizeof(m_t_serverless_runtime_context.m_c_url_proto), "%s", "http://");
-    ui8_pe_ret = pec_init(&m_t_serverless_runtime_context.m_t_prov_eng_context);
+    // Initial cleanup
+    memset(pt_sr_ctx, 0, sizeof(serverless_runtime_context_t));
 
-    if (ui8_pe_ret != PE_ERR_CODE_SUCCESS)
+    // Copy the provided config into the sr instance
+    memcpy(&pt_sr_ctx->m_t_cognit_conf, pt_cfg, sizeof(cognit_config_t));
+
+    // Init the provisioning engine client using the config
+    if (prov_engine_cli_init(&pt_sr_ctx->m_t_prov_engine_cli, &pt_sr_ctx->m_t_cognit_conf) == PE_ERR_CODE_SUCCESS)
     {
-        e_ret = E_ST_CODE_ERROR;
+        e_ret = E_ST_CODE_SUCCESS;
     }
-    // TODO: add sr_instance, src?
 
     return e_ret;
 }
 
-e_status_code_t srconext_create(basic_serverless_runtime_conf_t t_basic_serverless_runtime_conf)
+e_status_code_t serverless_runtime_ctx_create(serverless_runtime_context_t* pt_sr_ctx, const serverless_runtime_conf_t* pt_sr_conf)
 {
-    serverless_runtime_conf_t t_sr_conf_pe = { 0 };
-    char c_policies[SR_POLICY_MAX_LEN]     = "";
-    char c_requirements[SR_REQ_MAX_LEN]    = "";
 
-    int i_ret = 0;
-
-    for (int i = 0; i < MAX_SCHEDULING_POLICIES; i++)
-    {
-        strcat(c_policies, t_basic_serverless_runtime_conf.scheduling_policies[i].c_policy_name);
-        char* serialized_req_element = serialize_requirements(t_basic_serverless_runtime_conf.scheduling_policies[i]);
-        strcat(c_requirements, serialized_req_element);
-        free(serialized_req_element);
-
-        // Add comma only if it's not the last element
-        if (i != MAX_SCHEDULING_POLICIES - 1)
-        {
-            strcat(c_policies, ",");
-            strcat(c_requirements, ",");
-        }
-    }
-
-    // Copy flavour to faas_config
-    strncpy(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_flavour, t_basic_serverless_runtime_conf.name, sizeof(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_flavour));
     // Load default values to faas_config
-    init_xaas_config(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config);
-    // Copy policies and requirements to serverless_runtime_conf
-    strncpy(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.scheduling_config.c_policy, c_policies, sizeof(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.scheduling_config.c_policy));
-    strncpy(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.scheduling_config.c_requirements, c_requirements, sizeof(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.scheduling_config.c_requirements));
-    // Load device info empty TODO: add device info
-    m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.device_info = (device_info_t) { 0 };
+    init_faas_config(&pt_sr_ctx->m_t_serverless_runtime.faas_config);
+
+    // For now ignore the provided flavour and use the default one
+    // Only copy the name
+    strncpy(pt_sr_ctx->m_t_serverless_runtime.c_name, pt_sr_conf->name, sizeof(pt_sr_ctx->m_t_serverless_runtime.c_name));
+
+    // TODO: add device info
+
+    // TODO Add policies and requirements
+
+    // Serialize energy requirements
+    // for (int i = 0; i < MAX_ENERGY_SCHEDULING_POLICIES; i++)
+    // {
+    //     serialize_energy_requirements(pt_sr_conf.m_t_energy_scheduling_policies[i],pt_sr_ctx->m_t_prov_eng_context.m_serverless_runtime_conf.m_t_energy_scheduling_policies[i], sizeof(pt_sr_ctx->m_t_serverless_runtime.scheduling_config.
+    // }
 
     // Create serverless runtime
-    t_sr_conf_pe = pec_create_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf);
-
-    // if t_sr_conf_pe is == {0} then there was an error
-    if (memcmp(&t_sr_conf_pe, &(serverless_runtime_conf_t) { 0 }, sizeof(serverless_runtime_conf_t)) == 0)
+    if (prov_engine_cli_create_runtime(&pt_sr_ctx->m_t_prov_engine_cli, &pt_sr_ctx->m_t_serverless_runtime) != COGNIT_ECODE_SUCCESS)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed\n");
         return E_ST_CODE_ERROR;
     }
 
-    if (t_sr_conf_pe.faas_config.c_state != FaaSState_RUNNING)
+    // Check the state returned by the provisioning engine i
+    if (pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_PENDING || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_NO_STATE)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed: returned state is not PENDING, is %s\n", t_sr_conf_pe.faas_config.c_state);
-        return E_ST_CODE_ERROR;
+        return COGNIT_ECODE_ERROR;
     }
 
-    i_ret = get_ip_version(t_sr_conf_pe.faas_config.c_endpoint);
+    COGNIT_LOG_INFO("[sr_context] Serverless Runtime create request completed successfully\n");
 
-    if (i_ret == 0)
-    {
-        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed: returned endpoint IP is not valid\n");
-        return E_ST_CODE_ERROR;
-    }
-    else if (i_ret == IP_V4)
-    {
-        snprintf(m_t_serverless_runtime_context.m_c_endpoint, sizeof(m_t_serverless_runtime_context.m_c_endpoint), "%s%s:%d", m_t_serverless_runtime_context.m_c_url_proto, t_sr_conf_pe.faas_config.c_endpoint, m_t_serverless_runtime_context.m_t_prov_eng_context.m_cognit_prov_engine_config.ui32_serv_runtime_port);
-        COGNIT_LOG_INFO("[sr_context] Serverless Runtime created successfully, endpoint: %s\n", m_t_serverless_runtime_context.m_c_endpoint);
-    }
-    else if (i_ret == IP_V6)
-    {
-        snprintf(m_t_serverless_runtime_context.m_c_endpoint, sizeof(m_t_serverless_runtime_context.m_c_endpoint), "%s[%s]:%d", m_t_serverless_runtime_context.m_c_url_proto, t_sr_conf_pe.faas_config.c_endpoint, m_t_serverless_runtime_context.m_t_prov_eng_context.m_cognit_prov_engine_config.ui32_serv_runtime_port);
-        COGNIT_LOG_INFO("[sr_context] Serverless Runtime created successfully, endpoint: %s\n", m_t_serverless_runtime_context.m_c_endpoint);
-    }
-
-    // Copy the serverless runtime config to the context
-    m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf = t_sr_conf_pe;
-    srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
-
-    return SUCCESS;
+    return COGNIT_ECODE_ERROR;
 }
 
-const char* srcontext_check_serverless_runtime_status()
+e_faas_state_t serverless_runtime_ctx_status(serverless_runtime_context_t* pt_sr_ctx)
 {
-    serverless_runtime_conf_t t_sr_conf_pe = { 0 };
-    if (m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id == 0)
+    int i_ret = COGNIT_ECODE_ERROR;
+
+    // Check if the serverless runtime instance was created and already has an ID
+    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime not created yet\n");
-        return FaaSState_NO_STATE;
+        return E_FAAS_STATE_ERROR;
     }
 
-    // Create serverless runtime
-    t_sr_conf_pe = pec_retreive_runtime(&m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id);
+    // Retrieve the serverless runtime from the provisioning engine using the ID
+    i_ret = prov_engine_cli_retreive_runtime(&pt_sr_ctx->m_t_prov_engine_cli, pt_sr_ctx->m_t_serverless_runtime.ui32_id, &pt_sr_ctx->m_t_serverless_runtime);
 
-    // if t_sr_conf_pe is == {0} then there was an error
-    if (memcmp(&t_sr_conf_pe, &(serverless_runtime_conf_t) { 0 }, sizeof(serverless_runtime_conf_t)) == 0)
+    if (i_ret != COGNIT_ECODE_SUCCESS)
     {
-        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed\n");
-        return FaaSState_NO_STATE;
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime retrieval request failed\n");
+        return E_FAAS_STATE_ERROR;
     }
 
-    // Copy the serverless runtime config to the context
-    m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf = t_sr_conf_pe;
+    // Check the state returned by the provisioning engine
+    if (strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_PENDING) == 0)
+    {
+        COGNIT_LOG_INFO("[sr_context] Serverless Runtime is PENDING");
+        return E_FAAS_STATE_PENDING;
+    }
+    else if (strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) == 0)
+    {
+        COGNIT_LOG_INFO("[sr_context] Serverless Runtime is RUNNING");
+        return E_FAAS_STATE_RUNNING;
+    }
+    else if (strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_NO_STATE) == 0)
+    {
+        COGNIT_LOG_INFO("[sr_context] Serverless Runtime is NO_STATE");
+        return E_FAAS_STATE_NO_STATE;
+    }
 
-    return t_sr_conf_pe.faas_config.c_state;
+    COGNIT_LOG_ERROR("[sr_context] Serverless Runtime retrieval request failed: returned state is not PENDING, RUNNING or NO_STATE, is %s\n", pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state);
+    return E_FAAS_STATE_ERROR;
 }
 
 exec_response_t srcontext_call_sync(exec_faas_params_t* exec_faas_params)
@@ -260,7 +252,7 @@ void delete_serverless_runtime(const char* c_endpoint)
         }
         else
         {
-            if (pec_delete_runtime(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id) == true)
+            if (prov_engine_delete_runtime(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id) == true)
             {
                 COGNIT_LOG_INFO("[sr_context] Serverless Runtime deleted successfully\n");
             }

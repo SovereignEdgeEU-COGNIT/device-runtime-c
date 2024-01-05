@@ -15,6 +15,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <cJSON.h>
+#include <cognit_config.h>
+#include <serverless_runtime_context.h>
 /***************** DEFINES AND MACROS *********************/
 #define SR_RESOURCE_ENDPOINT "serverless-runtimes"
 #define REQ_TIMEOUT          60
@@ -23,127 +25,76 @@
 #define PE_ERR_CODE_ERROR   1
 
 // Definición de constantes de cadena para FaaSState
-#define FaaSState_PENDING  "PENDING"
-#define FaaSState_RUNNING  "RUNNING"
-#define FaaSState_NO_STATE ""
-
-#define PE_ENDPOINT_MAX_LEN 256
-#define PE_USR_MAX_LEN      256
-#define PE_PWD_MAX_LEN      256
-
-#define SR_NAME_MAX_LEN              50
-#define SR_FLAVOUR_MAX_LEN           50
-#define SR_ENDPOINT_MAX_LEN          256
-#define SR_STATE_MAX_LEN             256
-#define SR_VM_ID_MAX_LEN             256
-#define SR_POLICY_MAX_LEN            256
-#define SR_REQ_MAX_LEN               256
-#define SR_GEOGRAPH_LOCATION_MAX_LEN 256
-
-#define MAX_SCHEDULING_POLICIES 10
-#define POLICY_NAME_MAX_LEN     50
+#define STR_FAAS_STATE_PENDING  "PENDING"
+#define STR_FAAS_STATE_RUNNING  "RUNNING"
+#define STR_FAAS_STATE_NO_STATE ""
 
 /**************** TYPEDEFS AND STRUCTS ********************/
-typedef struct
+
+typedef enum EFaasState
 {
-    char prov_engine_endpoint[PE_ENDPOINT_MAX_LEN];
-    uint32_t prov_engine_port;
-    char prov_engine_pe_usr[PE_USR_MAX_LEN];
-    char prov_engine_pe_pwd[PE_PWD_MAX_LEN];
-    uint32_t ui32_serv_runtime_port;
-    // Add other fields as needed
-} cognit_config_t;
+    E_FAAS_STATE_ERROR    = -1,
+    E_FAAS_STATE_PENDING  = 0,
+    E_FAAS_STATE_RUNNING  = 1,
+    E_FAAS_STATE_NO_STATE = 2,
+
+} e_faas_state_t;
 
 typedef struct
 {
-    char c_policy_name[POLICY_NAME_MAX_LEN];
-    uint32_t ui32_energy_percentage;
-} energy_scheduling_policy_t;
+    const cognit_config_t* m_t_config;
 
-// Representación de la clase ServerlessRuntimeConfig
-typedef struct
-{
-    energy_scheduling_policy_t scheduling_policies[MAX_SCHEDULING_POLICIES];
-    char name[SR_NAME_MAX_LEN];
-    char faas_flavour[SR_FLAVOUR_MAX_LEN];
-    char daas_flavour[SR_FLAVOUR_MAX_LEN];
-} basic_serverless_runtime_conf_t;
-
-typedef struct
-{
-    uint8_t ui8_cpu;
-    uint32_t ui32_memory;
-    uint32_t ui32_disk_size;
-    char c_flavour[SR_FLAVOUR_MAX_LEN];
-    char c_endpoint[SR_ENDPOINT_MAX_LEN];
-    char c_state[SR_STATE_MAX_LEN];
-    char c_vm_id[SR_VM_ID_MAX_LEN];
-} xaas_config_t;
-
-typedef struct
-{
-    char c_policy[SR_POLICY_MAX_LEN];
-    char c_requirements[SR_REQ_MAX_LEN];
-} scheduling_config_t;
-
-typedef struct
-{
-    uint32_t ui32_latency_to_pe;
-    char c_geograph_location[SR_GEOGRAPH_LOCATION_MAX_LEN];
-} device_info_t;
-
-typedef struct
-{
-    char c_name[SR_NAME_MAX_LEN];
-    uint32_t ui32_id;
-    xaas_config_t faas_config;
-    xaas_config_t daas_config;
-    scheduling_config_t scheduling_config;
-    device_info_t device_info;
-} serverless_runtime_conf_t;
-
-typedef struct
-{
-    cognit_config_t m_cognit_prov_engine_config;
-    serverless_runtime_conf_t m_serverless_runtime_conf;
-} prov_eng_cli_context_t;
+} prov_engine_cli_t;
 
 /******************* GLOBAL VARIABLES *********************/
 
 /******************* PUBLIC METHODS ***********************/
 
 /*******************************************************/ /**
- * @brief Load cognit configuration to use in private m_cognit_prov_engine_config
- * and validate it
+ * @brief Initializes the prov_engine_cli_t structure with the given configuration.
  * 
- * @param config Configuration to load
- * @return int8_t 0 if success, -1 otherwise
+ * This function loads the cognit configuration and validates it.
+ * 
+ * @param t_prov_engine_cli Pointer to the prov_engine_cli_t structure to initialize.
+ * @param pt_cognit_config Pointer to the cognit_config_t structure containing the configuration.
+ * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-int8_t pec_init(prov_eng_cli_context_t* t_pec_context);
+int prov_engine_cli_init(prov_engine_cli_t* t_prov_engine_cli, const cognit_config_t* pt_cognit_config);
 
 /*******************************************************/ /**
- * @brief Create a runtime object in the provisioning engine and make HTTP request
+ * @brief Creates a runtime object in the provisioning engine and makes an HTTP request.
  * 
- * @param serverless_runtime_context Serverless runtime context to create
- * @return cJSON JSON response from provisioning engine
+ * This function creates a serverless runtime object in the provisioning engine using the provided serverless_runtime_t structure.
+ * 
+ * @param t_prov_engine_cli Pointer to the prov_engine_cli_t structure.
+ * @param t_serverless_runtime Pointer to the serverless_runtime_t structure to create.
+ * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-serverless_runtime_conf_t pec_create_runtime(serverless_runtime_conf_t* serverless_runtime_context);
+int prov_engine_cli_create_runtime(prov_engine_cli_t* t_prov_engine_cli, serverless_runtime_t* t_serverless_runtime);
 
 /*******************************************************/ /**
- * @brief Retreives serverless runtime status
+ * @brief Retrieves the status of a serverless runtime.
  * 
- * @param ui32_id Serverless runtime id
- * @return cJSON JSON response from provisioning engine
+ * This function retrieves the status of a serverless runtime with the given ID from the provisioning engine.
+ * 
+ * @param t_prov_engine_cli Pointer to the prov_engine_cli_t structure.
+ * @param ui32_id ID of the serverless runtime.
+ * @param t_serverless_runtime Pointer to the serverless_runtime_t structure to store the retrieved runtime information.
+ * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-serverless_runtime_conf_t pec_retreive_runtime(uint32_t ui32_id);
+int prov_engine_cli_retreive_runtime(prov_engine_cli_t* t_prov_engine_cli, uint32_t ui32_id, serverless_runtime_t* t_serverless_runtime);
 
 /*******************************************************/ /**
- * @brief Deletes serverless runtime
+ * @brief Deletes a serverless runtime.
  * 
- * @param ui32_id Serverless runtime id
- * @return cJSON JSON response from provisioning engine
+ * This function deletes a serverless runtime with the given ID from the provisioning engine.
+ * 
+ * @param t_prov_engine_cli Pointer to the prov_engine_cli_t structure.
+ * @param ui32_id ID of the serverless runtime to delete.
+ * @param t_serverless_runtime Pointer to the serverless_runtime_t structure to be cleaned.
+ * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-bool pec_delete_runtime(uint32_t ui32_id);
+int prov_engine_delete_runtime(prov_engine_cli_t* t_prov_engine_cli, uint32_t ui32_id, serverless_runtime_t* t_serverless_runtime);
 
 /******************* PRIVATE METHODS ***********************/
 #endif // PROV_ENGINE_CLI_H

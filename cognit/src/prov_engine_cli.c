@@ -1,30 +1,26 @@
 #include <prov_engine_cli.h>
-#include <string.h>
 
-static prov_eng_cli_context_t* m_t_pec_context;
-
-int8_t pec_init(prov_eng_cli_context_t* t_pec_context)
+int prov_engine_cli_init(prov_engine_cli_t* t_prov_engine_cli, const cognit_config_t* pt_cognit_config)
 {
-    int8_t i8_ret = PE_ERR_CODE_SUCCESS;
-
-    m_t_pec_context = &t_pec_context;
-    // TODO: validate config
-
-    return i8_ret;
+    // Setup the instance to point to the configuration
+    t_prov_engine_cli->m_t_config = pt_cognit_config;
+    return 0;
 }
 
-serverless_runtime_conf_t pec_create_runtime(serverless_runtime_conf_t* serverless_runtime_context)
+int prov_engine_cli_create_runtime(prov_engine_cli_t* t_prov_engine_cli, serverless_runtime_t* t_serverless_runtime)
 {
-    serverless_runtime_conf_t t_ret;
-    return t_ret;
+    // TODO: Implement this function
+    return -1;
 }
-serverless_runtime_conf_t pec_retreive_runtime(uint32_t ui32_id)
+
+int prov_engine_cli_retreive_runtime(prov_engine_cli_t* t_prov_engine_cli, uint32_t ui32_id, serverless_runtime_t* t_serverless_runtime)
 {
-    serverless_runtime_conf_t t_ret;
-    return t_ret;
+    // TODO: Implement this function
+    return -1;
 }
-bool pec_delete_runtime(uint32_t ui32_id)
+
+int prov_engine_delete_runtime(prov_engine_cli_t* t_prov_engine_cli, uint32_t ui32_id, serverless_runtime_t* t_serverless_runtime)
 {
-    bool b_ret = false;
-    return b_ret;
+    // TODO: Implement this function
+    return -1;
 }
