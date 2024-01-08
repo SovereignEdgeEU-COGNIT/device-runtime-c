@@ -17,22 +17,16 @@
 #include <serverless_runtime_client.h>
 #include <faas_parser.h>
 #include <cognit_config.h>
+#include <serverless_runtime.h>
 /***************** DEFINES AND MACROS *********************/
 #define MODE_IN      "IN"
 #define MODE_OUT     "OUT"
 #define INTERVAL_1MS 1
 
-#define SR_NAME_MAX_LEN              50
-#define SR_FLAVOUR_MAX_LEN           50
-#define SR_ENDPOINT_MAX_LEN          256
-#define SR_STATE_MAX_LEN             256
-#define SR_VM_ID_MAX_LEN             256
-#define SR_POLICY_MAX_LEN            256
-#define SR_REQ_MAX_LEN               256
-#define SR_GEOGRAPH_LOCATION_MAX_LEN 256
-
 #define MAX_ENERGY_SCHEDULING_POLICIES 1
 #define POLICY_NAME_MAX_LEN            50
+
+#define FAAS_MAX_SEND_PAYLOD_SIZE 16384 // 16KB
 /**************** TYPEDEFS AND STRUCTS ********************/
 
 typedef struct
@@ -43,46 +37,11 @@ typedef struct
 // Representación de la clase ServerlessRuntimeConfig
 typedef struct
 {
-    energy_scheduling_policy_t m_t_energy_scheduling_policies[MAX_ENERGY_SCHEDULING_POLICIES];
-    char name[SR_NAME_MAX_LEN];
-    char faas_flavour[SR_FLAVOUR_MAX_LEN];
-    char daas_flavour[SR_FLAVOUR_MAX_LEN];
+    energy_scheduling_policy_t m_t_energy_scheduling_policies;
+    const char* name;
+    const char* faas_flavour;
+    const char* daas_flavour;
 } serverless_runtime_conf_t;
-
-typedef struct
-{
-    uint8_t ui8_cpu;
-    uint32_t ui32_memory;
-    uint32_t ui32_disk_size;
-    char c_flavour[SR_FLAVOUR_MAX_LEN];
-    char c_endpoint[SR_ENDPOINT_MAX_LEN];
-    char c_state[SR_STATE_MAX_LEN];
-    char c_vm_id[SR_VM_ID_MAX_LEN];
-} faas_config_t;
-
-typedef faas_config_t daas_config_t;
-
-typedef struct
-{
-    char c_policy[SR_POLICY_MAX_LEN];
-    char c_requirements[SR_REQ_MAX_LEN];
-} scheduling_config_t;
-
-typedef struct
-{
-    uint32_t ui32_latency_to_pe;
-    char c_geograph_location[SR_GEOGRAPH_LOCATION_MAX_LEN];
-} device_info_t;
-
-typedef struct
-{
-    char c_name[SR_NAME_MAX_LEN];
-    uint32_t ui32_id;
-    faas_config_t faas_config;
-    daas_config_t daas_config;
-    scheduling_config_t scheduling_config;
-    device_info_t device_info;
-} serverless_runtime_t;
 
 typedef enum
 {
@@ -96,7 +55,9 @@ typedef struct
     cognit_config_t m_t_cognit_conf;
     serverless_runtime_t m_t_serverless_runtime;
     prov_engine_cli_t m_t_prov_engine_cli;
-    char m_c_endpoint[256];
+    serverless_runtime_cli_t m_t_serverless_runtime_cli;
+
+    uint8_t ui8_a_faas_send_buffer[FAAS_MAX_SEND_PAYLOD_SIZE];
 
 } serverless_runtime_context_t;
 
@@ -135,7 +96,7 @@ e_faas_state_t serverless_runtime_ctx_status(serverless_runtime_context_t* pt_sr
  * @param exec_faas_params Execution parameters
  * @return exec_response_t Execution response
 ***********************************************************/
-exec_response_t srcontext_call_sync(exec_faas_params_t* exec_faas_params);
+e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, exec_response_t* pt_exec_response);
 
 /*******************************************************/ /**
  * @brief Parses faas_params, generates the payload and calls the async serverless runtime
@@ -143,7 +104,7 @@ exec_response_t srcontext_call_sync(exec_faas_params_t* exec_faas_params);
  * @param exec_faas_params Execution parameters
  * @return async_exec_response_t Execution response
 ***********************************************************/
-async_exec_response_t srcontext_call_async(exec_faas_params_t* exec_faas_params);
+e_status_code_t serverless_runtime_call_async(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
  * @brief Ask periodically to the serverless runtime if the task has finished
@@ -152,14 +113,14 @@ async_exec_response_t srcontext_call_async(exec_faas_params_t* exec_faas_params)
  * @param ui32_timeout_ms Timeout in milliseconds
  * @return async_exec_response_t Execution response
 ***********************************************************/
-async_exec_response_t srcontext_wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms);
+e_status_code_t serverless_runtime_wait_for_task(serverless_runtime_context_t* pt_sr_ctx, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
  * @brief Ask pec to delete the serverless runtime
  * 
  * @param c_endpoint Serverless runtime endpoint
 ***********************************************************/
-void delete_serverless_runtime(const char* c_endpoint);
+e_status_code_t serverless_runtime_delete(serverless_runtime_context_t* pt_sr_ctx);
 
 /******************* PRIVATE METHODS ***********************/
 

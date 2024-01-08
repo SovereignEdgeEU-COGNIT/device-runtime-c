@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <ip_utils.h>
 #include <unistd.h>
+#include <logger.h>
 
 // Private functions
 static int serialize_energy_requirements(energy_scheduling_policy_t t_energy_scheduling_policy, char* pch_serialized_energy_requirements, const size_t ui32_serialized_energy_requirements_len)
@@ -19,7 +20,7 @@ static int serialize_energy_requirements(energy_scheduling_policy_t t_energy_sch
 
     if (i_json_size > ui32_serialized_energy_requirements_len)
     {
-        COGNIT_LOG_ERROR("[sr_context] serialize_energy_requirements: serialized string is too big, %d bytes, max allowed %d bytes\n", i_json_size, ui32_serialized_energy_requirements_len);
+        COGNIT_LOG_ERROR("[sr_context] serialize_energy_requirements: serialized string is too big, %d bytes, max allowed %ld bytes", i_json_size, ui32_serialized_energy_requirements_len);
         return -1;
     }
 
@@ -86,18 +87,18 @@ e_status_code_t serverless_runtime_ctx_create(serverless_runtime_context_t* pt_s
     // Create serverless runtime
     if (prov_engine_cli_create_runtime(&pt_sr_ctx->m_t_prov_engine_cli, &pt_sr_ctx->m_t_serverless_runtime) != COGNIT_ECODE_SUCCESS)
     {
-        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed\n");
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed");
         return E_ST_CODE_ERROR;
     }
 
     // Check the state returned by the provisioning engine i
     if (pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_PENDING || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_NO_STATE)
     {
-        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed: returned state is not PENDING, is %s\n", t_sr_conf_pe.faas_config.c_state);
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed: returned state is not PENDING, is %s", pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state);
         return COGNIT_ECODE_ERROR;
     }
 
-    COGNIT_LOG_INFO("[sr_context] Serverless Runtime create request completed successfully\n");
+    COGNIT_LOG_INFO("[sr_context] Serverless Runtime create request completed successfully");
 
     return COGNIT_ECODE_ERROR;
 }
@@ -109,7 +110,7 @@ e_faas_state_t serverless_runtime_ctx_status(serverless_runtime_context_t* pt_sr
     // Check if the serverless runtime instance was created and already has an ID
     if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0)
     {
-        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime not created yet\n");
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime not created yet");
         return E_FAAS_STATE_ERROR;
     }
 
@@ -118,7 +119,7 @@ e_faas_state_t serverless_runtime_ctx_status(serverless_runtime_context_t* pt_sr
 
     if (i_ret != COGNIT_ECODE_SUCCESS)
     {
-        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime retrieval request failed\n");
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime retrieval request failed");
         return E_FAAS_STATE_ERROR;
     }
 
@@ -128,138 +129,138 @@ e_faas_state_t serverless_runtime_ctx_status(serverless_runtime_context_t* pt_sr
         COGNIT_LOG_INFO("[sr_context] Serverless Runtime is PENDING");
         return E_FAAS_STATE_PENDING;
     }
-    else if (strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) == 0)
-    {
-        COGNIT_LOG_INFO("[sr_context] Serverless Runtime is RUNNING");
-        return E_FAAS_STATE_RUNNING;
-    }
     else if (strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_NO_STATE) == 0)
     {
         COGNIT_LOG_INFO("[sr_context] Serverless Runtime is NO_STATE");
         return E_FAAS_STATE_NO_STATE;
     }
+    else if (strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) == 0)
+    {
+        COGNIT_LOG_INFO("[sr_context] Serverless Runtime is RUNNING");
+        return E_FAAS_STATE_RUNNING;
+    }
 
-    COGNIT_LOG_ERROR("[sr_context] Serverless Runtime retrieval request failed: returned state is not PENDING, RUNNING or NO_STATE, is %s\n", pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state);
+    COGNIT_LOG_ERROR("[sr_context] Serverless Runtime retrieval request failed: returned state is not PENDING, RUNNING or NO_STATE, is %s", pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state);
     return E_FAAS_STATE_ERROR;
 }
 
-exec_response_t srcontext_call_sync(exec_faas_params_t* exec_faas_params)
+e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, exec_response_t* pt_exec_response)
 {
-    exec_response_t t_exec_response;
-    uint8_t ui8_off_func_data[10000];
-    size_t payload_len;
+    size_t i_payload_len = 0;
 
-    if (srcli_there_is_srv_runtime_created() == false)
+    // Check if serverless runtime is created and running
+    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
+        || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
     {
-        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
-            && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
-        {
-            COGNIT_LOG_ERROR("[sr_context] Serverless Runtime not created yet\n");
-            return (exec_response_t) { 0 };
-        }
-        else
-        {
-            srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
-        }
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");
+        return E_ST_CODE_ERROR;
     }
 
-    if (faasparser_parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
+    // Check if the serverless runtime client is initialized
+
+    if (serverless_runtime_cli_is_initialized(&pt_sr_ctx->m_t_serverless_runtime_cli) == false)
     {
-        COGNIT_LOG_DEBUG("Params parsed successfully, generated JSON: %s\n", ui8_off_func_data);
+        serverless_runtime_cli_init(&pt_sr_ctx->m_t_serverless_runtime_cli, pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint);
     }
 
-    t_exec_response = srcli_faas_exec_sync(ui8_off_func_data, payload_len);
+    // Serialize the function into a json string
 
-    return t_exec_response;
+    if (faasparser_parse_exec_faas_params_as_str_json(exec_faas_params, pt_sr_ctx->ui8_a_faas_send_buffer, &i_payload_len) == JSON_ERR_CODE_OK)
+    {
+        COGNIT_LOG_DEBUG("Params parsed successfully, generated JSON: %s", pt_sr_ctx->ui8_a_faas_send_buffer);
+    }
+
+    // Send the request to the serverless runtime
+    serverless_runtime_cli_faas_exec_sync(&pt_sr_ctx->m_t_serverless_runtime_cli, pt_sr_ctx->ui8_a_faas_send_buffer, i_payload_len, pt_exec_response);
+
+    return SUCCESS;
 }
 
-async_exec_response_t srcontext_call_async(exec_faas_params_t* exec_faas_params)
+e_status_code_t serverless_runtime_call_async(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, async_exec_response_t* pt_async_exec_response)
 {
-    async_exec_response_t t_async_exec_response;
-    uint8_t ui8_off_func_data[10000];
-    size_t payload_len;
+    size_t i_payload_len = 0;
 
-    if (srcli_there_is_srv_runtime_created() == false)
+    // Check if serverless runtime is created and running
+    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
+        || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
     {
-        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
-            && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
-        {
-            COGNIT_LOG_ERROR("[sr_context] Serverless Runtime not created yet\n");
-            return (async_exec_response_t) { 0 };
-        }
-        else
-        {
-            srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
-        }
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");
+        return E_ST_CODE_ERROR;
     }
 
-    if (faasparser_parse_exec_faas_params_as_str_json(exec_faas_params, ui8_off_func_data, &payload_len) == JSON_ERR_CODE_OK)
+    // Check if the serverless runtime client is initialized
+    if (serverless_runtime_cli_is_initialized(&pt_sr_ctx->m_t_serverless_runtime_cli) == false)
     {
-        COGNIT_LOG_DEBUG("Params parsed successfully, generated JSON: %s\n", ui8_off_func_data);
+        serverless_runtime_cli_init(&pt_sr_ctx->m_t_serverless_runtime_cli, pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint);
     }
 
-    t_async_exec_response = srcli_faas_exec_async(ui8_off_func_data, payload_len);
+    // Serialize the function into a json string
+    if (faasparser_parse_exec_faas_params_as_str_json(exec_faas_params, pt_sr_ctx->ui8_a_faas_send_buffer, &i_payload_len) == JSON_ERR_CODE_OK)
+    {
+        COGNIT_LOG_DEBUG("Params parsed successfully, generated JSON: %s", pt_sr_ctx->ui8_a_faas_send_buffer);
+    }
 
-    return t_async_exec_response;
+    // Send the request to the serverless runtime
+    serverless_runtime_cli_faas_exec_async(&pt_sr_ctx->m_t_serverless_runtime_cli, pt_sr_ctx->ui8_a_faas_send_buffer, i_payload_len, pt_async_exec_response);
+
+    return SUCCESS;
 }
 
-async_exec_response_t srcontext_wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
+e_status_code_t serverless_runtime_wait_for_task(serverless_runtime_context_t* pt_sr_ctx, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response)
 {
-    async_exec_response_t t_async_response;
-
-    if (srcli_there_is_srv_runtime_created() == false)
+    // Check if serverless runtime is created and running
+    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
+        || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
     {
-        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
-            && m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL)
-        {
-            COGNIT_LOG_ERROR("[sr_context] Serverless Runtime not created yet\n");
-            return (async_exec_response_t) { 0 };
-        }
-        else
-        {
-            srcli_init(m_t_serverless_runtime_context.m_c_endpoint);
-        }
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");
+        return E_ST_CODE_ERROR;
+    }
+
+    // Check if the serverless runtime client is initialized
+    if (serverless_runtime_cli_is_initialized(&pt_sr_ctx->m_t_serverless_runtime_cli) == false)
+    {
+        serverless_runtime_cli_init(&pt_sr_ctx->m_t_serverless_runtime_cli, pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint);
     }
 
     // Timeout management loop.
     while (ui32_timeout_ms > INTERVAL_1MS)
     {
-        t_async_response = srcli_wait_for_task(c_async_task_id, ui32_timeout_ms);
-        if (t_async_response.status == "READY")
+
+        if (serverless_runtime_cli_wait_for_task(&pt_sr_ctx->m_t_serverless_runtime_cli, c_async_task_id, ui32_timeout_ms, pt_async_exec_response) != 0)
         {
-            if (t_async_response.res != NULL)
-            {
-                break;
-            }
+            COGNIT_LOG_ERROR("[sr_context] Error sending HTTP request");
+            return E_ST_CODE_ERROR;
         }
+
+        if (pt_async_exec_response->status == "READY" && pt_async_exec_response->res != NULL)
+        {
+            COGNIT_LOG_DEBUG("[sr_context] Received task completed response from the serverless runtime");
+            return SUCCESS;
+        }
+
         usleep(INTERVAL_1MS * 1000);
         ui32_timeout_ms -= INTERVAL_1MS;
     }
 
-    return t_async_response;
+    return E_ST_CODE_ERROR;
 }
 
-void delete_serverless_runtime(const char* c_endpoint)
+e_status_code_t serverless_runtime_delete(serverless_runtime_context_t* pt_sr_ctx)
 {
-    if (srcli_there_is_srv_runtime_created() == false)
+    // Check if serverless runtime is created and running
+    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
+        || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
     {
-        if (m_t_serverless_runtime_context.m_c_endpoint == NULL
-            || m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.faas_config.c_endpoint == NULL
-            || m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id == 0)
-        {
-            COGNIT_LOG_ERROR("[sr_context] Serverless Runtime not created yet\n");
-            return;
-        }
-        else
-        {
-            if (prov_engine_delete_runtime(m_t_serverless_runtime_context.m_t_prov_eng_context.m_serverless_runtime_conf.ui32_id) == true)
-            {
-                COGNIT_LOG_INFO("[sr_context] Serverless Runtime deleted successfully\n");
-            }
-            else
-            {
-                COGNIT_LOG_ERROR("[sr_context] Serverless Runtime deletion failed\n");
-            }
-        }
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");
+        return E_ST_CODE_ERROR;
+    }
+
+    if (prov_engine_delete_runtime(&pt_sr_ctx->m_t_prov_engine_cli, pt_sr_ctx->m_t_serverless_runtime.ui32_id, &pt_sr_ctx->m_t_serverless_runtime) == 0)
+    {
+        COGNIT_LOG_INFO("[sr_context] Serverless Runtime deleted successfully");
+    }
+    else
+    {
+        COGNIT_LOG_ERROR("[sr_context] Serverless Runtime deletion failed");
     }
 }

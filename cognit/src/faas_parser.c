@@ -20,31 +20,31 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
 
     if (str_encoded_fc == NULL)
     {
-        COGNIT_LOG_ERROR("Failed to allocate memory for encoded string\n");
+        COGNIT_LOG_ERROR("Failed to allocate memory for encoded string");
     }
 
     root = cJSON_CreateObject();
 
     if (root == NULL)
     {
-        COGNIT_LOG_ERROR("Error creating cJSON object\n");
+        COGNIT_LOG_ERROR("Error creating cJSON object");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
 
     cJSON_AddStringToObject(root, "lang", "C");
-    COGNIT_LOG_DEBUG("exec_faas_params->fc: %s\n", exec_faas_params->fc);
+    COGNIT_LOG_DEBUG("exec_faas_params->fc: %s", exec_faas_params->fc);
 
     out_fc_len = base64_encode(str_encoded_fc, exec_faas_params->fc, strlen(exec_faas_params->fc));
-    COGNIT_LOG_DEBUG("str_encoded_fc: %s\n", str_encoded_fc);
-    // COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld\n", strlen(str_encoded_fc));
+    COGNIT_LOG_DEBUG("str_encoded_fc: %s", str_encoded_fc);
+    // COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld", strlen(str_encoded_fc));
     cJSON_AddStringToObject(root, "fc", (const char*)str_encoded_fc);
     free(str_encoded_fc);
 
     params_array = cJSON_CreateArray();
     if (params_array == NULL)
     {
-        COGNIT_LOG_ERROR("Error creating cJSON array\n");
+        COGNIT_LOG_ERROR("Error creating cJSON array");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -54,15 +54,15 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
         param = cJSON_CreateObject();
         if (param == NULL)
         {
-            COGNIT_LOG_ERROR("Error creating cJSON object\n");
+            COGNIT_LOG_ERROR("Error creating cJSON object");
             cJSON_Delete(root);
             return JSON_ERR_CODE_INVALID_JSON;
         }
-        COGNIT_LOG_TRACE("exec_faas_params->params[%d].value: %s\n", i, exec_faas_params->params[i].value);
+        COGNIT_LOG_TRACE("exec_faas_params->params[%d].value: %s", i, exec_faas_params->params[i].value);
 
         if (exec_faas_params->params[i].value == NULL)
         {
-            COGNIT_LOG_TRACE("exec_faas_params->params[%d].value is NULL\n", i);
+            COGNIT_LOG_TRACE("exec_faas_params->params[%d].value is NULL", i);
 
             cJSON_AddStringToObject(param, "type", exec_faas_params->params[i].type);
             cJSON_AddStringToObject(param, "var_name", exec_faas_params->params[i].var_name);
@@ -74,7 +74,7 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
             str_b64_value = malloc(base64_encode_len(strlen(exec_faas_params->params[i].value)));
             if (str_b64_value == NULL)
             {
-                COGNIT_LOG_ERROR("Failed to allocate memory for encoded param\n");
+                COGNIT_LOG_ERROR("Failed to allocate memory for encoded param");
             }
 
             i_coded_value_len = base64_encode(str_b64_value, exec_faas_params->params[i].value, strlen(exec_faas_params->params[i].value));
@@ -92,7 +92,7 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
         str_b64_param = malloc(base64_encode_len(strlen(str_param)));
         if (str_b64_param == NULL)
         {
-            COGNIT_LOG_ERROR("Failed to allocate memory for encoded param\n");
+            COGNIT_LOG_ERROR("Failed to allocate memory for encoded param");
         }
 
         i_coded_param_len = base64_encode(str_b64_param, str_param, strlen(str_param));
@@ -122,7 +122,7 @@ int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_res
 
     if (root == NULL)
     {
-        COGNIT_LOG_ERROR("Error parsing JSON\n");
+        COGNIT_LOG_ERROR("Error parsing JSON");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -133,7 +133,7 @@ int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_res
 
     if (!cJSON_IsNumber(ret_code_item) || !cJSON_IsString(res_item))
     {
-        COGNIT_LOG_ERROR("JSON content types are wrong\n");
+        COGNIT_LOG_ERROR("JSON content types are wrong");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -146,13 +146,13 @@ int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_res
     t_exec_response->res_payload = (char*)malloc(base64_decode_len(res_item->valuestring));
     if (t_exec_response->res_payload == NULL)
     {
-        COGNIT_LOG_ERROR("Failed to allocate memory for t_exec_response->res_payload\n");
+        COGNIT_LOG_ERROR("Failed to allocate memory for t_exec_response->res_payload");
     }
     out_len = base64_decode(t_exec_response->res_payload, res_item->valuestring);
 
     if (t_exec_response->res_payload == NULL)
     {
-        COGNIT_LOG_ERROR("Error decoding base64\n");
+        COGNIT_LOG_ERROR("Error decoding base64");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -172,7 +172,7 @@ int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, as
 
     if (root == NULL)
     {
-        COGNIT_LOG_ERROR("Error parsing JSON\n");
+        COGNIT_LOG_ERROR("Error parsing JSON");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -184,7 +184,7 @@ int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, as
     if (!cJSON_IsString(status_item)
         || !cJSON_IsObject(exec_id_item))
     {
-        COGNIT_LOG_ERROR("JSON content types are wrong\n");
+        COGNIT_LOG_ERROR("JSON content types are wrong");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -194,7 +194,7 @@ int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, as
     cJSON* faas_task_uuid_item = cJSON_GetObjectItem(exec_id_item, "faas_task_uuid");
     if (!cJSON_IsString(faas_task_uuid_item))
     {
-        COGNIT_LOG_ERROR("faas_task_uuid is not a string\n");
+        COGNIT_LOG_ERROR("faas_task_uuid is not a string");
         cJSON_Delete(root);
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -205,7 +205,7 @@ int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, as
     // If res is null means srv hasnt finished the execution
     if (cJSON_IsNull(res_item))
     {
-        COGNIT_LOG_TRACE("res_item is NULL\n");
+        COGNIT_LOG_TRACE("res_item is NULL");
         t_async_exec_response->res = NULL;
     }
     else
@@ -213,7 +213,7 @@ int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, as
         i8_ret = faasparser_parse_json_str_as_exec_response(cJSON_Print(res_item), t_async_exec_response->res);
         if (i8_ret != JSON_ERR_CODE_OK)
         {
-            COGNIT_LOG_ERROR("Error parsing JSON\n");
+            COGNIT_LOG_ERROR("Error parsing JSON");
             cJSON_Delete(root);
             return JSON_ERR_CODE_INVALID_JSON;
         }

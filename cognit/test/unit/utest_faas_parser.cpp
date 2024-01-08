@@ -27,7 +27,7 @@ TEST_F(UTestFaasParser, TestParseExecParamsAsJson)
     strcpy(c_raw_fc, includes);
     strcat(c_raw_fc, suma_str);
 
-    COGNIT_LOG_DEBUG("C function: %s\n", c_raw_fc);
+    COGNIT_LOG_DEBUG("C function: %s", c_raw_fc);
 
     strcpy(exec_params.lang, "C");
     exec_params.fc = c_raw_fc;
@@ -56,8 +56,8 @@ TEST_F(UTestFaasParser, TestParseExecParamsAsJson)
 
     i8_ret = faasparser_parse_exec_faas_params_as_str_json(&exec_params, ui8_json_buffer, &size_json_buff);
 
-    COGNIT_LOG_DEBUG("JSON: %s\n", (char*)ui8_json_buffer);
-    COGNIT_LOG_DEBUG("JSON len: %ld\n", size_json_buff);
+    COGNIT_LOG_DEBUG("JSON: %s", (char*)ui8_json_buffer);
+    COGNIT_LOG_DEBUG("JSON len: %ld", size_json_buff);
 
     EXPECT_STREQ(c_test_json, (char*)ui8_json_buffer);
 
@@ -84,18 +84,18 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseNull)
     async_exec_response_t test_async_exec_response;
     i8_ret = faasparser_parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
 
-    COGNIT_LOG_DEBUG("Status: %s\n", test_async_exec_response.status);
-    COGNIT_LOG_DEBUG("Exec ID: %s\n", test_async_exec_response.exec_id.faas_task_uuid);
+    COGNIT_LOG_DEBUG("Status: %s", test_async_exec_response.status);
+    COGNIT_LOG_DEBUG("Exec ID: %s", test_async_exec_response.exec_id.faas_task_uuid);
 
     EXPECT_STREQ(test_async_exec_response.status, "WORKING");
     if (test_async_exec_response.res == NULL)
     {
-        COGNIT_LOG_DEBUG("Res is NULL\n");
+        COGNIT_LOG_DEBUG("Res is NULL");
         EXPECT_EQ(0, 0);
     }
     else
     {
-        COGNIT_LOG_DEBUG("Res is NOT NULL\n");
+        COGNIT_LOG_DEBUG("Res is NOT NULL");
         EXPECT_EQ(0, 1);
     }
     EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
@@ -108,10 +108,10 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
     async_exec_response_t test_async_exec_response;
     i8_ret = faasparser_parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
 
-    COGNIT_LOG_DEBUG("Status: %s\n", test_async_exec_response.status);
-    COGNIT_LOG_DEBUG("Exec ID: %s\n", test_async_exec_response.exec_id.faas_task_uuid);
-    COGNIT_LOG_DEBUG("Ret code: %d\n", test_async_exec_response.res->ret_code);
-    COGNIT_LOG_DEBUG("Res: %s\n", test_async_exec_response.res->res_payload);
+    COGNIT_LOG_DEBUG("Status: %s", test_async_exec_response.status);
+    COGNIT_LOG_DEBUG("Exec ID: %s", test_async_exec_response.exec_id.faas_task_uuid);
+    COGNIT_LOG_DEBUG("Ret code: %d", test_async_exec_response.res->ret_code);
+    COGNIT_LOG_DEBUG("Res: %s", test_async_exec_response.res->res_payload);
 
     EXPECT_STREQ(test_async_exec_response.status, "READY");
     EXPECT_EQ(test_async_exec_response.res->ret_code, 0);

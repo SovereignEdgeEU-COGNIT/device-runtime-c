@@ -8,10 +8,6 @@
 
 /***************** DEFINES AND MACROS *********************/
 
-#define PE_ENDPOINT_MAX_LEN 256
-#define PE_USR_MAX_LEN      256
-#define PE_PWD_MAX_LEN      256
-
 #define COGNIT_ECODE_SUCCESS 0
 #define COGNIT_ECODE_ERROR   -1
 
@@ -19,10 +15,10 @@
 
 typedef struct
 {
-    char prov_engine_endpoint[PE_ENDPOINT_MAX_LEN];
+    const char* prov_engine_endpoint;
+    const char* prov_engine_pe_usr;
+    const char* prov_engine_pe_pwd;
     uint32_t prov_engine_port;
-    char prov_engine_pe_usr[PE_USR_MAX_LEN];
-    char prov_engine_pe_pwd[PE_PWD_MAX_LEN];
     uint32_t ui32_serv_runtime_port;
     // Add other fields as needed
 } cognit_config_t;

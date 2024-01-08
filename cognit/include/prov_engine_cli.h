@@ -16,7 +16,7 @@
 #include <stdbool.h>
 #include <cJSON.h>
 #include <cognit_config.h>
-#include <serverless_runtime_context.h>
+#include <serverless_runtime.h>
 /***************** DEFINES AND MACROS *********************/
 #define SR_RESOURCE_ENDPOINT "serverless-runtimes"
 #define REQ_TIMEOUT          60
@@ -40,10 +40,9 @@ typedef enum EFaasState
 
 } e_faas_state_t;
 
-typedef struct
+typedef struct SProvEngine
 {
     const cognit_config_t* m_t_config;
-
 } prov_engine_cli_t;
 
 /******************* GLOBAL VARIABLES *********************/

@@ -4,18 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <faas_parser.h>
+#include <logger.h>
 
-static char m_c_endpoint[256];
-
-void srcli_init(const char* c_endpoint)
+void serverless_runtime_cli_init(serverless_runtime_cli_t* pt_serverless_runtime_cli, const char* c_endpoint)
 {
-    snprintf(m_c_endpoint, 256, "%s", c_endpoint);
-    COGNIT_LOG_INFO("Serverless runtime endpoint: %s\n", m_c_endpoint);
+    memset(pt_serverless_runtime_cli, 0, sizeof(serverless_runtime_cli_t));
+    pt_serverless_runtime_cli->t_serverless_runtime_endpoint = c_endpoint;
+    snprintf(pt_serverless_runtime_cli->c_a_exec_sync_url, MAX_URL_LENGTH, "%s/%s/%s", c_endpoint, FAAS_VERSION, FAAS_EXECUTE_SYNC_ENDPOINT);
+    snprintf(pt_serverless_runtime_cli->c_a_exec_async_url, MAX_URL_LENGTH, "%s/%s/%s", c_endpoint, FAAS_VERSION, FAAS_EXECUTE_ASYNC_ENDPOINT);
 }
 
-bool srcli_there_is_srv_runtime_created()
+bool serverless_runtime_cli_is_initialized(serverless_runtime_cli_t* pt_serverless_runtime_cli)
 {
-    if (m_c_endpoint == NULL)
+    if (pt_serverless_runtime_cli->t_serverless_runtime_endpoint == 0)
     {
         return false;
     }
@@ -25,160 +26,157 @@ bool srcli_there_is_srv_runtime_created()
     }
 }
 
-exec_response_t srcli_faas_exec_sync(uint8_t* ui8_payload, size_t payload_len)
+int serverless_runtime_cli_faas_exec_sync(serverless_runtime_cli_t* pt_serverless_runtime_cli, uint8_t* ui8_payload, size_t payload_len, exec_response_t* pt_exec_response)
 {
-    int8_t i8_ret = 0;
-    exec_response_t t_exec_response;
+    int8_t i8_ret               = 0;
     http_config_t t_http_config = { 0 };
-    char c_exec_sync_url[256];
-    snprintf(c_exec_sync_url, 256, "%s/%s/%s", m_c_endpoint, FAAS_VERSION, FAAS_EXECUTE_SYNC_ENDPOINT);
 
-    t_http_config.c_url           = c_exec_sync_url;
+    //Clear the response
+    memset(pt_exec_response, 0, sizeof(exec_response_t));
+
+    t_http_config.c_url           = pt_serverless_runtime_cli->c_a_exec_sync_url;
     t_http_config.c_method        = HTTP_METHOD_POST;
     t_http_config.ui32_timeout_ms = 10000;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-    COGNIT_LOG_DEBUG("FaaS execute sync [POST-URL]: %s\n", c_exec_sync_url);
+    COGNIT_LOG_DEBUG("FaaS execute sync [POST-URL]: %s", t_http_config.c_url);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL
         || t_http_config.t_http_response.size == 0
         || t_http_config.t_http_response.l_http_code != 200)
     {
-        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d\n", i8_ret);
-        t_exec_response.ret_code = ERROR;
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
+        pt_exec_response->ret_code = ERROR;
     }
     else
     {
         // Print json response
-        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
-        COGNIT_LOG_TRACE("JSON received size: %ld\n", t_http_config.t_http_response.size);
+        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("JSON received size: %ld", t_http_config.t_http_response.size);
 
         // Copy the response json to the response struct
-        i8_ret = faasparser_parse_json_str_as_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_exec_response);
+        i8_ret = faasparser_parse_json_str_as_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, pt_exec_response);
 
         if (i8_ret != 0)
         {
-            COGNIT_LOG_ERROR("Error parsing JSON\n");
-            t_exec_response.ret_code = ERROR;
+            COGNIT_LOG_ERROR("Error parsing JSON");
+            pt_exec_response->ret_code = ERROR;
         }
     }
 
-    t_exec_response.http_err_code = t_http_config.t_http_response.l_http_code;
+    pt_exec_response->http_err_code = t_http_config.t_http_response.l_http_code;
 
-    return t_exec_response;
+    // TODO IMPOORTANT handle the free of the response buffer???
+
+    return 0;
 }
 
-async_exec_response_t srcli_faas_exec_async(uint8_t* ui8_payload, size_t payload_len)
+int serverless_runtime_cli_faas_exec_async(serverless_runtime_cli_t* pt_serverless_runtime_cli, uint8_t* ui8_payload, size_t payload_len, async_exec_response_t* pt_async_exec_response)
 {
-    async_exec_response_t t_async_exec_response;
     int8_t i8_ret = 0;
     http_config_t t_http_config;
-    char c_exec_async_url[256];
-    snprintf(c_exec_async_url, 256, "%s/%s/%s", m_c_endpoint, FAAS_VERSION, FAAS_EXECUTE_ASYNC_ENDPOINT);
 
-    t_http_config.c_url           = c_exec_async_url;
+    t_http_config.c_url           = pt_serverless_runtime_cli->c_a_exec_async_url;
     t_http_config.c_method        = HTTP_METHOD_POST;
     t_http_config.ui32_timeout_ms = 10000;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-    COGNIT_LOG_DEBUG("FaaS execute async [POST-URL]: %s\n", c_exec_async_url);
+    COGNIT_LOG_DEBUG("FaaS execute async [POST-URL]: %s", pt_serverless_runtime_cli->c_a_exec_async_url);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL
         || t_http_config.t_http_response.size == 0)
     {
-        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d\n", i8_ret);
-        t_async_exec_response.res->ret_code = ERROR;
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
+        pt_async_exec_response->res->ret_code = ERROR;
     }
     else
     {
         // Print json response
-        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
-        COGNIT_LOG_TRACE("JSON received size: %ld\n", t_http_config.t_http_response.size);
+        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("JSON received size: %ld", t_http_config.t_http_response.size);
 
         if (t_http_config.t_http_response.l_http_code == 200)
         {
             // Copy the response json to the response struct
-            i8_ret = faasparser_parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
+            i8_ret = faasparser_parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, pt_async_exec_response);
 
             if (i8_ret != 0)
             {
-                COGNIT_LOG_ERROR("Error parsing JSON\n");
-                t_async_exec_response.res->ret_code = ERROR;
+                COGNIT_LOG_ERROR("Error parsing JSON");
+                pt_async_exec_response->res->ret_code = ERROR;
             }
         }
         else if (t_http_config.t_http_response.l_http_code == 400)
         {
-            strcpy(t_async_exec_response.status, "FAILED");
-            t_async_exec_response.res->ret_code = ERROR;
-            strcpy(t_async_exec_response.exec_id.faas_task_uuid, "000-000-000");
+            strcpy(pt_async_exec_response->status, "FAILED");
+            pt_async_exec_response->res->ret_code = ERROR;
+            strcpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000");
         }
         else
         {
-            strcpy(t_async_exec_response.status, "READY");
-            t_async_exec_response.res->ret_code = ERROR;
-            strcpy(t_async_exec_response.exec_id.faas_task_uuid, "000-000-000");
+            strcpy(pt_async_exec_response->status, "READY");
+            pt_async_exec_response->res->ret_code = ERROR;
+            strcpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000");
         }
     }
 
-    t_async_exec_response.res->http_err_code = t_http_config.t_http_response.l_http_code;
+    pt_async_exec_response->res->http_err_code = t_http_config.t_http_response.l_http_code;
 
-    return t_async_exec_response;
+    return 0;
 }
 
-async_exec_response_t srcli_wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms)
+int serverless_runtime_cli_wait_for_task(serverless_runtime_cli_t* pt_serverless_runtime_cli, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response)
 {
-    async_exec_response_t t_async_exec_response;
     int8_t i8_ret = 0;
     http_config_t t_http_config;
-    char c_faas_wait_id[256];
-    char c_wait_for_task_url[MAX_URL_LENGTH];
     uint8_t ui8_payload[1] = { 0 };
     size_t payload_len     = 0;
 
-    snprintf(c_faas_wait_id, 256, FAAS_WAIT_ENDPOINT, c_async_task_id);
-    snprintf(c_wait_for_task_url, 256, "%s/%s/%s", m_c_endpoint, FAAS_VERSION, c_faas_wait_id);
+    memset(pt_serverless_runtime_cli->c_a_wait_task_url, 0, sizeof(pt_serverless_runtime_cli->c_a_wait_task_url));
+    snprintf(pt_serverless_runtime_cli->c_a_wait_task_url, 256, "%s/%s/%s", pt_serverless_runtime_cli->t_serverless_runtime_endpoint, FAAS_VERSION, c_async_task_id);
+    memset(pt_async_exec_response, 0, sizeof(async_exec_response_t));
 
-    t_http_config.c_url           = c_wait_for_task_url;
+    t_http_config.c_url           = pt_serverless_runtime_cli->c_a_wait_task_url;
     t_http_config.c_method        = HTTP_METHOD_GET;
     t_http_config.ui32_timeout_ms = ui32_timeout_ms;
 
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-    COGNIT_LOG_DEBUG("FaaS wait [GET-URL]: %s\n", c_wait_for_task_url);
+    COGNIT_LOG_DEBUG("FaaS wait [GET-URL]: %s", pt_serverless_runtime_cli->c_a_wait_task_url);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL
         || t_http_config.t_http_response.size == 0)
     {
-        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d\n", i8_ret);
-        t_async_exec_response.res->ret_code = ERROR;
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
+        pt_async_exec_response->res->ret_code = ERROR;
     }
     else
     {
         // Print json response
-        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s\n", t_http_config.t_http_response.ui8_response_data_buffer);
-        COGNIT_LOG_TRACE("JSON received size: %ld\n", t_http_config.t_http_response.size);
+        COGNIT_LOG_DEBUG("JSON received from serverless runtime: %s", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("JSON received size: %ld", t_http_config.t_http_response.size);
 
         if (t_http_config.t_http_response.l_http_code == (200 || 400))
         {
-            i8_ret = faasparser_parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, &t_async_exec_response);
+            i8_ret = faasparser_parse_json_str_as_async_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, pt_async_exec_response);
 
             if (i8_ret != 0)
             {
-                COGNIT_LOG_ERROR("Error parsing JSON\n");
-                t_async_exec_response.res->ret_code = ERROR;
+                COGNIT_LOG_ERROR("Error parsing JSON");
+                pt_async_exec_response->res->ret_code = ERROR;
             }
         }
         else
         {
-            strcpy(t_async_exec_response.status, "READY");
-            t_async_exec_response.res->ret_code = ERROR;
-            strcpy(t_async_exec_response.exec_id.faas_task_uuid, "000-000-000");
+            strcpy(pt_async_exec_response->status, "READY");
+            pt_async_exec_response->res->ret_code = ERROR;
+            strcpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000");
         }
     }
 
-    t_async_exec_response.res->http_err_code = t_http_config.t_http_response.l_http_code;
+    pt_async_exec_response->res->http_err_code = t_http_config.t_http_response.l_http_code;
 
-    return t_async_exec_response;
+    return 0;
 }

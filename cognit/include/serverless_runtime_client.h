@@ -64,6 +64,14 @@ typedef struct
     AsyncExecId exec_id;
 } async_exec_response_t;
 
+typedef struct SServerlessRuntimeCli
+{
+    const char* t_serverless_runtime_endpoint;
+    char c_a_exec_sync_url[MAX_URL_LENGTH];
+    char c_a_exec_async_url[MAX_URL_LENGTH];
+    char c_a_wait_task_url[MAX_URL_LENGTH];
+
+} serverless_runtime_cli_t;
 /******************* GLOBAL VARIABLES *********************/
 
 /******************* PUBLIC METHODS ***********************/
@@ -73,14 +81,14 @@ typedef struct
  * 
  * @param c_endpoint Server endpoint
 ***********************************************************/
-void srcli_init(const char* c_endpoint);
+void serverless_runtime_cli_init(serverless_runtime_cli_t* pt_serverless_runtime_cli, const char* c_endpoint);
 
 /*******************************************************/ /**
  * @brief Check if the serverless runtime is created
  * 
  * @return true if created, otherwise false
 ***********************************************************/
-bool srcli_there_is_srv_runtime_created();
+bool serverless_runtime_cli_is_initialized(serverless_runtime_cli_t* pt_serverless_runtime_cli);
 
 /*******************************************************/ /**
  * @brief Makes a POST petition to the serverless runtime for sync task execution
@@ -89,7 +97,7 @@ bool srcli_there_is_srv_runtime_created();
  * @param payload_len Length of the payload
  * @return exec_response_t Response of the serverless runtime
 ***********************************************************/
-exec_response_t srcli_faas_exec_sync(uint8_t* ui8_payload, size_t payload_len);
+int serverless_runtime_cli_faas_exec_sync(serverless_runtime_cli_t* pt_serverless_runtime_cli, uint8_t* ui8_payload, size_t payload_len, exec_response_t* pt_exec_response);
 
 /*******************************************************/ /**
  * @brief Makes a POST petition to the serverless runtime for async task execution
@@ -98,7 +106,7 @@ exec_response_t srcli_faas_exec_sync(uint8_t* ui8_payload, size_t payload_len);
  * @param payload_len Length of the payload
  * @return async_exec_response_t Response of the serverless runtime
 ***********************************************************/
-async_exec_response_t srcli_faas_exec_async(uint8_t* ui8_payload, size_t payload_len);
+int serverless_runtime_cli_faas_exec_async(serverless_runtime_cli_t* pt_serverless_runtime_cli, uint8_t* ui8_payload, size_t payload_len, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
  * @brief Makes a GET petition to the serverless runtime to know the status of an async task
@@ -107,7 +115,7 @@ async_exec_response_t srcli_faas_exec_async(uint8_t* ui8_payload, size_t payload
  * @param ui32_timeout_ms Timeout in milliseconds
  * @return async_exec_response_t Response of the serverless runtime
 ***********************************************************/
-async_exec_response_t srcli_wait_for_task(const char* c_async_task_id, uint32_t ui32_timeout_ms);
+int serverless_runtime_cli_wait_for_task(serverless_runtime_cli_t* pt_serverless_runtime_cli, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response);
 
 /******************* PRIVATE METHODS ***********************/
 
