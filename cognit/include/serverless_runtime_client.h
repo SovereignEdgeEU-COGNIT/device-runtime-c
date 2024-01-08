@@ -77,43 +77,61 @@ typedef struct SServerlessRuntimeCli
 /******************* PUBLIC METHODS ***********************/
 
 /*******************************************************/ /**
- * @brief Init the serverless runtime client with the server endpoint
+ * @brief Initializes the serverless runtime client with the server endpoint
  * 
- * @param c_endpoint Server endpoint
+ * This function initializes the serverless runtime client with the provided server endpoint.
+ * 
+ * @param pt_serverless_runtime_cli Pointer to the serverless runtime client structure
+ * @param c_endpoint Server endpoint URL
 ***********************************************************/
 void serverless_runtime_cli_init(serverless_runtime_cli_t* pt_serverless_runtime_cli, const char* c_endpoint);
 
 /*******************************************************/ /**
- * @brief Check if the serverless runtime is created
+ * @brief Checks if the serverless runtime client is initialized
  * 
- * @return true if created, otherwise false
+ * This function checks if the serverless runtime client is initialized.
+ * 
+ * @param pt_serverless_runtime_cli Pointer to the serverless runtime client structure
+ * @return true if the serverless runtime client is initialized, false otherwise
 ***********************************************************/
 bool serverless_runtime_cli_is_initialized(serverless_runtime_cli_t* pt_serverless_runtime_cli);
 
 /*******************************************************/ /**
- * @brief Makes a POST petition to the serverless runtime for sync task execution
+ * @brief Executes a synchronous task on the serverless runtime
  * 
- * @param ui8_payload JSON payload with the parameters
+ * This function makes a POST request to the serverless runtime for synchronous task execution.
+ * 
+ * @param pt_serverless_runtime_cli Pointer to the serverless runtime client structure
+ * @param ui8_payload JSON payload with the task parameters
  * @param payload_len Length of the payload
- * @return exec_response_t Response of the serverless runtime
+ * @param pt_exec_response Pointer to the execution response structure
+ * @return 0 on success, an error code otherwise
 ***********************************************************/
 int serverless_runtime_cli_faas_exec_sync(serverless_runtime_cli_t* pt_serverless_runtime_cli, uint8_t* ui8_payload, size_t payload_len, exec_response_t* pt_exec_response);
 
 /*******************************************************/ /**
- * @brief Makes a POST petition to the serverless runtime for async task execution
+ * @brief Executes an asynchronous task on the serverless runtime
  * 
- * @param ui8_payload JSON payload with the parameters
+ * This function makes a POST request to the serverless runtime for asynchronous task execution.
+ * 
+ * @param pt_serverless_runtime_cli Pointer to the serverless runtime client structure
+ * @param ui8_payload JSON payload with the task parameters
  * @param payload_len Length of the payload
- * @return async_exec_response_t Response of the serverless runtime
+ * @param pt_async_exec_response Pointer to the asynchronous execution response structure
+ * @return 0 on success, an error code otherwise
 ***********************************************************/
 int serverless_runtime_cli_faas_exec_async(serverless_runtime_cli_t* pt_serverless_runtime_cli, uint8_t* ui8_payload, size_t payload_len, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
- * @brief Makes a GET petition to the serverless runtime to know the status of an async task
+ * @brief Waits for the completion of an asynchronous task on the serverless runtime
  * 
- * @param c_async_task_id String with the async task ID
+ * This function makes a GET request to the serverless runtime to check the status of an asynchronous task.
+ * 
+ * @param pt_serverless_runtime_cli Pointer to the serverless runtime client structure
+ * @param c_async_task_id String with the ID of the asynchronous task
  * @param ui32_timeout_ms Timeout in milliseconds
- * @return async_exec_response_t Response of the serverless runtime
+ * @param pt_async_exec_response Pointer to the asynchronous execution response structure
+ * @return 0 on success, an error code otherwise
 ***********************************************************/
 int serverless_runtime_cli_wait_for_task(serverless_runtime_cli_t* pt_serverless_runtime_cli, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response);
 

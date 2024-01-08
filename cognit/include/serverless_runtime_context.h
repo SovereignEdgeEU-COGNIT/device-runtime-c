@@ -78,7 +78,7 @@ e_status_code_t serverless_runtime_ctx_init(serverless_runtime_context_t* pt_sr_
  * @brief Creates default serverless runtime configuration
  * 
  * @param pt_sr_ctx Serverless runtime context instance
- * @param t_basic_serverless_runtime_conf Basic serverless runtime configuration
+ * @param t_sr_conf Serverless runtime configuration
  * @return e_status_code_t Status returned by prov engine client
 ***********************************************************/
 e_status_code_t serverless_runtime_ctx_create(serverless_runtime_context_t* pt_sr_ctx, const serverless_runtime_conf_t* t_sr_conf);
@@ -86,42 +86,49 @@ e_status_code_t serverless_runtime_ctx_create(serverless_runtime_context_t* pt_s
 /*******************************************************/ /**
  * @brief Gets current serverless runtime status
  * 
- * @return const char* Serverless runtime status
+ * @param pt_sr_ctx Serverless runtime context instance
+ * @return e_faas_state_t Serverless runtime status
 ***********************************************************/
 e_faas_state_t serverless_runtime_ctx_status(serverless_runtime_context_t* pt_sr_ctx);
 
 /*******************************************************/ /**
  * @brief Parses faas_params, generates the payload and calls the sync serverless runtime
  * 
+ * @param pt_sr_ctx Serverless runtime context instance
  * @param exec_faas_params Execution parameters
- * @return exec_response_t Execution response
+ * @param pt_exec_response Execution response
+ * @return e_status_code_t Execution status
 ***********************************************************/
 e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, exec_response_t* pt_exec_response);
 
 /*******************************************************/ /**
  * @brief Parses faas_params, generates the payload and calls the async serverless runtime
  * 
+ * @param pt_sr_ctx Serverless runtime context instance
  * @param exec_faas_params Execution parameters
- * @return async_exec_response_t Execution response
+ * @param pt_async_exec_response Async execution response
+ * @return e_status_code_t Execution status
 ***********************************************************/
 e_status_code_t serverless_runtime_call_async(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
  * @brief Ask periodically to the serverless runtime if the task has finished
  * 
+ * @param pt_sr_ctx Serverless runtime context instance
  * @param c_async_task_id Task id to wait for
  * @param ui32_timeout_ms Timeout in milliseconds
- * @return async_exec_response_t Execution response
+ * @param pt_async_exec_response Async execution response
+ * @return e_status_code_t Execution status
 ***********************************************************/
 e_status_code_t serverless_runtime_wait_for_task(serverless_runtime_context_t* pt_sr_ctx, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
  * @brief Ask pec to delete the serverless runtime
  * 
- * @param c_endpoint Serverless runtime endpoint
+ * @param pt_sr_ctx Serverless runtime context instance
+ * @return e_status_code_t Status returned by prov engine client
 ***********************************************************/
 e_status_code_t serverless_runtime_delete(serverless_runtime_context_t* pt_sr_ctx);
-
 /******************* PRIVATE METHODS ***********************/
 
 #endif // SERVERLESS_RUNTIME_CONTEXT_H
