@@ -8,12 +8,12 @@ void offload_fc_c_create(exec_faas_params_t* t_exec_faas_params, const char* c_i
     size_t total_fc_len = strlen(c_includes) + strlen(c_func) + 1;
     char* c_raw_fc      = (char*)malloc(total_fc_len);
 
-    COGNIT_LOG_TRACE("Includes length: %d, function length: %d, Total length of function: %d", strlen(c_includes), strlen(c_func), total_fc_len);
+    COGNIT_LOG_TRACE("Includes length: %zu, function length: %zu, Total length of function: %zu", strlen(c_includes), strlen(c_func), total_fc_len);
     strncpy(c_raw_fc, c_includes, strlen(c_includes));
     c_raw_fc[strlen(c_includes)] = '\0';
 
     size_t available_space = total_fc_len - strlen(c_raw_fc) - 1;
-    COGNIT_LOG_TRACE("Available space: %d", available_space);
+    COGNIT_LOG_TRACE("Available space: %zu", available_space);
     if (available_space >= strlen(c_func))
     {
         strncat(c_raw_fc, c_func, strlen(c_func));
@@ -91,8 +91,8 @@ void offload_fc_c_destroy(exec_faas_params_t* t_exec_faas_params)
     free(t_exec_faas_params->fc);
     for (int i = 0; i < t_exec_faas_params->params_count; i++)
     {
-        free(t_exec_faas_params->params[i].var_name);
-        free(t_exec_faas_params->params[i].type);
-        free(t_exec_faas_params->params[i].value);
+        free((char*)t_exec_faas_params->params[i].var_name);
+        free((char*)t_exec_faas_params->params[i].type);
+        free((char*)t_exec_faas_params->params[i].value);
     }
 }

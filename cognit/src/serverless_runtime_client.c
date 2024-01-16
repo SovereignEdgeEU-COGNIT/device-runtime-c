@@ -112,13 +112,13 @@ int serverless_runtime_cli_faas_exec_async(serverless_runtime_cli_t* pt_serverle
         {
             strcpy(pt_async_exec_response->status, "FAILED");
             pt_async_exec_response->res->ret_code = ERROR;
-            strcpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000");
+            strncpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000", strlen("000-000-000"));
         }
         else
         {
             strcpy(pt_async_exec_response->status, "READY");
             pt_async_exec_response->res->ret_code = ERROR;
-            strcpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000");
+            strncpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000", strlen("000-000-000"));
         }
     }
 
