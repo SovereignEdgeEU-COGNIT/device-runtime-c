@@ -32,8 +32,6 @@ TEST_F(UTestFaasParser, TestParseExecParamsAsJson)
     strcpy(exec_params.lang, "C");
     exec_params.fc = c_raw_fc;
 
-    // Asegúrate de que params es un array de al menos 3 elementos
-    exec_params.params       = (param_t*)malloc(sizeof(param_t) * 3);
     exec_params.params_count = 3;
 
     // Primer parámetro de entrada
@@ -62,7 +60,6 @@ TEST_F(UTestFaasParser, TestParseExecParamsAsJson)
     EXPECT_STREQ(c_test_json, (char*)ui8_json_buffer);
 
     free(c_raw_fc);
-    free(exec_params.params);
 }
 
 // Test to parse json as exec_response_t
@@ -75,6 +72,7 @@ TEST_F(UTestFaasParser, TestParseJsonAsExecResponse)
 
     EXPECT_EQ(test_exec_response.ret_code, 0);
     EXPECT_STREQ(test_exec_response.res_payload, "7.0");
+    faasparser_destroy_exec_response(&test_exec_response);
 }
 
 TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseNull)
@@ -99,6 +97,7 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseNull)
         EXPECT_EQ(0, 1);
     }
     EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
+    faasparser_destroy_exec_response(test_async_exec_response.res);
 }
 
 TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
@@ -117,4 +116,6 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
     EXPECT_EQ(test_async_exec_response.res->ret_code, 0);
     EXPECT_STREQ(test_async_exec_response.res->res_payload, "10");
     EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
+
+    faasparser_destroy_exec_response(test_async_exec_response.res);
 }

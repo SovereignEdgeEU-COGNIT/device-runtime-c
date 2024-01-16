@@ -26,7 +26,7 @@
 // Macro to create a string from a function
 #define FUNC_TO_STR(name, fn) \
     fn const char name##_str[] = #fn;
-
+#define MAX_PARAMS 5
 /**************** TYPEDEFS AND STRUCTS ********************/
 typedef struct
 {
@@ -40,7 +40,7 @@ typedef struct
 {
     char lang[2]; // "PY", "C"
     char* fc;
-    param_t* params;
+    param_t params[MAX_PARAMS];
     size_t params_count;
 } exec_faas_params_t;
 
@@ -75,6 +75,13 @@ int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_res
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
 int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response);
+
+/*******************************************************/ /**
+ * @brief Frees the memory allocated for exec_faas_params_t struct
+ * 
+ * @param t_exec_response Struct to free
+***********************************************************/
+void faasparser_destroy_exec_response(exec_response_t* t_exec_response);
 
 /******************* PRIVATE METHODS ***********************/
 

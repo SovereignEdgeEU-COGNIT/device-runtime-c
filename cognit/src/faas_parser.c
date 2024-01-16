@@ -112,6 +112,7 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_fa
     *payload_len = strlen(str_faas_json);
 
     cJSON_Delete(root);
+    free(str_faas_json);
 
     return JSON_ERR_CODE_OK;
 }
@@ -167,8 +168,9 @@ int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_res
 
 int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response)
 {
-    cJSON* root   = cJSON_Parse(json_str);
-    int8_t i8_ret = 0;
+    cJSON* root              = cJSON_Parse(json_str);
+    const char* str_res_item = NULL;
+    int8_t i8_ret            = 0;
 
     if (root == NULL)
     {
@@ -210,16 +212,29 @@ int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, as
     }
     else
     {
-        i8_ret = faasparser_parse_json_str_as_exec_response(cJSON_Print(res_item), t_async_exec_response->res);
+        str_res_item = cJSON_Print(res_item);
+        i8_ret       = faasparser_parse_json_str_as_exec_response(str_res_item, t_async_exec_response->res);
         if (i8_ret != JSON_ERR_CODE_OK)
         {
             COGNIT_LOG_ERROR("Error parsing JSON");
             cJSON_Delete(root);
+            free(str_res_item);
             return JSON_ERR_CODE_INVALID_JSON;
         }
     }
 
     cJSON_Delete(root);
+    free(str_res_item);
 
     return JSON_ERR_CODE_OK;
+}
+
+// TODO: wrap all destroys in a single function
+void faasparser_destroy_exec_response(exec_response_t* t_exec_response)
+{
+    if (t_exec_response != NULL
+        && t_exec_response->res_payload != NULL)
+    {
+        free(t_exec_response->res_payload);
+    }
 }
