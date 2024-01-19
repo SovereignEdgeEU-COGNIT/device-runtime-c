@@ -80,13 +80,15 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseNull)
     const char* c_test_json = "{\"status\":\"WORKING\",\"res\":null,\"exec_id\":{\"faas_task_uuid\":\"58035b11-aa14-11ee-a240-02008ac90074\"}}";
     int8_t i8_ret           = 0;
     async_exec_response_t test_async_exec_response;
+    exec_response_t zero_struct;
+    memset(&zero_struct, 0, sizeof(exec_response_t));
     i8_ret = faasparser_parse_json_str_as_async_exec_response(c_test_json, &test_async_exec_response);
 
     COGNIT_LOG_DEBUG("Status: %s", test_async_exec_response.status);
     COGNIT_LOG_DEBUG("Exec ID: %s", test_async_exec_response.exec_id.faas_task_uuid);
 
     EXPECT_STREQ(test_async_exec_response.status, "WORKING");
-    if (test_async_exec_response.res == NULL)
+    if (memcmp(&test_async_exec_response.res, &zero_struct, sizeof(exec_response_t)) == 0)
     {
         COGNIT_LOG_DEBUG("Res is NULL");
         EXPECT_EQ(0, 0);
@@ -97,7 +99,7 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseNull)
         EXPECT_EQ(0, 1);
     }
     EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
-    faasparser_destroy_exec_response(test_async_exec_response.res);
+    faasparser_destroy_exec_response(&test_async_exec_response.res);
 }
 
 TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
@@ -109,13 +111,14 @@ TEST_F(UTestFaasParser, TestParseJsonAsAsyncExecResponseComplete)
 
     COGNIT_LOG_DEBUG("Status: %s", test_async_exec_response.status);
     COGNIT_LOG_DEBUG("Exec ID: %s", test_async_exec_response.exec_id.faas_task_uuid);
-    COGNIT_LOG_DEBUG("Ret code: %d", test_async_exec_response.res->ret_code);
-    COGNIT_LOG_DEBUG("Res: %s", test_async_exec_response.res->res_payload);
+    COGNIT_LOG_INFO("Exec task id len: %ld", strlen(test_async_exec_response.exec_id.faas_task_uuid));
+    COGNIT_LOG_DEBUG("Ret code: %d", test_async_exec_response.res.ret_code);
+    COGNIT_LOG_DEBUG("Res: %s", test_async_exec_response.res.res_payload);
 
     EXPECT_STREQ(test_async_exec_response.status, "READY");
-    EXPECT_EQ(test_async_exec_response.res->ret_code, 0);
-    EXPECT_STREQ(test_async_exec_response.res->res_payload, "10");
+    EXPECT_EQ(test_async_exec_response.res.ret_code, 0);
+    EXPECT_STREQ(test_async_exec_response.res.res_payload, "10");
     EXPECT_STREQ(test_async_exec_response.exec_id.faas_task_uuid, "58035b11-aa14-11ee-a240-02008ac90074");
 
-    faasparser_destroy_exec_response(test_async_exec_response.res);
+    faasparser_destroy_exec_response(&test_async_exec_response.res);
 }

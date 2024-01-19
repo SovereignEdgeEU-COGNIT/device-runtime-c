@@ -60,7 +60,7 @@ typedef struct
 typedef struct
 {
     char status[10];      // "WORKING", "READY", "FAILED"
-    exec_response_t* res; // NULL if not present
+    exec_response_t res;
     AsyncExecId exec_id;
 } async_exec_response_t;
 

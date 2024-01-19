@@ -232,7 +232,8 @@ e_status_code_t serverless_runtime_wait_for_task(serverless_runtime_context_t* p
             return E_ST_CODE_ERROR;
         }
 
-        if (pt_async_exec_response->status == "READY" && pt_async_exec_response->res != NULL)
+        if (strcmp(pt_async_exec_response->status, "READY") == 0
+            && memcmp(&pt_async_exec_response->res, &(exec_response_t) { 0 }, sizeof(exec_response_t)) != 0)
         {
             COGNIT_LOG_DEBUG("[sr_context] Received task completed response from the serverless runtime");
             return SUCCESS;

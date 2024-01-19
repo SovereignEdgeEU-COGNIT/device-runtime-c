@@ -202,29 +202,30 @@ int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, as
     }
 
     // Copy task uuid to the response struct
-    strncpy(t_async_exec_response->exec_id.faas_task_uuid, faas_task_uuid_item->valuestring, sizeof(t_async_exec_response->exec_id.faas_task_uuid) - 1);
+    strncpy(t_async_exec_response->exec_id.faas_task_uuid, faas_task_uuid_item->valuestring, strlen(faas_task_uuid_item->valuestring) + 1);
 
     // If res is null means srv hasnt finished the execution
     if (cJSON_IsNull(res_item))
     {
         COGNIT_LOG_TRACE("res_item is NULL");
-        t_async_exec_response->res = NULL;
+        memset(&t_async_exec_response->res, 0, sizeof(t_async_exec_response->res));
     }
     else
     {
         str_res_item = cJSON_Print(res_item);
-        i8_ret       = faasparser_parse_json_str_as_exec_response(str_res_item, t_async_exec_response->res);
+        i8_ret       = faasparser_parse_json_str_as_exec_response(str_res_item, &t_async_exec_response->res);
+
         if (i8_ret != JSON_ERR_CODE_OK)
         {
             COGNIT_LOG_ERROR("Error parsing JSON");
             cJSON_Delete(root);
-            free(str_res_item);
+            free((char*)str_res_item);
             return JSON_ERR_CODE_INVALID_JSON;
         }
     }
 
     cJSON_Delete(root);
-    free(str_res_item);
+    free((char*)str_res_item);
 
     return JSON_ERR_CODE_OK;
 }

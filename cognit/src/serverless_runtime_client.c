@@ -89,7 +89,7 @@ int serverless_runtime_cli_faas_exec_async(serverless_runtime_cli_t* pt_serverle
         || t_http_config.t_http_response.size == 0)
     {
         COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
-        pt_async_exec_response->res->ret_code = ERROR;
+        pt_async_exec_response->res.ret_code = ERROR;
     }
     else
     {
@@ -105,24 +105,24 @@ int serverless_runtime_cli_faas_exec_async(serverless_runtime_cli_t* pt_serverle
             if (i8_ret != 0)
             {
                 COGNIT_LOG_ERROR("Error parsing JSON");
-                pt_async_exec_response->res->ret_code = ERROR;
+                pt_async_exec_response->res.ret_code = ERROR;
             }
         }
         else if (t_http_config.t_http_response.l_http_code == 400)
         {
             strcpy(pt_async_exec_response->status, "FAILED");
-            pt_async_exec_response->res->ret_code = ERROR;
+            pt_async_exec_response->res.ret_code = ERROR;
             strncpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000", strlen("000-000-000"));
         }
         else
         {
             strcpy(pt_async_exec_response->status, "READY");
-            pt_async_exec_response->res->ret_code = ERROR;
+            pt_async_exec_response->res.ret_code = ERROR;
             strncpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000", strlen("000-000-000"));
         }
     }
 
-    pt_async_exec_response->res->http_err_code = t_http_config.t_http_response.l_http_code;
+    pt_async_exec_response->res.http_err_code = t_http_config.t_http_response.l_http_code;
 
     return 0;
 }
@@ -150,7 +150,7 @@ int serverless_runtime_cli_wait_for_task(serverless_runtime_cli_t* pt_serverless
         || t_http_config.t_http_response.size == 0)
     {
         COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
-        pt_async_exec_response->res->ret_code = ERROR;
+        pt_async_exec_response->res.ret_code = ERROR;
     }
     else
     {
@@ -165,18 +165,18 @@ int serverless_runtime_cli_wait_for_task(serverless_runtime_cli_t* pt_serverless
             if (i8_ret != 0)
             {
                 COGNIT_LOG_ERROR("Error parsing JSON");
-                pt_async_exec_response->res->ret_code = ERROR;
+                pt_async_exec_response->res.ret_code = ERROR;
             }
         }
         else
         {
             strcpy(pt_async_exec_response->status, "READY");
-            pt_async_exec_response->res->ret_code = ERROR;
+            pt_async_exec_response->res.ret_code = ERROR;
             strcpy(pt_async_exec_response->exec_id.faas_task_uuid, "000-000-000");
         }
     }
 
-    pt_async_exec_response->res->http_err_code = t_http_config.t_http_response.l_http_code;
+    pt_async_exec_response->res.http_err_code = t_http_config.t_http_response.l_http_code;
 
     return 0;
 }
