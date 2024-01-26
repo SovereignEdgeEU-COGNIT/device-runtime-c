@@ -4,7 +4,7 @@
 
 void offload_fc_c_create(exec_faas_params_t* t_exec_faas_params, const char* c_includes, const char* c_func)
 {
-    stpncpy(t_exec_faas_params->lang, "C", sizeof("C"));
+    strncpy(t_exec_faas_params->lang, "C", sizeof("C"));
     size_t total_fc_len = strlen(c_includes) + strlen(c_func) + 1;
     char* c_raw_fc      = (char*)malloc(total_fc_len);
 
