@@ -16,6 +16,7 @@
 /***************** DEFINES AND MACROS *********************/
 #define HTTP_METHOD_GET  "GET"
 #define HTTP_METHOD_POST "POST"
+#define HTTP_METHOD_DELETE "DELETE"
 
 #define MAX_HTTP_RESPONSE_SIZE     30000
 #define MAX_HTTP_TRANSMISSION_SIZE 20000
@@ -35,6 +36,8 @@ typedef struct
     const char* c_url;
     const char* c_method;
     uint32_t ui32_timeout_ms;
+    const char* username;
+    const char* password;
 } http_config_t;
 
 typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config_t* config);

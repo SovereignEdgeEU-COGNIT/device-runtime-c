@@ -14,6 +14,7 @@ set(UNIT_TEST_SRC_FILES
     ${PROJECT_ROOT}/test/unit/utest_http.cpp
     ${PROJECT_ROOT}/test/unit/utest_base64.cpp
     ${PROJECT_ROOT}/test/unit/utest_ip_utils.cpp
+    ${PROJECT_ROOT}/test/unit/utest_sr_parser.cpp
     ${PROJECT_ROOT}/test/unit/utest_faas_parser.cpp)
 add_executable(${UNIT_TESTS_TARGET} ${UNIT_TEST_SRC_FILES} ${SRC_FILES})
 

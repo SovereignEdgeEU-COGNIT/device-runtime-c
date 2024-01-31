@@ -46,6 +46,6 @@ typedef struct
     daas_config_t daas_config;
     scheduling_config_t scheduling_config;
     device_info_t device_info;
-} serverless_runtime_t;
+}   serverless_runtime_t;
 
 #endif // SERVERLESS_RUNTIME_H
