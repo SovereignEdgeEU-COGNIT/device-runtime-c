@@ -38,10 +38,10 @@ static void init_faas_config(faas_config_t* t_xaas_config)
     t_xaas_config->ui8_cpu        = 1;
     t_xaas_config->ui32_memory    = 768;
     t_xaas_config->ui32_disk_size = 3072;
-    strcpy(t_xaas_config->c_flavour, "nature");
+    strcpy(t_xaas_config->c_flavour, "Nature");
     strcpy(t_xaas_config->c_endpoint, "");
     strcpy(t_xaas_config->c_state, "");
-    strcpy(t_xaas_config->c_vm_id, "");
+    t_xaas_config->c_vm_id = 0;
 }
 
 // Public functions
@@ -92,7 +92,7 @@ e_status_code_t serverless_runtime_ctx_create(serverless_runtime_context_t* pt_s
     }
 
     // Check the state returned by the provisioning engine i
-    if (pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_PENDING || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_NO_STATE)
+    if (strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_PENDING) != 0)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime creation request failed: returned state is not PENDING, is %s", pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state);
         return COGNIT_ECODE_ERROR;
@@ -100,7 +100,7 @@ e_status_code_t serverless_runtime_ctx_create(serverless_runtime_context_t* pt_s
 
     COGNIT_LOG_INFO("[sr_context] Serverless Runtime create request completed successfully");
 
-    return COGNIT_ECODE_ERROR;
+    return COGNIT_ECODE_SUCCESS;
 }
 
 e_faas_state_t serverless_runtime_ctx_status(serverless_runtime_context_t* pt_sr_ctx)
@@ -248,8 +248,8 @@ e_status_code_t serverless_runtime_wait_for_task(serverless_runtime_context_t* p
 e_status_code_t serverless_runtime_delete(serverless_runtime_context_t* pt_sr_ctx)
 {
     // Check if serverless runtime is created and running
-    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
-        || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
+    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) != 0
+        || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint[0] == NULL)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");
         return E_ST_CODE_ERROR;

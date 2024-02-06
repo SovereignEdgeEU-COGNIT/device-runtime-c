@@ -14,8 +14,10 @@
 #include <stdint.h>
 #include <stddef.h>
 /***************** DEFINES AND MACROS *********************/
-#define HTTP_METHOD_GET  "GET"
-#define HTTP_METHOD_POST "POST"
+#define STR_PROTOCOL "http"
+
+#define HTTP_METHOD_GET    "GET"
+#define HTTP_METHOD_POST   "POST"
 #define HTTP_METHOD_DELETE "DELETE"
 
 #define MAX_HTTP_RESPONSE_SIZE     30000

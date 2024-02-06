@@ -3,15 +3,15 @@
 
 #include <gtest/gtest.h>
 
-class UTestSRParser : public testing::Test
+class UTestSrParser : public testing::Test
 {
 
 protected:
-    UTestSRParser()
+    UTestSrParser()
     {
     }
 
-    ~UTestSRParser() {}
+    ~UTestSrParser() {}
 };
 
 #endif // ITEST_SR_PARSER_HEADER_

@@ -21,7 +21,7 @@ typedef struct
     char c_flavour[SR_FLAVOUR_MAX_LEN];
     char c_endpoint[SR_ENDPOINT_MAX_LEN];
     char c_state[SR_STATE_MAX_LEN];
-    char c_vm_id[SR_VM_ID_MAX_LEN];
+    uint32_t c_vm_id;
 } faas_config_t;
 
 typedef faas_config_t daas_config_t;
@@ -46,6 +46,6 @@ typedef struct
     daas_config_t daas_config;
     scheduling_config_t scheduling_config;
     device_info_t device_info;
-}   serverless_runtime_t;
+} serverless_runtime_t;
 
 #endif // SERVERLESS_RUNTIME_H

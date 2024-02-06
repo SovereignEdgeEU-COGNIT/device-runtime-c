@@ -21,7 +21,6 @@
 #define JSON_ERR_CODE_OK           0
 #define JSON_ERR_CODE_INVALID_JSON -1
 
-
 /**************** TYPEDEFS AND STRUCTS ********************/
 /******************* GLOBAL VARIABLES *********************/
 
