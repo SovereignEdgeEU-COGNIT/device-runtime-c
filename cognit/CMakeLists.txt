@@ -1,6 +1,5 @@
 # Build the cognit device runtime library
 
-# TODO: Add here the source files
 set(SRC_FILES
     "${PROJECT_ROOT}/src/cJSON_Utils.c"
     "${PROJECT_ROOT}/src/cJSON.c"
@@ -12,6 +11,7 @@ set(SRC_FILES
     "${PROJECT_ROOT}/src/ip_utils.c"
     "${PROJECT_ROOT}/src/faas_parser.c"
     "${PROJECT_ROOT}/src/offload_fc_c.c"
+    "${PROJECT_ROOT}/src/sr_parser.c"
     )
 
 set(INCLUDE_PATHS "${PROJECT_ROOT}/include" "${PROJECT_ROOT}/src")

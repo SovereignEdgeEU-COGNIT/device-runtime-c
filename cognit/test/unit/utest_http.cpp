@@ -57,7 +57,9 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
         if (config->c_method == HTTP_METHOD_GET)
         {
-            if (curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L) != CURLE_OK)
+            if (curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_USERNAME, config->username) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->password) != CURLE_OK)
             {
                 COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->get() failed");
                 return -1;
@@ -68,7 +70,19 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
             if (curl_easy_setopt(curl, CURLOPT_POST, 1L) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST") != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, size) != CURLE_OK
-                || curl_easy_setopt(curl, CURLOPT_POSTFIELDS, c_buffer) != CURLE_OK)
+                || curl_easy_setopt(curl, CURLOPT_POSTFIELDS, c_buffer) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_USERNAME, config->username) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->password) != CURLE_OK)
+            {
+                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed");
+                return -1;
+            }
+        }
+        else if (config->c_method == HTTP_METHOD_DELETE)
+        {
+            if (curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE") != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_USERNAME, config->username) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->password) != CURLE_OK)
             {
                 COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed");
                 return -1;
