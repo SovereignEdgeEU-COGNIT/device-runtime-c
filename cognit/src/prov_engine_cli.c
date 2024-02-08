@@ -27,9 +27,9 @@ int prov_engine_cli_create_runtime(prov_engine_cli_t* t_prov_engine_cli, serverl
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
-    t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 100;
-    t_http_config.username        = t_prov_engine_cli->m_t_config->prov_engine_pe_usr;
-    t_http_config.password        = t_prov_engine_cli->m_t_config->prov_engine_pe_pwd;
+    t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
+    t_http_config.c_username      = t_prov_engine_cli->m_t_config->prov_engine_pe_usr;
+    t_http_config.c_password      = t_prov_engine_cli->m_t_config->prov_engine_pe_pwd;
 
     i8_ret = srparser_parse_serverless_runtime_as_str_json(t_serverless_runtime, &ui8_payload, &payload_len);
     COGNIT_LOG_DEBUG("%s", ui8_payload);
@@ -75,8 +75,8 @@ int prov_engine_cli_retreive_runtime(prov_engine_cli_t* t_prov_engine_cli, uint3
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_GET;
     t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
-    t_http_config.username        = t_prov_engine_cli->m_t_config->prov_engine_pe_usr;
-    t_http_config.password        = t_prov_engine_cli->m_t_config->prov_engine_pe_pwd;
+    t_http_config.c_username      = t_prov_engine_cli->m_t_config->prov_engine_pe_usr;
+    t_http_config.c_password      = t_prov_engine_cli->m_t_config->prov_engine_pe_pwd;
 
     //auth?
 
@@ -117,8 +117,8 @@ int prov_engine_delete_runtime(prov_engine_cli_t* t_prov_engine_cli, uint32_t ui
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_DELETE;
     t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
-    t_http_config.username        = t_prov_engine_cli->m_t_config->prov_engine_pe_usr;
-    t_http_config.password        = t_prov_engine_cli->m_t_config->prov_engine_pe_pwd;
+    t_http_config.c_username      = t_prov_engine_cli->m_t_config->prov_engine_pe_usr;
+    t_http_config.c_password      = t_prov_engine_cli->m_t_config->prov_engine_pe_pwd;
 
     COGNIT_LOG_DEBUG("Create [DELETE] URL: %s", t_http_config.c_url);
     i8_ret = cognit_http_send(NULL, NULL, &t_http_config);

@@ -34,7 +34,7 @@ TEST_F(UTestSrParser, TestParseServerlessRuntimeAsJson)
     strcpy(test_serverless_runtime.faas_config.c_flavour, "nature");
     strcpy(test_serverless_runtime.faas_config.c_endpoint, "");
     strcpy(test_serverless_runtime.faas_config.c_state, "");
-    test_serverless_runtime.faas_config.c_vm_id, 0;
+    test_serverless_runtime.faas_config.ui32_vm_id, 0;
 
     COGNIT_LOG_DEBUG("Serverless runtime created");
 
@@ -73,5 +73,5 @@ TEST_F(UTestSrParser, TestParseJsonAsServerlessRuntime)
     EXPECT_STREQ(test_serverless_runtime.faas_config.c_flavour, "nature");
     EXPECT_STREQ(test_serverless_runtime.faas_config.c_endpoint, "localhost:8080");
     EXPECT_STREQ(test_serverless_runtime.faas_config.c_state, "pending");
-    EXPECT_EQ(test_serverless_runtime.faas_config.c_vm_id, 0);
+    EXPECT_EQ(test_serverless_runtime.faas_config.ui32_vm_id, 0);
 }

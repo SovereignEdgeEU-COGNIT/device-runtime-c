@@ -81,9 +81,9 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
         cJSON_AddStringToObject(faas, "STATE", t_serverless_runtime->faas_config.c_state);
     }
 
-    if (t_serverless_runtime->faas_config.c_vm_id != NULL)
+    if (t_serverless_runtime->faas_config.ui32_vm_id != NULL)
     {
-        cJSON_AddNumberToObject(faas, "VM_ID", t_serverless_runtime->faas_config.c_vm_id);
+        cJSON_AddNumberToObject(faas, "VM_ID", t_serverless_runtime->faas_config.ui32_vm_id);
     }
 
     cJSON_AddItemToObject(root, "FAAS", faas);
@@ -127,9 +127,9 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
         cJSON_AddStringToObject(daas, "STATE", t_serverless_runtime->daas_config.c_state);
     }
 
-    if (t_serverless_runtime->daas_config.c_vm_id != NULL)
+    if (t_serverless_runtime->daas_config.ui32_vm_id != NULL)
     {
-        cJSON_AddNumberToObject(daas, "VM_ID", t_serverless_runtime->daas_config.c_vm_id);
+        cJSON_AddNumberToObject(daas, "VM_ID", t_serverless_runtime->daas_config.ui32_vm_id);
     }
 
     scheduling = cJSON_CreateObject();
@@ -245,7 +245,7 @@ int8_t srparser_parse_json_str_as_serverless_runtime(const char* json_str, serve
         cJSON* faas_vm_id_item = cJSON_GetObjectItem(faas_config_item, "VM_ID");
         if (faas_vm_id_item != NULL)
         {
-            t_serverless_runtime->faas_config.c_vm_id = faas_vm_id_item->valueint;
+            t_serverless_runtime->faas_config.ui32_vm_id = faas_vm_id_item->valueint;
         }
     }
     else
@@ -290,7 +290,7 @@ int8_t srparser_parse_json_str_as_serverless_runtime(const char* json_str, serve
         cJSON* daas_vm_id_item = cJSON_GetObjectItem(daas_config_item, "VM_ID");
         if (daas_vm_id_item != NULL)
         {
-            t_serverless_runtime->daas_config.c_vm_id = daas_vm_id_item->valueint;
+            t_serverless_runtime->daas_config.ui32_vm_id = daas_vm_id_item->valueint;
         }
     }
 

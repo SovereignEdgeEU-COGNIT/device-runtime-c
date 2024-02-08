@@ -38,8 +38,8 @@ typedef struct
     const char* c_url;
     const char* c_method;
     uint32_t ui32_timeout_ms;
-    const char* username;
-    const char* password;
+    const char* c_username;
+    const char* c_password;
 } http_config_t;
 
 typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config_t* config);

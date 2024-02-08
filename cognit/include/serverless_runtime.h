@@ -21,7 +21,7 @@ typedef struct
     char c_flavour[SR_FLAVOUR_MAX_LEN];
     char c_endpoint[SR_ENDPOINT_MAX_LEN];
     char c_state[SR_STATE_MAX_LEN];
-    uint32_t c_vm_id;
+    uint32_t ui32_vm_id;
 } faas_config_t;
 
 typedef faas_config_t daas_config_t;
