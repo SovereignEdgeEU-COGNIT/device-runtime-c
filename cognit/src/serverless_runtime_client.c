@@ -10,8 +10,8 @@ void serverless_runtime_cli_init(serverless_runtime_cli_t* pt_serverless_runtime
 {
     memset(pt_serverless_runtime_cli, 0, sizeof(serverless_runtime_cli_t));
     pt_serverless_runtime_cli->t_serverless_runtime_endpoint = c_endpoint;
-    snprintf(pt_serverless_runtime_cli->c_a_exec_sync_url, MAX_URL_LENGTH, "%s/%s/%s", c_endpoint, FAAS_VERSION, FAAS_EXECUTE_SYNC_ENDPOINT);
-    snprintf(pt_serverless_runtime_cli->c_a_exec_async_url, MAX_URL_LENGTH, "%s/%s/%s", c_endpoint, FAAS_VERSION, FAAS_EXECUTE_ASYNC_ENDPOINT);
+    snprintf(pt_serverless_runtime_cli->c_a_exec_sync_url, MAX_URL_LENGTH, "http://[%s]:8000/%s/%s", c_endpoint, FAAS_VERSION, FAAS_EXECUTE_SYNC_ENDPOINT);
+    snprintf(pt_serverless_runtime_cli->c_a_exec_async_url, MAX_URL_LENGTH, "http://[%s]:8000/%s/%s", c_endpoint, FAAS_VERSION, FAAS_EXECUTE_ASYNC_ENDPOINT);
 }
 
 bool serverless_runtime_cli_is_initialized(serverless_runtime_cli_t* pt_serverless_runtime_cli)

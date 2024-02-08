@@ -38,10 +38,10 @@ static void init_faas_config(faas_config_t* t_xaas_config)
     t_xaas_config->ui8_cpu        = 1;
     t_xaas_config->ui32_memory    = 768;
     t_xaas_config->ui32_disk_size = 3072;
-    strcpy(t_xaas_config->c_flavour, "Nature");
+    strcpy(t_xaas_config->c_flavour, "DC_C_version_tests");
     strcpy(t_xaas_config->c_endpoint, "");
     strcpy(t_xaas_config->c_state, "");
-    t_xaas_config->c_vm_id = 0;
+    t_xaas_config->ui32_vm_id = 0;
 }
 
 // Public functions
@@ -146,7 +146,10 @@ e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* p
     size_t i_payload_len = 0;
 
     // Check if serverless runtime is created and running
-    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
+
+    if (pt_sr_ctx == 0
+        || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0
+        || strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) != 0
         || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");
