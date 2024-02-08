@@ -2,6 +2,8 @@ set(TEST_SRC_FILES "${PROJECT_ROOT}/src/cognit.c")
 
 set(MINIMAL_OFFLOAD_EXAMPLE_TARGET minimal-offload-example)
 
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIR})
 # Set source files
 
 add_executable(${MINIMAL_OFFLOAD_EXAMPLE_TARGET}
@@ -10,4 +12,4 @@ add_executable(${MINIMAL_OFFLOAD_EXAMPLE_TARGET}
 target_include_directories(${MINIMAL_OFFLOAD_EXAMPLE_TARGET}
                            PRIVATE ${PROJECT_ROOT}/include)
 
-target_link_libraries(${MINIMAL_OFFLOAD_EXAMPLE_TARGET} ${PROJECT_NAME})
+target_link_libraries(${MINIMAL_OFFLOAD_EXAMPLE_TARGET} ${CURL_LIBRARIES} ${PROJECT_NAME})
