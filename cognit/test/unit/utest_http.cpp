@@ -3,6 +3,7 @@
 extern "C" {
 #include <cognit_http.h>
 #include <logger.h>
+#include <ip_utils.h>
 }
 
 size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, void* user_buffer)
@@ -53,6 +54,19 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         {
             COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt() failed");
             return -1;
+        }
+
+        // Find '[' or ']' in the URL to determine the IP version
+        // TODO: fix ip_utils to obtain http://[2001:67c:22b8:1::d]:8000/v1/faas/execute-sync
+        // as IP_V6
+        if (strchr(config->c_url, '[') != NULL
+            && strchr(config->c_url, ']') != NULL)
+        {
+            if (curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6) != CURLE_OK)
+            {
+                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->IPRESOLVE_V6 failed");
+                return -1;
+            }
         }
 
         if (strcmp(config->c_method, HTTP_METHOD_GET) == 0)
@@ -131,6 +145,8 @@ TEST_F(UTestHttp, TestHttpGet)
     config.c_method                           = HTTP_METHOD_GET;
     config.c_url                              = "https://jsonplaceholder.typicode.com/posts";
     config.ui32_timeout_ms                    = 5000;
+    config.c_username                         = "user";
+    config.c_password                         = "password";
 
     i8_ret = cognit_http_send(c_buffer, size, &config);
 
@@ -164,28 +180,4 @@ TEST_F(UTestHttp, TestHttpPost)
 
     // TODO: make proper json comparison -> Problem with , '\0' and spaces but same content
     EXPECT_EQ(i8_ret, CURLE_OK);
-}
-
-// Must run a serverless runtime to test this
-TEST_F(UTestHttp, TestHttpPost2)
-{
-    int8_t i8_ret                             = 0;
-    const char* c_json_test                   = "{\"lang\":\"C\",\"fc\":\"I2luY2x1ZGUgPHN0ZGlvLmg+IAp2b2lkIHN1bWEgKGludCBhLCBpbnQgYiwgZmxvYXQgKmMpCnsKKmMgPSBhICtiOwp9\",\"params\":[\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJhIiwKICAgICJ2YWx1ZSI6ICJNdz09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiaW50IiwKICAgICJ2YXJfbmFtZSI6ICJiIiwKICAgICJ2YWx1ZSI6ICJOQT09IiwKICAgICJtb2RlIjogIklOIgogICAgfQ==\",\"ewogICAgInR5cGUiOiAiZmxvYXQiLAogICAgInZhcl9uYW1lIjogImMiLAogICAgIm1vZGUiOiAiT1VUIgogICAgfQ==\"]}";
-    char c_buffer[MAX_HTTP_TRANSMISSION_SIZE] = { 0 };
-    size_t size                               = 0;
-    http_config_t config;
-    config.c_method        = HTTP_METHOD_POST;
-    config.c_url           = "http://127.0.0.1:8000/v1/faas/execute-sync";
-    config.ui32_timeout_ms = 5000;
-
-    strncpy(c_buffer, c_json_test, strlen(c_json_test) + 1);
-    size = strlen(c_json_test);
-    COGNIT_LOG_DEBUG("size: %ld", config.t_http_response.size);
-    i8_ret = cognit_http_send(c_buffer, size, &config);
-
-    // Print json response
-    COGNIT_LOG_DEBUG("%s", config.t_http_response.ui8_response_data_buffer);
-    COGNIT_LOG_DEBUG("size: %ld", config.t_http_response.size);
-
-    ASSERT_EQ(i8_ret, CURLE_OK);
 }
