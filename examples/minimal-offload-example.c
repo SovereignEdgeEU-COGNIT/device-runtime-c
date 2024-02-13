@@ -9,6 +9,7 @@
 #include <faas_parser.h>
 #include <cognit_http.h>
 #include <logger.h>
+#include <ip_utils.h>
 
 FUNC_TO_STR(
     mult_fc,
@@ -55,7 +56,6 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
         if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers) != CURLE_OK
             // Configure URL and payload
-            || curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6) != CURLE_OK
             || curl_easy_setopt(curl, CURLOPT_URL, config->c_url) != CURLE_OK
             // Set the callback function to handle the response data
             || curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&config->t_http_response) != CURLE_OK
@@ -65,6 +65,20 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
             COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt() failed");
             return -1;
         }
+
+        // Find '[' or ']' in the URL to determine the IP version
+        // TODO: fix ip_utils to obtain http://[2001:67c:22b8:1::d]:8000/v1/faas/execute-sync
+        // as IP_V6
+        if (strchr(config->c_url, '[') != NULL
+            && strchr(config->c_url, ']') != NULL)
+        {
+            if (curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6) != CURLE_OK)
+            {
+                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->IPRESOLVE_V6 failed");
+                return -1;
+            }
+        }
+
         if (strcmp(config->c_method, HTTP_METHOD_GET) == 0)
         {
             if (curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L) != CURLE_OK
@@ -193,6 +207,16 @@ int main(int argc, char const* argv[])
 
     // TODO: wrap all destroys in a single function
     faasparser_destroy_exec_response(&t_exec_response);
+
+    COGNIT_LOG_INFO("Deleting serverless runtime");
+
+    while (prov_engine_delete_runtime(&t_my_serverless_runtime_context.m_t_prov_engine_cli, t_my_serverless_runtime_context.m_t_serverless_runtime.ui32_id, &t_my_serverless_runtime_context.m_t_serverless_runtime) != 0)
+    {
+        COGNIT_LOG_ERROR("Error deleting serverless runtime");
+        sleep(1);
+    }
+
+    COGNIT_LOG_INFO("Serverless runtime deleted");
 
     return 0;
 }
