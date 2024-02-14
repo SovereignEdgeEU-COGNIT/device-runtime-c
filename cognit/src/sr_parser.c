@@ -170,6 +170,7 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
     strcpy((char*)ui8_payload_buff, str_sr_json);
     *payload_len = strlen(str_sr_json);
 
+    free(str_sr_json);
     cJSON_Delete(sr);
 
     return JSON_ERR_CODE_OK;

@@ -141,6 +141,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
     // Clean global curl configuration
     curl_global_cleanup();
+    free(headers);
 
     return (res == CURLE_OK) ? 0 : -1;
 }
@@ -205,8 +206,9 @@ int main(int argc, char const* argv[])
 
     COGNIT_LOG_INFO("Result: %s", t_exec_response.res_payload);
 
-    // TODO: wrap all destroys in a single function
+    // Free the resources
     faasparser_destroy_exec_response(&t_exec_response);
+    offload_fc_c_destroy(&exec_params);
 
     COGNIT_LOG_INFO("Deleting serverless runtime");
 

@@ -131,6 +131,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
     // Clean global curl configuration
     curl_global_cleanup();
+    free(headers);
 
     return (res == CURLE_OK) ? 0 : -1;
 }
