@@ -155,7 +155,7 @@ int main(int argc, char const* argv[])
     exec_faas_params_t exec_params = { 0 };
 
     // Initialize the config for the serverless runtime context instance
-    t_my_cognit_config.prov_engine_endpoint   = "http://localhost:8080";
+    t_my_cognit_config.prov_engine_endpoint   = "localhost:8080";
     t_my_cognit_config.prov_engine_pe_usr     = "admin";
     t_my_cognit_config.prov_engine_pe_pwd     = "admin";
     t_my_cognit_config.prov_engine_port       = 8080;
@@ -164,7 +164,9 @@ int main(int argc, char const* argv[])
     serverless_runtime_ctx_init(&t_my_serverless_runtime_context, &t_my_cognit_config);
 
     // Cofigure the initial serverless runtime requirements
-    t_my_serverless_runtime_conf.name = "my_serverless_runtime";
+    t_my_serverless_runtime_conf.name                                                  = "my_serverless_runtime";
+    t_my_serverless_runtime_conf.faas_flavour                                          = "DC_C_version_tests";
+    t_my_serverless_runtime_conf.m_t_energy_scheduling_policies.ui32_energy_percentage = 50;
 
     if (serverless_runtime_ctx_create(&t_my_serverless_runtime_context, &t_my_serverless_runtime_conf) != E_ST_CODE_SUCCESS)
     {

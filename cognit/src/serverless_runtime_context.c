@@ -38,7 +38,7 @@ static void init_faas_config(faas_config_t* t_xaas_config)
     t_xaas_config->ui8_cpu        = 1;
     t_xaas_config->ui32_memory    = 768;
     t_xaas_config->ui32_disk_size = 3072;
-    strcpy(t_xaas_config->c_flavour, "DC_C_version_tests");
+    strcpy(t_xaas_config->c_flavour, "Energy");
     strcpy(t_xaas_config->c_endpoint, "");
     strcpy(t_xaas_config->c_state, "");
     t_xaas_config->ui32_vm_id = 0;
@@ -66,16 +66,18 @@ e_status_code_t serverless_runtime_ctx_init(serverless_runtime_context_t* pt_sr_
 
 e_status_code_t serverless_runtime_ctx_create(serverless_runtime_context_t* pt_sr_ctx, const serverless_runtime_conf_t* pt_sr_conf)
 {
-
     // Load default values to faas_config
     init_faas_config(&pt_sr_ctx->m_t_serverless_runtime.faas_config);
 
-    // For now ignore the provided flavour and use the default one
-    // Only copy the name
+    // Copy name, flavour, policies and requirements
     strncpy(pt_sr_ctx->m_t_serverless_runtime.c_name, pt_sr_conf->name, sizeof(pt_sr_ctx->m_t_serverless_runtime.c_name));
+    strncpy(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_flavour, pt_sr_conf->faas_flavour, sizeof(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_flavour));
+    // By default "ENERGY" is the scheduling policy
+    strncpy(pt_sr_ctx->m_t_serverless_runtime.scheduling_config.c_policy, "ENERGY", sizeof("ENERGY"));
+    // TODO: Uncommet when ON avtivates requirements
+    // snprintf(pt_sr_ctx->m_t_serverless_runtime.scheduling_config.c_requirements, sizeof(pt_sr_ctx->m_t_serverless_runtime.scheduling_config.c_requirements), "%d", pt_sr_conf->m_t_energy_scheduling_policies.ui32_energy_percentage);
 
     // TODO: add device info
-
     // TODO Add policies and requirements
 
     // Serialize energy requirements
