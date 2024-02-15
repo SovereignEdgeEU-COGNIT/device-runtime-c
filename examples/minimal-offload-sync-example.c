@@ -155,11 +155,11 @@ int main(int argc, char const* argv[])
     exec_faas_params_t exec_params = { 0 };
 
     // Initialize the config for the serverless runtime context instance
-    t_my_cognit_config.prov_engine_endpoint   = "localhost:8080";
-    t_my_cognit_config.prov_engine_pe_usr     = "admin";
-    t_my_cognit_config.prov_engine_pe_pwd     = "admin";
-    t_my_cognit_config.prov_engine_port       = 8080;
-    t_my_cognit_config.ui32_serv_runtime_port = 8080;
+    t_my_cognit_config.prov_engine_endpoint   = "";
+    t_my_cognit_config.prov_engine_pe_usr     = "";
+    t_my_cognit_config.prov_engine_pe_pwd     = "";
+    t_my_cognit_config.prov_engine_port       = 0;
+    t_my_cognit_config.ui32_serv_runtime_port = 0;
 
     serverless_runtime_ctx_init(&t_my_serverless_runtime_context, &t_my_cognit_config);
 

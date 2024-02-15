@@ -148,7 +148,6 @@ e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* p
     size_t i_payload_len = 0;
 
     // Check if serverless runtime is created and running
-
     if (pt_sr_ctx == 0
         || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0
         || strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) != 0
@@ -159,7 +158,6 @@ e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* p
     }
 
     // Check if the serverless runtime client is initialized
-
     if (serverless_runtime_cli_is_initialized(&pt_sr_ctx->m_t_serverless_runtime_cli) == false)
     {
         serverless_runtime_cli_init(&pt_sr_ctx->m_t_serverless_runtime_cli, pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint);
@@ -178,12 +176,13 @@ e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* p
     return SUCCESS;
 }
 
-e_status_code_t serverless_runtime_call_async(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, async_exec_response_t* pt_async_exec_response)
+e_status_code_t serverless_runtime_ctx_call_async(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, async_exec_response_t* pt_async_exec_response)
 {
     size_t i_payload_len = 0;
-
     // Check if serverless runtime is created and running
-    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
+    if (pt_sr_ctx == 0
+        || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0
+        || strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) != 0
         || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");
@@ -208,10 +207,11 @@ e_status_code_t serverless_runtime_call_async(serverless_runtime_context_t* pt_s
     return SUCCESS;
 }
 
-e_status_code_t serverless_runtime_wait_for_task(serverless_runtime_context_t* pt_sr_ctx, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response)
+e_status_code_t serverless_runtime_ctx_wait_for_task(serverless_runtime_context_t* pt_sr_ctx, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response)
 {
     // Check if serverless runtime is created and running
-    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0 || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state != STR_FAAS_STATE_RUNNING
+    if (pt_sr_ctx == 0 || pt_sr_ctx->m_t_serverless_runtime.ui32_id == 0
+        || strcmp(pt_sr_ctx->m_t_serverless_runtime.faas_config.c_state, STR_FAAS_STATE_RUNNING) != 0
         || pt_sr_ctx->m_t_serverless_runtime.faas_config.c_endpoint == 0)
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime is not ready");

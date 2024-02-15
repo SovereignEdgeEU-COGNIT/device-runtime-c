@@ -109,7 +109,7 @@ e_status_code_t serverless_runtime_ctx_call_sync(serverless_runtime_context_t* p
  * @param pt_async_exec_response Async execution response
  * @return e_status_code_t Execution status
 ***********************************************************/
-e_status_code_t serverless_runtime_call_async(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, async_exec_response_t* pt_async_exec_response);
+e_status_code_t serverless_runtime_ctx_call_async(serverless_runtime_context_t* pt_sr_ctx, exec_faas_params_t* exec_faas_params, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
  * @brief Ask periodically to the serverless runtime if the task has finished
@@ -120,7 +120,7 @@ e_status_code_t serverless_runtime_call_async(serverless_runtime_context_t* pt_s
  * @param pt_async_exec_response Async execution response
  * @return e_status_code_t Execution status
 ***********************************************************/
-e_status_code_t serverless_runtime_wait_for_task(serverless_runtime_context_t* pt_sr_ctx, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response);
+e_status_code_t serverless_runtime_ctx_wait_for_task(serverless_runtime_context_t* pt_sr_ctx, const char* c_async_task_id, uint32_t ui32_timeout_ms, async_exec_response_t* pt_async_exec_response);
 
 /*******************************************************/ /**
  * @brief Ask pec to delete the serverless runtime

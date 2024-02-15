@@ -59,14 +59,14 @@ typedef struct
 
 typedef struct
 {
-    char status[10];      // "WORKING", "READY", "FAILED"
+    char status[10]; // "WORKING", "READY", "FAILED"
     exec_response_t res;
     AsyncExecId exec_id;
 } async_exec_response_t;
 
 typedef struct SServerlessRuntimeCli
 {
-    const char* t_serverless_runtime_endpoint;
+    const char t_serverless_runtime_endpoint[MAX_URL_LENGTH];
     char c_a_exec_sync_url[MAX_URL_LENGTH];
     char c_a_exec_async_url[MAX_URL_LENGTH];
     char c_a_wait_task_url[MAX_URL_LENGTH];
