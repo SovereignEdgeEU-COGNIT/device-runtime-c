@@ -266,4 +266,6 @@ e_status_code_t serverless_runtime_delete(serverless_runtime_context_t* pt_sr_ct
     {
         COGNIT_LOG_ERROR("[sr_context] Serverless Runtime deletion failed");
     }
+
+    return E_ST_CODE_SUCCESS;
 }
