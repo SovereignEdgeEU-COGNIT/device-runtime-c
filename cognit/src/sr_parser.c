@@ -37,9 +37,11 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
         cJSON_AddStringToObject(root, "NAME", t_serverless_runtime->c_name);
     }
 
-    if (t_serverless_runtime->ui32_id != NULL)
+    if (t_serverless_runtime->ui32_id != 0)
     {
-        cJSON_AddStringToObject(root, "ID", t_serverless_runtime->ui32_id);
+        char c_id[32];
+        sprintf(c_id, "%u", t_serverless_runtime->ui32_id);
+        cJSON_AddStringToObject(root, "ID", c_id);
     }
 
     //faas
@@ -51,37 +53,37 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
         return JSON_ERR_CODE_INVALID_JSON;
     }
 
-    if (t_serverless_runtime->faas_config.ui8_cpu != NULL)
+    if (t_serverless_runtime->faas_config.ui8_cpu != 0)
     {
         cJSON_AddNumberToObject(faas, "CPU", t_serverless_runtime->faas_config.ui8_cpu);
     }
 
-    if (t_serverless_runtime->faas_config.ui32_memory != NULL)
+    if (t_serverless_runtime->faas_config.ui32_memory != 0)
     {
         cJSON_AddNumberToObject(faas, "MEMORY", t_serverless_runtime->faas_config.ui32_memory);
     }
 
-    if (t_serverless_runtime->faas_config.ui32_disk_size != NULL)
+    if (t_serverless_runtime->faas_config.ui32_disk_size != 0)
     {
         cJSON_AddNumberToObject(faas, "DISK_SIZE", t_serverless_runtime->faas_config.ui32_disk_size);
     }
 
-    if (t_serverless_runtime->faas_config.c_flavour != NULL)
+    if (t_serverless_runtime->faas_config.c_flavour[0] != '\0')
     {
         cJSON_AddStringToObject(faas, "FLAVOUR", t_serverless_runtime->faas_config.c_flavour);
     }
 
-    if (t_serverless_runtime->faas_config.c_endpoint[0] != NULL)
+    if (t_serverless_runtime->faas_config.c_endpoint[0] != '\0')
     {
         cJSON_AddStringToObject(faas, "ENDPOINT", t_serverless_runtime->faas_config.c_endpoint);
     }
 
-    if (t_serverless_runtime->faas_config.c_state[0] != NULL)
+    if (t_serverless_runtime->faas_config.c_state[0] != '\0')
     {
         cJSON_AddStringToObject(faas, "STATE", t_serverless_runtime->faas_config.c_state);
     }
 
-    if (t_serverless_runtime->faas_config.ui32_vm_id != NULL)
+    if (t_serverless_runtime->faas_config.ui32_vm_id != 0)
     {
         cJSON_AddNumberToObject(faas, "VM_ID", t_serverless_runtime->faas_config.ui32_vm_id);
     }
@@ -96,38 +98,38 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
         return JSON_ERR_CODE_INVALID_JSON;
     }
 
-    if (t_serverless_runtime->daas_config.c_flavour[0] != NULL)
+    if (t_serverless_runtime->daas_config.c_flavour[0] != '\0')
     {
         cJSON_AddStringToObject(daas, "FLAVOUR", t_serverless_runtime->daas_config.c_flavour);
         cJSON_AddItemToObject(root, "DAAS", daas);
     }
 
-    if (t_serverless_runtime->daas_config.ui8_cpu != NULL)
+    if (t_serverless_runtime->daas_config.ui8_cpu != 0)
     {
         cJSON_AddNumberToObject(daas, "CPU", t_serverless_runtime->daas_config.ui8_cpu);
     }
 
-    if (t_serverless_runtime->daas_config.ui32_memory != NULL)
+    if (t_serverless_runtime->daas_config.ui32_memory != 0)
     {
         cJSON_AddNumberToObject(daas, "MEMORY", t_serverless_runtime->daas_config.ui32_memory);
     }
 
-    if (t_serverless_runtime->daas_config.ui32_disk_size != NULL)
+    if (t_serverless_runtime->daas_config.ui32_disk_size != 0)
     {
         cJSON_AddNumberToObject(daas, "DISK_SIZE", t_serverless_runtime->daas_config.ui32_disk_size);
     }
 
-    if (t_serverless_runtime->daas_config.c_endpoint[0] != NULL)
+    if (t_serverless_runtime->daas_config.c_endpoint[0] != '\0')
     {
         cJSON_AddStringToObject(daas, "ENDPOINT", t_serverless_runtime->daas_config.c_endpoint);
     }
 
-    if (t_serverless_runtime->daas_config.c_state[0] != NULL)
+    if (t_serverless_runtime->daas_config.c_state[0] != '\0')
     {
         cJSON_AddStringToObject(daas, "STATE", t_serverless_runtime->daas_config.c_state);
     }
 
-    if (t_serverless_runtime->daas_config.ui32_vm_id != NULL)
+    if (t_serverless_runtime->daas_config.ui32_vm_id != 0)
     {
         cJSON_AddNumberToObject(daas, "VM_ID", t_serverless_runtime->daas_config.ui32_vm_id);
     }
@@ -143,7 +145,7 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
     cJSON_AddStringToObject(scheduling, "POLICY", t_serverless_runtime->scheduling_config.c_policy);
     cJSON_AddItemToObject(root, "SCHEDULING", scheduling);
 
-    if (t_serverless_runtime->scheduling_config.c_requirements[0] != NULL)
+    if (t_serverless_runtime->scheduling_config.c_requirements[0] != '\0')
     {
         cJSON_AddStringToObject(scheduling, "REQUIREMENTS", t_serverless_runtime->scheduling_config.c_requirements);
     }
@@ -159,7 +161,7 @@ int8_t srparser_parse_serverless_runtime_as_str_json(serverless_runtime_t* t_ser
     cJSON_AddStringToObject(device_info, "GEOGRAPHIC_LOCATION", t_serverless_runtime->device_info.c_geograph_location);
     cJSON_AddItemToObject(root, "DEVICE_INFO", device_info);
 
-    if (t_serverless_runtime->device_info.ui32_latency_to_pe != NULL)
+    if (t_serverless_runtime->device_info.ui32_latency_to_pe != 0)
     {
         cJSON_AddNumberToObject(device_info, "LATENCY_TO_PE", t_serverless_runtime->device_info.ui32_latency_to_pe);
     }
@@ -206,7 +208,7 @@ int8_t srparser_parse_json_str_as_serverless_runtime(const char* json_str, serve
     //  strcpy(t_serverless_runtime->c_name, cname_item->valuestring);
 
     //id
-    COGNIT_LOG_DEBUG("%d%d", t_serverless_runtime->ui32_id, ui32_id_item->valueint)
+    COGNIT_LOG_DEBUG("%d%d", t_serverless_runtime->ui32_id, ui32_id_item->valueint);
     t_serverless_runtime->ui32_id = ui32_id_item->valueint;
 
     //faas_config
@@ -273,7 +275,9 @@ int8_t srparser_parse_json_str_as_serverless_runtime(const char* json_str, serve
         cJSON* daas_disk_size_item = cJSON_GetObjectItem(daas_config_item, "DISK_SIZE");
         if (daas_disk_size_item != NULL)
         {
-            t_serverless_runtime->daas_config.ui32_disk_size = daas_disk_size_item->valuestring;
+            char* end;
+            t_serverless_runtime->daas_config.ui32_disk_size = (uint32_t)strtoul(daas_disk_size_item->valuestring, &end, 10);
+            // t_serverless_runtime->daas_config.ui32_disk_size = daas_disk_size_item->valuestring;
         }
 
         cJSON* daas_flavour_item = cJSON_GetObjectItem(daas_config_item, "FLAVOUR");

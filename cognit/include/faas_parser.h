@@ -30,10 +30,10 @@
 /**************** TYPEDEFS AND STRUCTS ********************/
 typedef struct
 {
-    const char* type; // Float, int, char, bool
-    const char* var_name;
-    const char* value; // Coded b64
-    char mode[4];      // "IN" or "OUT"
+    char* type; // Float, int, char, bool
+    char* var_name;
+    char* value;  // Coded b64
+    char mode[4]; // "IN" or "OUT"
 } param_t;
 
 typedef struct

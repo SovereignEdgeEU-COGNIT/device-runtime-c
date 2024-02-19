@@ -40,7 +40,7 @@ int prov_engine_cli_create_runtime(prov_engine_cli_t* t_prov_engine_cli, serverl
     if (i8_ret != 0
         || t_http_config.t_http_response.l_http_code != 201)
     {
-        COGNIT_LOG_ERROR("Provisioning engine returned %d on create", t_http_config.t_http_response.l_http_code);
+        COGNIT_LOG_ERROR("Provisioning engine returned %ld on create", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
 
         return COGNIT_ECODE_ERROR;
@@ -86,7 +86,7 @@ int prov_engine_cli_retreive_runtime(prov_engine_cli_t* t_prov_engine_cli, uint3
     if (i8_ret != 0
         || t_http_config.t_http_response.l_http_code != 200)
     {
-        COGNIT_LOG_ERROR("Provisioning engine returned %d on retrieve", t_http_config.t_http_response.l_http_code);
+        COGNIT_LOG_ERROR("Provisioning engine returned %ld on retrieve", t_http_config.t_http_response.l_http_code);
         return COGNIT_ECODE_ERROR;
     }
     else
@@ -126,7 +126,7 @@ int prov_engine_delete_runtime(prov_engine_cli_t* t_prov_engine_cli, uint32_t ui
     if (i8_ret != 0
         || t_http_config.t_http_response.l_http_code != 204)
     {
-        COGNIT_LOG_ERROR("Provisioning engine returned %d on delete", t_http_config.t_http_response.l_http_code);
+        COGNIT_LOG_ERROR("Provisioning engine returned %ld on delete", t_http_config.t_http_response.l_http_code);
         return COGNIT_ECODE_ERROR;
     }
 
