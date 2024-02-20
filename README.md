@@ -24,12 +24,13 @@ There are different points to compile using CMake:
     cmake -DCOGNIT_BUILD_TESTS=OFF -DCOGNIT_BUILD_EXAMPLES=OFF ..
     
 **To compile with your own toolchain**
+
 In order to compile the project with a custom toolchain for Arm systems for example, you will need to add to the main CMake the follows:
     
     set(CMAKE_SYSTEM_NAME custom_arm)
     set(CMAKE_SYSTEM_PROCESSOR arm)
-    set(CMAKE_C_COMPILER path_to_toolchain__bin_gcc)
-    set(CMAKE_CXX_COMPILER path_to_toolchain_bin_g++)
+    set(CMAKE_C_COMPILER <path_to_toolchain_gcc_bin>)
+    set(CMAKE_CXX_COMPILER <path_to_toolchain_g++_bin>)
     set(CMAKE_SYSROOT path_to_toolchain)
     set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
     set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
