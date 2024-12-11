@@ -1,94 +1,84 @@
 #include <device_runtime_state_machine.h>
 #include "logger.h"
 
-int device_runtime_sm_init(device_runtime_sm_t* pt_dr_sm, cognit_config_t t_config, scheduling_t t_reqs)
-{
-    pt_dr_sm->current_state = INIT;
-    pt_dr_sm->m_t_config = t_config;
-    pt_dr_sm->m_t_requirements = t_reqs;
-    execute_action(pt_dr_sm);
-
-    return 0;
-}
-
 exec_response_t offload_function(device_runtime_sm_t* pt_dr_state_machine);
 
-int address_obtained_condition(device_runtime_sm_t* pt_dr_sm) {
+static int address_obtained_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check ADDRESS_OBTAINED conditions\n");
     return 0;
 }
 
-int token_not_valid_address_condition(device_runtime_sm_t* pt_dr_sm) {
+static int token_not_valid_address_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check TOKEN_NOT_VALID_ADDRESS conditions\n");
     return 0;
 }
 
-int retry_get_address_condition(device_runtime_sm_t* pt_dr_sm) {
+static int retry_get_address_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check RETRY_GET_ADDRESS conditions\n");
     return 0;
 }
 
-int limit_get_address_condition(device_runtime_sm_t* pt_dr_sm) {
+static int limit_get_address_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check LIMIT_GET_ADDRESS conditions\n");
     return 0;
 }
 
-int address_update_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
+static int address_update_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check ADDRESS_UPDATE_REQUIREMENTS conditions\n");
     return 0;
 }
 
-int success_auth_condition(device_runtime_sm_t* pt_dr_sm) {
+static int success_auth_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check SUCCESS_AUTH conditions\n");
     return 0;
 }
 
-int repeat_auth_condition(device_runtime_sm_t* pt_dr_sm) {
+static int repeat_auth_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check REPEAT_AUTH conditions\n");
     return 0;
 }
 
-int result_given_condition(device_runtime_sm_t* pt_dr_sm) {
+static int result_given_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check RESULT_GIVEN conditions\n");
     return 0;
 }
 
-int token_not_valid_ready_condition(device_runtime_sm_t* pt_dr_sm) {
+static int token_not_valid_ready_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check TOKEN_NOT_VALID_READY conditions\n");
     return 0;
 }
 
-int token_not_valid_ready_2_condition(device_runtime_sm_t* pt_dr_sm) {
+static int token_not_valid_ready_2_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check TOKEN_NOT_VALID_READY_2 conditions\n");
     return 0;
 }
 
-int ready_update_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
+static int ready_update_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check READY_UPDATE_REQUIREMENTS conditions\n");
     return 0;
 }
 
-int requirements_up_condition(device_runtime_sm_t* pt_dr_sm) {
+static int requirements_up_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check REQUIREMENTS_UP conditions\n");
     return 0;
 }
 
-int token_not_valid_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
+static int token_not_valid_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check TOKEN_NOT_VALID_REQUIREMENTS conditions\n");
     return 0;
 }
 
-int retry_requirements_upload_condition(device_runtime_sm_t* pt_dr_sm) {
+static int retry_requirements_upload_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check RETRY_REQUIREMENTS_UPLOAD conditions\n");
     return 0;
 }
 
-int limit_requirements_upload_condition(device_runtime_sm_t* pt_dr_sm) {
+static int limit_requirements_upload_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check LIMIT_REQUIREMENTS_UPLOAD conditions\n");
     return 0;
 }
 
-int send_init_update_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
+static int send_init_update_requirements_condition(device_runtime_sm_t* pt_dr_sm) {
     printf("Check SEND_INIT_UPDATE_REQUIREMENTS conditions\n");
     return 0;
 }
@@ -114,12 +104,11 @@ sm_transition_t transitions[] = {
 };
 
 // State functions
-void get_ecf_address_action(device_runtime_sm_t* pt_dr_sm) {
+static void get_ecf_address_action(device_runtime_sm_t* pt_dr_sm) {
     printf("Action: Getting ECF address...\n");
 }
 
-void init_action(device_runtime_sm_t* pt_dr_sm) {
-    COGNIT_LOG_DEBUG("Entering INIT state");
+static void init_action(device_runtime_sm_t* pt_dr_sm) {
 
     pt_dr_sm->up_req_counter = 0;
     pt_dr_sm->get_address_counter = 0;
@@ -127,45 +116,45 @@ void init_action(device_runtime_sm_t* pt_dr_sm) {
     cognit_frontend_cli_init(&pt_dr_sm->cfc, &pt_dr_sm->m_t_config);
     cognit_frontend_cli_authenticate(&pt_dr_sm->cfc, pt_dr_sm->biscuit_token);
 
-    COGNIT_LOG_DEBUG("Token: ");
+    COGNIT_LOG_DEBUG("Token: %s", pt_dr_sm->biscuit_token);
 }
 
-void ready_action(device_runtime_sm_t* pt_dr_sm) {
+static void ready_action(device_runtime_sm_t* pt_dr_sm) {
     printf("Action: Ready for processing...\n");
 }
 
-void send_init_request_action(device_runtime_sm_t* pt_dr_sm) {
+static void send_init_request_action(device_runtime_sm_t* pt_dr_sm) {
     printf("Action: Sending initial request...\n");
 }
 
-void execute_action(device_runtime_sm_t* pt_dr_sm)
+static void execute_action(device_runtime_sm_t* pt_dr_sm)
 {
     // Display current state
     switch (pt_dr_sm->current_state) {
         case INIT:
-            printf("Current state: INIT\n");
+            COGNIT_LOG_DEBUG("Current state: INIT");
             init_action(pt_dr_sm);
             break;
         case SEND_INIT_REQUEST:
-            printf("Current state: SEND_INIT_REQUEST\n");
+            COGNIT_LOG_DEBUG("Current state: SEND_INIT_REQUEST\n");
             send_init_request_action(pt_dr_sm);
             break;
         case GET_ECF_ADDRESS:
-            printf("Current state: GET_ECF_ADDRESS\n");
+            COGNIT_LOG_DEBUG("Current state: GET_ECF_ADDRESS");
             get_ecf_address_action(pt_dr_sm);
             break;
         case READY:
-            printf("Current state: READY\n");
+            printf("Current state: READY");
             ready_action(pt_dr_sm);
             break;
         default:
-            printf("Invalid state\n");
+            COGNIT_LOG_DEBUG("Invalid state");
             exit(1);
     }
 }
 
 // Function to get the next state based on the current state and event
-int execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t event) {
+int dr_state_machine_execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t event) {
     for (int i = 0; i < sizeof(transitions) / sizeof(sm_transition_t); i++) {
         if (transitions[i].previous_state == pt_dr_sm->current_state && transitions[i].event == event) {
             int ret = transitions[i].check_conditions(pt_dr_sm);
@@ -176,10 +165,30 @@ int execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t event) {
             }
             else
             {
-                printf("Conditions for transition not met\n");
+                COGNIT_LOG_ERROR("Conditions for transition not met\n");
+                return -1;
             }
         }
     }
+    COGNIT_LOG_ERROR("Invalid transition for current state");
     return -1;
+}
+
+int dr_state_machine_init(device_runtime_sm_t* pt_dr_sm, cognit_config_t t_config, scheduling_t t_reqs)
+{
+    if(pt_dr_sm == NULL)
+    {
+        COGNIT_LOG_ERROR("Device runtime state machine not initialized");
+        return -1;
+    }
+
+    pt_dr_sm->current_state = INIT;
+    pt_dr_sm->m_t_config = t_config;
+    pt_dr_sm->m_t_requirements = t_reqs;
+    
+    COGNIT_LOG_DEBUG("Starting state machine")
+    execute_action(pt_dr_sm);
+
+    return 0;
 }
 

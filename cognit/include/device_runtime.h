@@ -23,7 +23,7 @@
 typedef enum
 {
     E_ST_CODE_SUCCESS = 0,
-    E_ST_CODE_ERROR   = 1
+    E_ST_CODE_ERROR   = -1
 } e_status_code_t;
 
 typedef struct SDeviceRuntime

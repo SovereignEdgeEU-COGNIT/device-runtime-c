@@ -7,6 +7,18 @@
 
 int cognit_frontend_cli_init(cognit_frontend_cli_t* pt_cognit_frontend_cli, cognit_config_t* pt_cognit_config)
 {
+    if(pt_cognit_frontend_cli == NULL)
+    {
+        COGNIT_LOG_ERROR("Cognit frontend not initialized");
+        return -1;
+    }
+
+    if(pt_cognit_config == NULL)
+    {
+        COGNIT_LOG_ERROR("Cognit config not provided");
+        return -1;
+    }
+
     // Setup the instance to point to the configuration
     pt_cognit_frontend_cli->m_t_config = pt_cognit_config;
 
@@ -21,8 +33,20 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
     http_config_t t_http_config = { 0 };
     char url[MAX_URL_LENGTH];
 
+    if(pt_cognit_frontend_cli == NULL)
+    {
+        COGNIT_LOG_ERROR("Cognit frontend not initialized");
+        return -1;
+    }
+
+    if(token == NULL)
+    {
+        COGNIT_LOG_ERROR("Token not provided");
+        return -1;
+    }
+
     memset(url, 0, sizeof(url));
-    snprintf(url, MAX_URL_LENGTH, "%s://%s", STR_PROTOCOL, pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_AUTH_ENDPOINT);
+    snprintf(url, MAX_URL_LENGTH, "%s://%s/%s", STR_PROTOCOL, pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_AUTH_ENDPOINT);
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
@@ -30,7 +54,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
     t_http_config.c_username      = pt_cognit_frontend_cli->m_t_config->cognit_frontend_usr;
     t_http_config.c_password      = pt_cognit_frontend_cli->m_t_config->cognit_frontend_pwd;
 
-    COGNIT_LOG_DEBUG("Requiesting token for %s", pt_cognit_frontend_cli->m_t_config->cognit_frontend_usr);
+    COGNIT_LOG_DEBUG("Requiesting token to %s", url);
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
 
     if (i8_ret != 0

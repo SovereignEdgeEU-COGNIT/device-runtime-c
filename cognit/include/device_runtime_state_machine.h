@@ -52,9 +52,9 @@ typedef struct STransition{
 } sm_transition_t;
 
 // Declaraciones de funciones
-int execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t event);
+int dr_state_machine_execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t event);
 
-int device_runtime_sm_init(device_runtime_sm_t* pt_dr_state_machine, cognit_config_t t_config, scheduling_t t_reqs);
+int dr_state_machine_init(device_runtime_sm_t* pt_dr_state_machine, cognit_config_t t_config, scheduling_t t_reqs);
 
 exec_response_t offload_function(device_runtime_sm_t* pt_dr_state_machine);
 

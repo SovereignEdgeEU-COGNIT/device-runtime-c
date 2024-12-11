@@ -23,9 +23,9 @@
 #define MAX_ENERGY_SCHEDULING_POLICIES 1
 #define NAME_MAX_LEN            50
 
-#define CF_AUTH_ENDPOINT       "/v1/authenticate"
-#define CF_REQ_ENDPOINT       "/v1/app_requirements"
-#define ECF_ADDRESS_ENDPOINT         "/ec_fe"
+#define CF_AUTH_ENDPOINT       "v1/authenticate"
+#define CF_REQ_ENDPOINT       "v1/app_requirements"
+#define ECF_ADDRESS_ENDPOINT         "ec_fe"
 
 #define MAX_URL_LENGTH 512
 #define REQ_TIMEOUT          60
