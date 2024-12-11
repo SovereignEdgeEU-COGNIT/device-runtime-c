@@ -17,15 +17,20 @@
 #include <cJSON.h>
 #include <cognit_config.h>
 #include <cf_parser.h>
+#include <cognit_frontend_cli.h>
 
 /***************** DEFINES AND MACROS *********************/
 #define MAX_ENERGY_SCHEDULING_POLICIES 1
 #define NAME_MAX_LEN            50
 
-#define AUTH_ENDPOINT       "/v1/authenticate"
-#define REQ_ENDPOINT       "/v1/app_requirements"
-#define ECF_ENDPOINT         "/ec_fe"
+#define CF_AUTH_ENDPOINT       "/v1/authenticate"
+#define CF_REQ_ENDPOINT       "/v1/app_requirements"
+#define ECF_ADDRESS_ENDPOINT         "/ec_fe"
 
+#define MAX_URL_LENGTH 512
+#define REQ_TIMEOUT          60
+
+#define MAX_TOKEN_LENGTH    50
 #define MAX_HOSTS           15
 #define MAX_DATASTORES      15
 #define MAX_VNETS      15
@@ -60,8 +65,8 @@ typedef struct SEdgeClusterFrontendResponse
 
 typedef struct SCognitFrontend
 {
-    const cognit_config_t* m_t_config;
-    const char* biscuit_token;  /**< The biscuit token. */
+    cognit_config_t* m_t_config;
+    char biscuit_token[MAX_TOKEN_LENGTH];  /**< The biscuit token. */
     int app_req_id;
 } cognit_frontend_cli_t;
 
@@ -78,7 +83,7 @@ typedef struct SCognitFrontend
  * @param pt_cognit_config Pointer to the cognit_config_t structure containing the configuration.
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-e_cfc_state_t cognit_frontend_cli_init(cognit_frontend_cli_t* t_cognit_frontend_cli, const cognit_config_t* pt_cognit_config);
+e_cfc_state_t cognit_frontend_cli_init(cognit_frontend_cli_t* t_cognit_frontend_cli, cognit_config_t* pt_cognit_config);
 
 /*******************************************************/ /**
  * @brief Authenticates to the cognit frontend and gets the token.
