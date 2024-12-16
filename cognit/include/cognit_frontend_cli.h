@@ -16,21 +16,19 @@
 #include <stdbool.h>
 #include <cJSON.h>
 #include <cognit_config.h>
-#include <cf_parser.h>
-#include <cognit_frontend_cli.h>
 
 /***************** DEFINES AND MACROS *********************/
 #define MAX_ENERGY_SCHEDULING_POLICIES 1
 #define NAME_MAX_LEN            50
 
-#define CF_AUTH_ENDPOINT       "v1/authenticate"
-#define CF_REQ_ENDPOINT       "v1/app_requirements"
+#define CF_AUTH_ENDPOINT             "v1/authenticate"
+#define CF_REQ_ENDPOINT              "v1/app_requirements"
 #define ECF_ADDRESS_ENDPOINT         "ec_fe"
 
-#define MAX_URL_LENGTH 512
+#define MAX_URL_LENGTH       512
 #define REQ_TIMEOUT          60
 
-#define MAX_TOKEN_LENGTH    50
+#define MAX_TOKEN_LENGTH    512
 #define MAX_HOSTS           15
 #define MAX_DATASTORES      15
 #define MAX_VNETS      15
@@ -100,7 +98,7 @@ e_cfc_state_t cognit_frontend_cli_authenticate(cognit_frontend_cli_t* t_cognit_f
  * @param requirements_json app requirements.
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-int cognit_frontend_client_update_requirements(cognit_frontend_cli_t* t_cognit_frontend_cli, const char *requirements_json);
+int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, scheduling_t t_app_reqs, int* pt_app_req_id);
 
 /*******************************************************/ /**
  * @brief Gets the status of an edge cluster.

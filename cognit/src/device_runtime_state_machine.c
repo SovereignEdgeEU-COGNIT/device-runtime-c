@@ -148,8 +148,7 @@ static void execute_action(device_runtime_sm_t* pt_dr_sm)
             ready_action(pt_dr_sm);
             break;
         default:
-            COGNIT_LOG_DEBUG("Invalid state");
-            exit(1);
+            COGNIT_LOG_ERROR("Invalid state");
     }
 }
 
@@ -188,6 +187,10 @@ int dr_state_machine_init(device_runtime_sm_t* pt_dr_sm, cognit_config_t t_confi
     
     COGNIT_LOG_DEBUG("Starting state machine")
     execute_action(pt_dr_sm);
+
+    /////Esto no va aqui
+    int i = 0;
+    cognit_frontend_cli_update_requirements(&pt_dr_sm->cfc, pt_dr_sm->biscuit_token, pt_dr_sm->m_t_requirements, &i);
 
     return 0;
 }

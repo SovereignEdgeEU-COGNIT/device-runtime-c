@@ -26,6 +26,8 @@
 
 /******************* PUBLIC METHODS ***********************/
 
+void cfparser_parse_str_response_as_token(char* token, uint8_t *ui8_payload);
+
 /*******************************************************/ /**
  * @brief Parse the scheduling_t struct to a JSON string
  * 
@@ -34,7 +36,7 @@
  * @param payload_len Length of the JSON string
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-//int8_t cfparser_parse_app_requirements_as_str_json(scheduling_t t_app_requirements, uint8_t* ui8_payload_buff, size_t* payload_len);
+int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements, uint8_t* ui8_payload_buff, size_t* payload_len);
 
 /*******************************************************/ /**
  * @brief Get edge cluster frontend address from JSON string
@@ -43,7 +45,7 @@
  * @param t_ecf_response Struct to store the response
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-//int8_t cfparser_parse_json_str_as_ecf_address(const char* json_str, cognit_frontend_cli_t* pt_cfc);
+int8_t cfparser_parse_json_str_as_ecf_address(const char* json_str, cognit_frontend_cli_t* pt_cfc);
 
 /******************* PRIVATE METHODS ***********************/
 

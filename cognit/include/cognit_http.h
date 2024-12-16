@@ -14,10 +14,11 @@
 #include <stdint.h>
 #include <stddef.h>
 /***************** DEFINES AND MACROS *********************/
-#define STR_PROTOCOL "http"
+#define STR_PROTOCOL "https"
 
 #define HTTP_METHOD_GET    "GET"
 #define HTTP_METHOD_POST   "POST"
+#define HTTP_METHOD_PUT   "PUT"
 #define HTTP_METHOD_DELETE "DELETE"
 
 #define MAX_HTTP_RESPONSE_SIZE     30000
@@ -40,6 +41,7 @@ typedef struct
     uint32_t ui32_timeout_ms;
     const char* c_username;
     const char* c_password;
+    const char* c_token;
 } http_config_t;
 
 typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config_t* config);
