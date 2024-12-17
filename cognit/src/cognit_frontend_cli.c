@@ -138,3 +138,61 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
 
     return 0;
 }
+
+int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id)
+{
+    int8_t i8_ret = 0;
+    uint8_t ui8_payload[1024 * 16];
+    size_t payload_len;
+    http_config_t t_http_config = { 0 };
+    char url[MAX_URL_LENGTH];
+
+    if(pt_cognit_frontend_cli == NULL)
+    {
+        COGNIT_LOG_ERROR("Cognit frontend not initialized");
+        return -1;
+    }
+
+    if(biscuit_token == NULL)
+    {
+        COGNIT_LOG_ERROR("Token not provided");
+        return -1;
+    }
+
+    memset(url, 0, sizeof(url));
+    snprintf(url, MAX_URL_LENGTH, "%s://%s/%s/%d/%s", STR_PROTOCOL, pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_REQ_ENDPOINT, app_req_id, CF_ECF_ADDRESS_ENDPOINT);
+
+    t_http_config.c_url           = url;
+    t_http_config.c_method        = HTTP_METHOD_GET;
+    t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
+    t_http_config.c_token         = biscuit_token;
+
+    COGNIT_LOG_DEBUG("Sending ECF address request to %s", url);
+    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
+
+    if (i8_ret != 0
+        || (t_http_config.t_http_response.l_http_code != 200
+        && t_http_config.t_http_response.l_http_code != 201))
+    {
+        COGNIT_LOG_ERROR("Get ECF failed with status code: %s", t_http_config.t_http_response.l_http_code);
+        COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
+
+        return COGNIT_ECODE_ERROR;
+    }
+    else
+    {
+        COGNIT_LOG_DEBUG("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
+        // Copy the response json to the token string
+        cfparser_parse_json_str_as_ecf_address(t_http_config.t_http_response.ui8_response_data_buffer, &pt_cognit_frontend_cli->ecf_resp);
+        COGNIT_LOG_DEBUG("ECF IP: %s", pt_cognit_frontend_cli->ecf_resp.template);
+        if (i8_ret != 0)
+        {
+            COGNIT_LOG_ERROR("Error parsing token");
+            return COGNIT_ECODE_ERROR;
+        }
+    }
+
+    // TODO IMPOORTANT handle the free of the response buffer???
+
+    return 0;
+}

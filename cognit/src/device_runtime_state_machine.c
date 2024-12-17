@@ -189,8 +189,9 @@ int dr_state_machine_init(device_runtime_sm_t* pt_dr_sm, cognit_config_t t_confi
     execute_action(pt_dr_sm);
 
     /////Esto no va aqui
-    int i = 0;
-    cognit_frontend_cli_update_requirements(&pt_dr_sm->cfc, pt_dr_sm->biscuit_token, pt_dr_sm->m_t_requirements, &i);
+    cognit_frontend_cli_update_requirements(&pt_dr_sm->cfc, pt_dr_sm->biscuit_token, pt_dr_sm->m_t_requirements, &pt_dr_sm->cfc.app_req_id);
+    cognit_frontend_cli_get_ecf_address(&pt_dr_sm->cfc, pt_dr_sm->biscuit_token, pt_dr_sm->cfc.app_req_id);
+    strcpy(pt_dr_sm->ecf.t_ecf_endpoint, pt_dr_sm->cfc.ecf_resp.template);
 
     return 0;
 }

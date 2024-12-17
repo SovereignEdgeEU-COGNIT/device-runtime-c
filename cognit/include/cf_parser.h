@@ -45,7 +45,8 @@ int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements,
  * @param t_ecf_response Struct to store the response
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-int8_t cfparser_parse_json_str_as_ecf_address(const char* json_str, cognit_frontend_cli_t* pt_cfc);
+
+int8_t cfparser_parse_json_str_as_ecf_address(const char* json_str, ecf_response_t* pt_ecf_res);
 
 /******************* PRIVATE METHODS ***********************/
 

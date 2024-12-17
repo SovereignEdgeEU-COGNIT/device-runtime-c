@@ -23,7 +23,7 @@
 
 #define CF_AUTH_ENDPOINT             "v1/authenticate"
 #define CF_REQ_ENDPOINT              "v1/app_requirements"
-#define ECF_ADDRESS_ENDPOINT         "ec_fe"
+#define CF_ECF_ADDRESS_ENDPOINT         "ec_fe"
 
 #define MAX_URL_LENGTH       512
 #define REQ_TIMEOUT          60
@@ -58,7 +58,7 @@ typedef struct SEdgeClusterFrontendResponse
     int hosts[MAX_HOSTS];
     int datastores[MAX_DATASTORES];
     int vnets[MAX_VNETS];
-    char* template;
+    char* template[MAX_URL_LENGTH];
 } ecf_response_t;
 
 typedef struct SCognitFrontend
@@ -66,6 +66,7 @@ typedef struct SCognitFrontend
     cognit_config_t* m_t_config;
     char biscuit_token[MAX_TOKEN_LENGTH];  /**< The biscuit token. */
     int app_req_id;
+    ecf_response_t ecf_resp;
 } cognit_frontend_cli_t;
 
 /******************* GLOBAL VARIABLES *********************/
@@ -109,7 +110,7 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
  * @param ecf_address address of the edge cluster frontend.
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-e_cfc_state_t cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* t_cognit_frontend_cli, ecf_response_t t_ecf);
+e_cfc_state_t cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
 
 /******************* PRIVATE METHODS ***********************/
 #endif // COGNIT_FRONTEND_CLI_H

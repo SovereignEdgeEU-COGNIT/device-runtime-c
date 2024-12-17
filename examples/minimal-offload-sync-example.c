@@ -46,6 +46,13 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         headers = curl_slist_append(headers, "Content-Type: application/json");
         headers = curl_slist_append(headers, "charset: utf-8");
 
+        if(config->c_token != NULL)
+        {
+            char token_header[MAX_TOKEN_LENGTH] = "token: ";
+            strcat(token_header, config->c_token);
+            headers = curl_slist_append(headers, token_header);
+        }
+
         if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers) != CURLE_OK
             // Configure URL and payload
             || curl_easy_setopt(curl, CURLOPT_URL, config->c_url) != CURLE_OK
@@ -88,9 +95,42 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, size) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_POSTFIELDS, c_buffer) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
-                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
+                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK
+                )
             {
                 COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed");
+                return -1;
+            }
+
+            printf("Generated cURL Command:\n");
+            printf("curl -X %s '%s'",
+                config->c_method,
+                config->c_url);
+
+            if (headers)
+            {
+                struct curl_slist* header = headers;
+                while (header != NULL)
+                {
+                    printf(" -H '%s'", header->data);
+                    header = header->next;
+                }
+            }
+
+            if (c_buffer != NULL && size > 0)
+            {
+                printf(" -d '%.*s'", (int)size, c_buffer);
+            }
+        }
+        else if (strcmp(config->c_method, HTTP_METHOD_PUT) == 0)
+        {
+            if (curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT") != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, size) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_POSTFIELDS, c_buffer) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
+            {
+                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->put() failed");
                 return -1;
             }
         }
