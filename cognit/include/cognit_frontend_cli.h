@@ -50,7 +50,6 @@ typedef struct
     char geolocation[NAME_MAX_LEN];
 } scheduling_t;
 
-
 typedef struct SEdgeClusterFrontendResponse
 {
     int id;
@@ -58,15 +57,14 @@ typedef struct SEdgeClusterFrontendResponse
     int hosts[MAX_HOSTS];
     int datastores[MAX_DATASTORES];
     int vnets[MAX_VNETS];
-    char* template[MAX_URL_LENGTH];
+    char template[MAX_URL_LENGTH];
 } ecf_response_t;
 
 typedef struct SCognitFrontend
 {
     cognit_config_t* m_t_config;
-    char biscuit_token[MAX_TOKEN_LENGTH];  /**< The biscuit token. */
-    int app_req_id;
     ecf_response_t ecf_resp;
+    bool has_connection;
 } cognit_frontend_cli_t;
 
 /******************* GLOBAL VARIABLES *********************/
@@ -111,6 +109,12 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
 e_cfc_state_t cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
+
+int cognit_frontend_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, char* payload, int payload_len);
+
+void set_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli, bool value);
+
+bool cfc_get_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli);
 
 /******************* PRIVATE METHODS ***********************/
 #endif // COGNIT_FRONTEND_CLI_H

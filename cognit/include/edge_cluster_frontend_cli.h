@@ -80,17 +80,7 @@ typedef struct SEdgeClusterFrontendCli
  * @param token Session token
  * @param c_endpoint Server endpoint URL
 ***********************************************************/
-void edge_cluster_frontend_cli_init(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, char* token, const char* c_endpoint);
-
-/*******************************************************/ /**
- * @brief Checks if the edge_cluster client is initialized
- * 
- * This function checks if the edge_cluster client is initialized.
- * 
- * @param pt_edge_cluster_frontend_cli Pointer to the edge_cluster client structure
- * @return true if the edge_cluster client is initialized, false otherwise
-***********************************************************/
-bool edge_cluster_frontend_cli_is_initialized(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli);
+void ecf_cli_init(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, const char* c_endpoint);
 
 /*******************************************************/ /**
  * @brief Executes a synchronous task on the edge_cluster
@@ -103,46 +93,11 @@ bool edge_cluster_frontend_cli_is_initialized(edge_cluster_frontend_cli_t* pt_ed
  * @param pt_exec_response Pointer to the execution response structure
  * @return 0 on success, an error code otherwise
 ***********************************************************/
-int edge_cluster_frontend_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, uint8_t* ui8_payload, size_t payload_len, exec_response_t* pt_exec_response);
+int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, int func_id, uint8_t* ui8_payload, size_t payload_len, exec_response_t* pt_exec_response);
 
-/*******************************************************/ /**
- * @brief Executes an asynchronous task on the edge_cluster
- * 
- * This function makes a POST request to the edge_cluster for asynchronous task execution.
- * 
- * @param pt_edge_cluster_frontend_cli Pointer to the edge_cluster client structure
- * @param ui8_payload JSON payload with the task parameters
- * @param payload_len Length of the payload
- * @param pt_async_exec_response Pointer to the asynchronous execution response structure
- * @return 0 on success, an error code otherwise
-***********************************************************/
-int edge_cluster_frontend_cli_faas_exec_async(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, uint8_t* ui8_payload, size_t payload_len, async_exec_response_t* pt_async_exec_response);
+void ecf_set_has_connection(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, bool value);
 
-/*******************************************************/ /**
- * @brief Waits for the completion of an asynchronous task on the edge_cluster
- * 
- * This function makes a GET request to the edge_cluster to check the status of an asynchronous task.
- * 
- * @param pt_edge_cluster_frontend_cli Pointer to the edge_cluster client structure
- * @param c_async_task_id String with the ID of the asynchronous task
- * @param ui32_timeout_ms Timeout in milliseconds
- * @param pt_async_exec_response Pointer to the asynchronous execution response structure
- * @return 0 on success, an error code otherwise
-***********************************************************/
-int edge_cluster_get_has_connection(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli);
-
-/*******************************************************/ /**
- * @brief Waits for the completion of an asynchronous task on the edge_cluster
- * 
- * This function makes a GET request to the edge_cluster to check the status of an asynchronous task.
- * 
- * @param pt_edge_cluster_frontend_cli Pointer to the edge_cluster client structure
- * @param c_async_task_id String with the ID of the asynchronous task
- * @param ui32_timeout_ms Timeout in milliseconds
- * @param pt_async_exec_response Pointer to the asynchronous execution response structure
- * @return 0 on success, an error code otherwise
-***********************************************************/
-int edge_cluster_set_has_connection(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli);
+bool ecf_get_has_connection(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli);
 /******************* PRIVATE METHODS ***********************/
 
 #endif // EDGE_CLUSTER_CLI_H

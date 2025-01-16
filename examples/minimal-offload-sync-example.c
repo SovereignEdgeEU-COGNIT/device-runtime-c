@@ -61,7 +61,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
             || curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_response_data_cb) != CURLE_OK
             || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK)
         {
-            COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt() failed");
+            COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt() failed");
             return -1;
         }
 
@@ -73,7 +73,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         {
             if (curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->IPRESOLVE_V6 failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->IPRESOLVE_V6 failed");
                 return -1;
             }
         }
@@ -84,7 +84,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->get() failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->get() failed");
                 return -1;
             }
         }
@@ -98,28 +98,8 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK
                 )
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->post() failed");
                 return -1;
-            }
-
-            printf("Generated cURL Command:\n");
-            printf("curl -X %s '%s'",
-                config->c_method,
-                config->c_url);
-
-            if (headers)
-            {
-                struct curl_slist* header = headers;
-                while (header != NULL)
-                {
-                    printf(" -H '%s'", header->data);
-                    header = header->next;
-                }
-            }
-
-            if (c_buffer != NULL && size > 0)
-            {
-                printf(" -d '%.*s'", (int)size, c_buffer);
             }
         }
         else if (strcmp(config->c_method, HTTP_METHOD_PUT) == 0)
@@ -130,7 +110,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->put() failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->put() failed");
                 return -1;
             }
         }
@@ -140,13 +120,13 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->post() failed");
                 return -1;
             }
         }
         else
         {
-            COGNIT_LOG_ERROR("[hhtp_send_req_cb] Invalid HTTP method");
+            COGNIT_LOG_ERROR("[http_send_req_cb] Invalid HTTP method");
             return -1;
         }
 
@@ -154,7 +134,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         res = curl_easy_perform(curl);
 
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-        COGNIT_LOG_ERROR("HTTP err code %ld ", http_code);
+        COGNIT_LOG_INFO("HTTP err code %ld ", http_code);
 
         // Check errors
         if (res != CURLE_OK)
@@ -178,21 +158,29 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
     return (res == CURLE_OK) ? 0 : -1;
 }
 
+scheduling_t app_reqs = {
+    .flavour = "NatureV2",
+    .max_latency = 100,
+    .max_function_execution_time = 3.5,
+    .min_renewable = 85,
+    .geolocation = "IKERLAN ARRASATE/MONDRAGON 20500"
+};
+
+scheduling_t new_reqs = {
+    .flavour = "NatureV2",
+    .max_latency = 80,
+    .max_function_execution_time = 8.5,
+    .min_renewable = 50,
+    .geolocation = "IKERLAN ARRASATE/MONDRAGON 20500"
+};
+
 int main(int argc, char const* argv[])
 {
-    device_runtime_t t_my_device_runtime;
+    device_runtime_t t_my_device_runtime = {0};
     exec_response_t t_exec_response;
-    scheduling_t t_app_reqs = {
-        .flavour = "NatureV2",
-        .max_latency = 100,
-        .max_function_execution_time = 3.5,
-        .min_renewable = 85,
-        .geolocation = "IKERLAN ARRASATE/MONDRAGON 20500"
-    };
+    device_runtime_init(&t_my_device_runtime, "./examples/cognit-template.yml", app_reqs);
 
-    device_runtime_init(&t_my_device_runtime, "./examples/cognit-template.yml", t_app_reqs);
-
-    device_runtime_call(&t_my_device_runtime, &t_exec_response);
+    device_runtime_call(&t_my_device_runtime, new_reqs, &t_exec_response);
 
     COGNIT_LOG_INFO("Result: %s", t_exec_response.res_payload);
 

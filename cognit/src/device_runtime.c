@@ -82,6 +82,7 @@ e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, 
         return E_ST_CODE_ERROR;
     }
 
+
     if (read_yaml_config(config_path, &pt_dr->m_t_config) == 0) {
         COGNIT_LOG_DEBUG("Cognit Frontend Endpoint: %s", pt_dr->m_t_config.cognit_frontend_endpoint);
         COGNIT_LOG_DEBUG("Cognit Frontend Username: %s", pt_dr->m_t_config.cognit_frontend_usr);
@@ -90,15 +91,32 @@ e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, 
         return E_ST_CODE_ERROR;
     }
 
-    pt_dr->m_t_requirements = t_reqs; 
+    int ret = dr_state_machine_init(&pt_dr->m_t_device_runtime_sm, pt_dr->m_t_config);
 
-    int ret = dr_state_machine_init(&pt_dr->m_t_device_runtime_sm, pt_dr->m_t_config, pt_dr->m_t_requirements);
+    dr_sm_update_requirements(&pt_dr->m_t_device_runtime_sm, t_reqs);
     
     return ret;
 }
 
 
-e_status_code_t device_runtime_call(device_runtime_t* pt_dr, exec_response_t* pt_exec_response)
+e_status_code_t device_runtime_call(device_runtime_t* pt_dr, scheduling_t t_new_reqs, exec_response_t* pt_exec_response)
 {
+    if(pt_dr == NULL)
+    {
+        COGNIT_LOG_ERROR("Device runtime state machine not initialized");
+        return E_ST_CODE_ERROR;
+    }
+
+    dr_sm_update_requirements(&pt_dr->m_t_device_runtime_sm, t_new_reqs);
+
+    exec_response_t res = dr_sm_offload_function(&pt_dr->m_t_device_runtime_sm);
+    //Handle response
+    
     return E_ST_CODE_SUCCESS;
 }
+
+
+
+
+
+

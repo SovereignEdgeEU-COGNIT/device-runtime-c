@@ -5,12 +5,12 @@ set(SRC_FILES
     "${PROJECT_ROOT}/src/cJSON.c"
     "${PROJECT_ROOT}/src/cognit_http.c"
     "${PROJECT_ROOT}/src/cognit_frontend_cli.c"
-    #"${PROJECT_ROOT}/src/edge_cluster_frontend_client.c"
+    "${PROJECT_ROOT}/src/edge_cluster_frontend_cli.c"
     "${PROJECT_ROOT}/src/device_runtime.c"
     "${PROJECT_ROOT}/src/base64.c"
     "${PROJECT_ROOT}/src/ip_utils.c"
     "${PROJECT_ROOT}/src/device_runtime_state_machine.c"
-    #"${PROJECT_ROOT}/src/cf_parser.c"
+    "${PROJECT_ROOT}/src/cf_parser.c"
     )
 
 set(INCLUDE_PATHS "${PROJECT_ROOT}/include" "${PROJECT_ROOT}/src")

@@ -18,19 +18,13 @@
 #include <device_runtime_state_machine.h>
 /***************** DEFINES AND MACROS *********************/
 #define FAAS_MAX_SEND_PAYLOD_SIZE 16384 // 16KB
-/**************** TYPEDEFS AND STRUCTS ********************/
 
-typedef enum
-{
-    E_ST_CODE_SUCCESS = 0,
-    E_ST_CODE_ERROR   = -1
-} e_status_code_t;
+/**************** TYPEDEFS AND STRUCTS ********************/
 
 typedef struct SDeviceRuntime
 {
     cognit_config_t m_t_config;
     device_runtime_sm_t m_t_device_runtime_sm;
-    scheduling_t m_t_requirements;
 } device_runtime_t;
 
 /******************* GLOBAL VARIABLES *********************/
@@ -55,7 +49,7 @@ e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, 
  * @param pt_exec_response Execution response
  * @return e_status_code_t Execution status
 ***********************************************************/
-e_status_code_t device_runtime_call(device_runtime_t* pt_dr, exec_response_t* pt_exec_response);
+e_status_code_t device_runtime_call(device_runtime_t* pt_dr, scheduling_t t_new_reqs, exec_response_t* pt_exec_response);
 /******************* PRIVATE METHODS ***********************/
 
 #endif // DEVICE_RUNTIME_H
