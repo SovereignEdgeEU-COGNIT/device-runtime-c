@@ -17,11 +17,10 @@
  */
 typedef struct
 {
-    const char* prov_engine_endpoint; /**< The endpoint of the provisioning engine. */
-    const char* prov_engine_pe_usr;   /**< The username for the provisioning engine. */
-    const char* prov_engine_pe_pwd;   /**< The password for the provisioning engine. */
-    uint32_t prov_engine_port;        /**< The port number for the provisioning engine. */
-    uint32_t ui32_serv_runtime_port;  /**< The port number for the service runtime. */
+    const char* cognit_frontend_endpoint; /**< The endpoint of the cognit frontend. */
+    const char* cognit_frontend_usr;      /**< The username for the provisioning engine. */
+    const char* cognit_frontend_pwd;      /**< The password for the provisioning engine. */
+    const char* local_endpoint;
     // Add other fields as needed
 } cognit_config_t;
 

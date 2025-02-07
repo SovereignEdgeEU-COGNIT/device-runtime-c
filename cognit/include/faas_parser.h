@@ -1,88 +1,104 @@
-/*******************************************************/ /***
-*	\file  ${file_name}
-*	\brief HTTP client
-*
-*	Compiler  :  \n
-*	Copyright : Samuel Pérez \n
-*	Target    :  \n
-*
-*	\version $(date) ${user} $(remarks)
-***********************************************************/
-#ifndef FAAS_PARSER_H
-#define FAAS_PARSER_H
-/********************** INCLUDES **************************/
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <serverless_runtime_client.h>
-/***************** DEFINES AND MACROS *********************/
-#define JSON_ERR_CODE_OK           0
-#define JSON_ERR_CODE_INVALID_JSON -1
-// Macro to include headers
-#define INCLUDE_HEADERS(...) \
-    (#__VA_ARGS__)
+#include <string.h>
+#include "nano.pb.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
-// Macro to create a string from a function
-#define FUNC_TO_STR(name, fn) \
-    fn const char name##_str[] = #fn;
-#define MAX_PARAMS 5
-/**************** TYPEDEFS AND STRUCTS ********************/
-typedef struct
+typedef struct SFaaS
 {
-    char* type; // Float, int, char, bool
-    char* var_name;
-    char* value;  // Coded b64
-    char mode[4]; // "IN" or "OUT"
-} param_t;
+    MyFunc myfunc;
+    FaasRequest faas_request;
+} faas_t;
 
-typedef struct
-{
-    char lang[2]; // "PY", "C"
-    char* fc;
-    param_t params[MAX_PARAMS];
-    size_t params_count;
-} exec_faas_params_t;
+void faas_parser_init(faas_t* pt_faas);
 
-/******************* GLOBAL VARIABLES *********************/
+#define ADD_VAR_FC(FIELD, FIELD_UPPER, TYPE)                \
+    void add##FIELD_UPPER##Var(faas_t* pt_faas, TYPE val)   \
+    {                                                       \
+        TYPE FIELD##_array[1];                              \
+        FIELD##_array[0] = val;                             \
+        add##FIELD_UPPER##Array(pt_faas, FIELD##_array, 1); \
+    }
 
-/******************* PUBLIC METHODS ***********************/
+#define ADD_ARRAY_FC(FIELD, FIELD_UPPER, TYPE)                                      \
+    void add##FIELD_UPPER##Array(faas_t* pt_faas, TYPE array[], int length)         \
+    {                                                                               \
+        MyParam param                       = MyParam_init_zero;                    \
+        param.which_param                   = MyParam_my_##FIELD##_tag;             \
+        param.param.my_##FIELD.values_count = length;                               \
+        for (int i = 0; i < length; i++)                                            \
+            param.param.my_##FIELD.values[i] = array[i];                            \
+        pt_faas->faas_request.params[pt_faas->faas_request.params_count++] = param; \
+    }
 
-/*******************************************************/ /**
- * @brief Parse the exec_faas_params_t struct to a JSON string
- * 
- * @param exec_faas_params Struct with the FaaS parameters
- * @param ui8_payload_buff Buffer to store the JSON string
- * @param payload_len Length of the JSON string
- * @return int8_t 0 if OK, -1 if error
-***********************************************************/
-int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
+void printParams(FaasRequest faas_request);
 
-/*******************************************************/ /**
- * @brief Parse JSON string to exec_response_t struct
- * 
- * @param json_str JSON string
- * @param t_exec_response Struct to store the response
- * @return int8_t 0 if OK, -1 if error
-***********************************************************/
-int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response);
+void addFLOATVar(faas_t* pt_faas_faas, float val);
 
-/*******************************************************/ /**
- * @brief Parse JSON string to async_exec_response_t struct
- * 
- * @param json_str JSON string
- * @param t_async_exec_response Struct to store the response 
- * @return int8_t 0 if OK, -1 if error
-***********************************************************/
-int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response);
+void addDOUBLEVar(faas_t* pt_faas_faas, double val);
 
-/*******************************************************/ /**
- * @brief Frees the memory allocated for exec_faas_params_t struct
- * 
- * @param t_exec_response Struct to free
-***********************************************************/
-void faasparser_destroy_exec_response(exec_response_t* t_exec_response);
+void addINT64Var(faas_t* pt_faas_faas, int64_t val);
 
-/******************* PRIVATE METHODS ***********************/
+void addINT32Var(faas_t* pt_faas_faas, int32_t val);
 
-#endif // FAAS_PARSER_H
+void addUINT32Var(faas_t* pt_faas_faas, uint32_t val);
+
+void addUINT64Var(faas_t* pt_faas_faas, uint64_t val);
+
+void addSINT32Var(faas_t* pt_faas_faas, int32_t val);
+
+void addSINT64Var(faas_t* pt_faas_faas, int64_t val);
+
+void addFIXED32Var(faas_t* pt_faas_faas, uint32_t val);
+
+void addFIXED64Var(faas_t* pt_faas_faas, uint64_t val);
+
+void addSFIXED32Var(faas_t* pt_faas_faas, int32_t val);
+
+void addSFIXED64Var(faas_t* pt_faas_faas, int64_t val);
+
+//void addBOOLVar(faas_t *pt_faas_faas, protobuf_c_boolean val);
+
+void addFLOATArray(faas_t* pt_faas_faas, float array[], int length);
+
+void addDOUBLEArray(faas_t* pt_faas_faas, double array[], int length);
+
+void addINT64Array(faas_t* pt_faas_faas, int64_t array[], int length);
+
+void addINT32Array(faas_t* pt_faas_faas, int32_t array[], int length);
+
+void addUINT32Array(faas_t* pt_faas_faas, uint32_t array[], int length);
+
+void addUINT64Array(faas_t* pt_faas_faas, uint64_t array[], int length);
+
+void addSINT32Array(faas_t* pt_faas_faas, int32_t array[], int length);
+
+void addSINT64Array(faas_t* pt_faas_faas, int64_t array[], int length);
+
+void addFIXED32Array(faas_t* pt_faas_faas, uint32_t array[], int length);
+
+void addFIXED64Array(faas_t* pt_faas_faas, uint64_t array[], int length);
+
+void addSFIXED32Array(faas_t* pt_faas_faas, int32_t array[], int length);
+
+void addSFIXED64Array(faas_t* pt_faas_faas, int64_t array[], int length);
+
+//void addBOOLArray(faas_t *pt_faas_faas, protobuf_c_boolean array[], int length);
+
+void addBYTESParam(faas_t* pt_faas, const uint8_t* bytes, size_t length);
+
+void addSTRINGParam(faas_t* pt_faas, const char* string);
+
+void addFC(faas_t* pt_faas, char* fc_name, char* fc_code);
+
+int faas_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len);
+
+int faas_serialize_faas_request(faas_t* pt_faas, uint8_t* req_buf, int len);
+
+void faas_add_fc_id_to_request(faas_t* pt_faas, int fc_id);
+
+int faas_deserialize_fc_upload_response(uint8_t* req_buf, int len);
+
+int faas_deserialize_faas_response(uint8_t* res_buf, int len, void** result);
