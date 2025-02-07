@@ -48,8 +48,8 @@ The configuration to connect to the Cognit Frontend is set in the cognit-templat
 
 ```c
     api_endpoint: "https://cognit-lab-frontend.sovereignedge.eu" # no port needed
-credentials: "your_username:your_password"
-local_endpoint: "localhost:5555"
+    credentials: "your_username:your_password"
+    local_endpoint: "localhost:5555"
 
 ```
 `Note: The "local_endpoint" field is used only for local testing purposes. If this field is not included (or is commented out), the Device Runtime will offload the functions to the Edge Cluster provided by the Cognit Frontend. Otherwise, the Device Runtime will connect to the Cognit Frontend but, afterward, will ignore the provided Edge Cluster and offload (or call) the functions to the local endpoint specified in the configuration file. This requires a Serverless Runtime to be running on the specified endpoint.`
