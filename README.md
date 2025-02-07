@@ -1,5 +1,5 @@
 # Device-runtime
-This repository holds the c implementation of the Device Runtime. The Device Runtime provides a SDK to enable the devices to communicate with the COGNIT platform to perform the task offloading. This component communicates with the Provisioning Engine to request/delete/update a Serverless Runtime and, then, it communicates with the provided Serverless Runtime to perform the offloading of functions and the uploading of content to the data-service.
+This repository holds the c implementation of the new architecture for Device Runtime. The Device Runtime provides a SDK to enable the devices to communicate with the COGNIT platform to perform the task offloading. This component communicates with the Cognit Frontend to send the app requirements and get the endpoint of an Edge Cluster. Then, it communicates with the provided Edge Cluster to perform the offloading of functions and the uploading of content to the data-service.
 
 ## Building from sources
 Ensure you have updated gcc and clang.
@@ -18,14 +18,13 @@ There are different points to compile using CMake:
 
     mkdir build && cd build && cmake .. -DSANITIZER="" && make
 
+`Note:` By default the example program is compiled, ensure libCurl is installed in your system to build the example. If you only want to compile the library use:
 
-`Note:` By default unit test and examples are compiled, ensure libCurl and Gtest sources are installed in your system to build the tests and examples. If you only want to compile the library use:
+    cmake -DCOGNIT_BUILD_EXAMPLES=OFF ..
 
-    cmake -DCOGNIT_BUILD_TESTS=OFF -DCOGNIT_BUILD_EXAMPLES=OFF ..
-    
 **To compile with your own toolchain**
 
-In order to compile the project with a custom toolchain for Arm systems for example, you will need to add to the main CMake the follows:
+In order to compile the project with a custom toolchain (for Arm systems, for example), you will need to add to the main CMake the follows:
     
     set(CMAKE_SYSTEM_NAME custom_arm)
     set(CMAKE_SYSTEM_PROCESSOR arm)
@@ -39,24 +38,20 @@ In order to compile the project with a custom toolchain for Arm systems for exam
 
 
 ## User's manual
-### Configuration
-The configuration for your Cognit Device Runtime can be added in minimal-offload-example.c where:
-
-```c
-    // Initialize the config for the serverless runtime context instance
-    t_my_cognit_config.prov_engine_endpoint   = "localhost:8080";
-    t_my_cognit_config.prov_engine_pe_usr     = "admin";
-    t_my_cognit_config.prov_engine_pe_pwd     = "admin";
-    t_my_cognit_config.prov_engine_port       = 8080;
-```
-`Note: Provisioning Engine Endpoint doesn't need "http://"`
 ### Examples
-There are several folders that might be interesting for a user that is getting acquainted with Cognit:
 In the `examples/` folder one can find the minimal example for running a minimal example making use of the Cognit module. To run it:
 
     ./examples/minimal-offload-example
 
-### Tests
-The `cognit/test/`  folder holds the tests. To run them:
+### Configuration
+The configuration to connect to the Cognit Frontend is set in the cognit-template.yml file:
 
-    ./cognit/test/unit_tests
+```c
+    api_endpoint: "https://cognit-lab-frontend.sovereignedge.eu" # no port needed
+    credentials: "your_username:your_password"
+    local_endpoint: "localhost:5555"
+
+```
+`Note: The "local_endpoint" field is used only for local testing purposes. If this field is not included (or is commented out), the Device Runtime will offload the functions to the Edge Cluster provided by the Cognit Frontend. Otherwise, the Device Runtime will connect to the Cognit Frontend but, afterward, will ignore the provided Edge Cluster and offload (or call) the functions to the local endpoint specified in the configuration file. This requires a Serverless Runtime to be running on the specified endpoint.`
+
+

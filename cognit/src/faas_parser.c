@@ -1,241 +1,377 @@
-#include <faas_parser.h>
-#include <base64.h>
-#include <cJSON.h>
-#include <logger.h>
+#include "faas_parser.h"
+#include "logger.h"
 
-int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len)
+#define MAX_BYTE_PARAMS 8 // Límite máximo de parámetros de tipo bytes
+
+void printParams(FaasRequest faas_request)
 {
-    cJSON* root           = NULL;
-    cJSON* param          = NULL;
-    cJSON* params_array   = NULL;
-    char* str_faas_json   = NULL;
-    char* str_param       = NULL;
-    char* str_b64_param   = NULL;
-    char* str_b64_value   = NULL;
-    int i_coded_value_len = 0;
-    int i_coded_param_len = 0;
-    int out_fc_len        = 0;
-
-    char* str_encoded_fc = (char*)malloc(base64_encode_len(strlen(exec_faas_params->fc)));
-
-    if (str_encoded_fc == NULL)
+    COGNIT_LOG_DEBUG("FaaS Request Params:");
+    for (size_t i = 0; i < faas_request.params_count; i++)
     {
-        COGNIT_LOG_ERROR("Failed to allocate memory for encoded string");
-    }
+        MyParam* param = &faas_request.params[i];
 
-    root = cJSON_CreateObject();
-
-    if (root == NULL)
-    {
-        COGNIT_LOG_ERROR("Error creating cJSON object");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    cJSON_AddStringToObject(root, "lang", "C");
-    COGNIT_LOG_DEBUG("exec_faas_params->fc: %s", exec_faas_params->fc);
-
-    out_fc_len = base64_encode(str_encoded_fc, exec_faas_params->fc, strlen(exec_faas_params->fc));
-    COGNIT_LOG_DEBUG("str_encoded_fc: %s", str_encoded_fc);
-    // COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld", strlen(str_encoded_fc));
-    cJSON_AddStringToObject(root, "fc", (const char*)str_encoded_fc);
-    free(str_encoded_fc);
-
-    params_array = cJSON_CreateArray();
-    if (params_array == NULL)
-    {
-        COGNIT_LOG_ERROR("Error creating cJSON array");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    for (int i = 0; i < exec_faas_params->params_count; i++)
-    {
-        param = cJSON_CreateObject();
-        if (param == NULL)
+        if (i == faas_request.bytes_pos)
         {
-            COGNIT_LOG_ERROR("Error creating cJSON object");
-            cJSON_Delete(root);
-            return JSON_ERR_CODE_INVALID_JSON;
+            COGNIT_LOG_DEBUG("  Param[%zu]:", i);
+            COGNIT_LOG_DEBUG("    BYTES");
         }
-        COGNIT_LOG_TRACE("exec_faas_params->params[%d].value: %s", i, exec_faas_params->params[i].value);
-
-        if (exec_faas_params->params[i].value == NULL)
+        if (i < faas_request.bytes_pos)
         {
-            COGNIT_LOG_TRACE("exec_faas_params->params[%d].value is NULL", i);
-
-            cJSON_AddStringToObject(param, "type", exec_faas_params->params[i].type);
-            cJSON_AddStringToObject(param, "var_name", exec_faas_params->params[i].var_name);
-            cJSON_AddStringToObject(param, "value", "NULL");
-            cJSON_AddStringToObject(param, "mode", exec_faas_params->params[i].mode);
+            COGNIT_LOG_DEBUG("  Param[%zu]:", i);
         }
         else
         {
-            str_b64_value = malloc(base64_encode_len(strlen(exec_faas_params->params[i].value)));
-            if (str_b64_value == NULL)
-            {
-                COGNIT_LOG_ERROR("Failed to allocate memory for encoded param");
-            }
-
-            i_coded_value_len = base64_encode(str_b64_value, exec_faas_params->params[i].value, strlen(exec_faas_params->params[i].value));
-
-            cJSON_AddStringToObject(param, "type", exec_faas_params->params[i].type);
-            cJSON_AddStringToObject(param, "var_name", exec_faas_params->params[i].var_name);
-            cJSON_AddStringToObject(param, "value", str_b64_value);
-            cJSON_AddStringToObject(param, "mode", exec_faas_params->params[i].mode);
-            free(str_b64_value);
+            COGNIT_LOG_DEBUG("  Param[%zu]:", i + 1);
         }
-
-        // Convert param to string
-        str_param = cJSON_Print(param);
-        // Convert param to base64
-        str_b64_param = malloc(base64_encode_len(strlen(str_param)));
-        if (str_b64_param == NULL)
+        switch (param->which_param)
         {
-            COGNIT_LOG_ERROR("Failed to allocate memory for encoded param");
+            case MyParam_my_string_tag:
+                COGNIT_LOG_DEBUG("    STRING = %s", param->param.my_string);
+                break;
+
+            case MyParam_my_int32_tag:
+                for (size_t j = 0; j < param->param.my_int32.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    INT32[%zu] = %d", j, param->param.my_int32.values[j]);
+                }
+                break;
+
+            case MyParam_my_int64_tag:
+                for (size_t j = 0; j < param->param.my_int64.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    INT64[%zu] = %ld", j, param->param.my_int64.values[j]);
+                }
+                break;
+
+            case MyParam_my_float_tag:
+                for (size_t j = 0; j < param->param.my_float.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    FLOAT[%zu] = %f", j, param->param.my_float.values[j]);
+                }
+                break;
+
+            case MyParam_my_double_tag:
+                for (size_t j = 0; j < param->param.my_double.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    DOUBLE[%zu] = %lf", j, param->param.my_double.values[j]);
+                }
+                break;
+
+            case MyParam_my_uint32_tag:
+                for (size_t j = 0; j < param->param.my_uint32.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    UINT32[%zu] = %u", j, param->param.my_uint32.values[j]);
+                }
+                break;
+
+            case MyParam_my_uint64_tag:
+                for (size_t j = 0; j < param->param.my_uint64.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    UINT64[%zu] = %lu", j, param->param.my_uint64.values[j]);
+                }
+                break;
+
+            case MyParam_my_sint32_tag:
+                for (size_t j = 0; j < param->param.my_sint32.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    SINT32[%zu] = %d", j, param->param.my_sint32.values[j]);
+                }
+                break;
+
+            case MyParam_my_sint64_tag:
+                for (size_t j = 0; j < param->param.my_sint64.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    SINT64[%zu] = %ld", j, param->param.my_sint64.values[j]);
+                }
+                break;
+
+            case MyParam_my_fixed32_tag:
+                for (size_t j = 0; j < param->param.my_fixed32.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    FIXED32[%zu] = %u", j, param->param.my_fixed32.values[j]);
+                }
+                break;
+
+            case MyParam_my_fixed64_tag:
+                for (size_t j = 0; j < param->param.my_fixed64.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    FIXED64[%zu] = %lu", j, param->param.my_fixed64.values[j]);
+                }
+                break;
+
+            case MyParam_my_sfixed32_tag:
+                for (size_t j = 0; j < param->param.my_sfixed32.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    SFIXED32[%zu] = %d", j, param->param.my_sfixed32.values[j]);
+                }
+                break;
+
+            case MyParam_my_sfixed64_tag:
+                for (size_t j = 0; j < param->param.my_sfixed64.values_count; j++)
+                {
+                    COGNIT_LOG_DEBUG("    SFIXED64[%zu] = %ld", j, param->param.my_sfixed64.values[j]);
+                }
+                break;
+
+            default:
+                COGNIT_LOG_DEBUG("    Unknown or unsupported type.");
+                break;
         }
-
-        i_coded_param_len = base64_encode(str_b64_param, str_param, strlen(str_param));
-
-        cJSON_AddItemToArray(params_array, cJSON_CreateString(str_b64_param));
-
-        free(str_param);
-        free(str_b64_param);
-        cJSON_Delete(param);
     }
-
-    cJSON_AddItemToObject(root, "params", params_array);
-    str_faas_json = cJSON_Print(root);
-
-    // Copy the json string to the payload buffer
-    strcpy((char*)ui8_payload_buff, str_faas_json);
-    *payload_len = strlen(str_faas_json);
-
-    cJSON_Delete(root);
-    free(str_faas_json);
-
-    return JSON_ERR_CODE_OK;
 }
 
-int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response)
+bool encode_datos(pb_ostream_t* stream, const pb_field_iter_t* field, void* const* arg)
 {
-    cJSON* root = cJSON_Parse(json_str);
-
-    if (root == NULL)
+    uint8_t* buffer = (uint8_t*)(*arg);
+    size_t length;
+    if (buffer == NULL)
     {
-        COGNIT_LOG_ERROR("Error parsing JSON");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    cJSON* ret_code_item = cJSON_GetObjectItem(root, "ret_code");
-    cJSON* res_item      = cJSON_GetObjectItem(root, "res");
-    cJSON* err_item      = cJSON_GetObjectItem(root, "err");
-
-    if (!cJSON_IsNumber(ret_code_item) || !cJSON_IsString(res_item))
-    {
-        COGNIT_LOG_ERROR("JSON content types are wrong");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    t_exec_response->ret_code = ret_code_item->valueint;
-
-    // Decode base64 res_item
-    int out_len = 0;
-
-    t_exec_response->res_payload = (char*)malloc(base64_decode_len(res_item->valuestring));
-    if (t_exec_response->res_payload == NULL)
-    {
-        COGNIT_LOG_ERROR("Failed to allocate memory for t_exec_response->res_payload");
-    }
-    out_len = base64_decode(t_exec_response->res_payload, res_item->valuestring);
-
-    if (t_exec_response->res_payload == NULL)
-    {
-        COGNIT_LOG_ERROR("Error decoding base64");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    t_exec_response->res_payload_len = out_len;
-    // TODO: parse err ??
-
-    cJSON_Delete(root);
-
-    return JSON_ERR_CODE_OK;
-}
-
-int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response)
-{
-    cJSON* root              = cJSON_Parse(json_str);
-    const char* str_res_item = NULL;
-    int8_t i8_ret            = 0;
-
-    if (root == NULL)
-    {
-        COGNIT_LOG_ERROR("Error parsing JSON");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    cJSON* status_item  = cJSON_GetObjectItem(root, "status");
-    cJSON* res_item     = cJSON_GetObjectItem(root, "res");
-    cJSON* exec_id_item = cJSON_GetObjectItem(root, "exec_id");
-
-    if (!cJSON_IsString(status_item)
-        || !cJSON_IsObject(exec_id_item))
-    {
-        COGNIT_LOG_ERROR("JSON content types are wrong");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    strncpy(t_async_exec_response->status, status_item->valuestring, sizeof(t_async_exec_response->status) - 1);
-    // Parse exec_id as an object
-    cJSON* faas_task_uuid_item = cJSON_GetObjectItem(exec_id_item, "faas_task_uuid");
-    if (!cJSON_IsString(faas_task_uuid_item))
-    {
-        COGNIT_LOG_ERROR("faas_task_uuid is not a string");
-        cJSON_Delete(root);
-        return JSON_ERR_CODE_INVALID_JSON;
-    }
-
-    // Copy task uuid to the response struct
-    strncpy(t_async_exec_response->exec_id.faas_task_uuid, faas_task_uuid_item->valuestring, strlen(faas_task_uuid_item->valuestring) + 1);
-
-    // If res is null means srv hasnt finished the execution
-    if (cJSON_IsNull(res_item))
-    {
-        COGNIT_LOG_TRACE("res_item is NULL");
-        memset(&t_async_exec_response->res, 0, sizeof(t_async_exec_response->res));
+        length = 0;
     }
     else
     {
-        str_res_item = cJSON_Print(res_item);
-        i8_ret       = faasparser_parse_json_str_as_exec_response(str_res_item, &t_async_exec_response->res);
-
-        if (i8_ret != JSON_ERR_CODE_OK)
-        {
-            COGNIT_LOG_ERROR("Error parsing JSON");
-            cJSON_Delete(root);
-            free((char*)str_res_item);
-            return JSON_ERR_CODE_INVALID_JSON;
-        }
+        length = strlen((char*)buffer); // O la longitud real de tus datos
     }
 
-    cJSON_Delete(root);
-    free((char*)str_res_item);
+    if (!pb_encode_tag_for_field(stream, field))
+    {
+        return false;
+    }
 
-    return JSON_ERR_CODE_OK;
+    return pb_encode_string(stream, buffer, length);
 }
 
-// TODO: wrap all destroys in a single function
-void faasparser_destroy_exec_response(exec_response_t* t_exec_response)
+void addBYTESParam(faas_t* pt_faas, const uint8_t* bytes, size_t length)
 {
-    if (t_exec_response != NULL
-        && t_exec_response->res_payload != NULL)
+
+    pt_faas->faas_request.my_bytes.arg = bytes;
+    pt_faas->faas_request.bytes_pos    = pt_faas->faas_request.params_count;
+}
+
+void addSTRINGParam(faas_t* pt_faas, const char* string)
+{
+    MyParam param     = MyParam_init_zero;
+    param.which_param = MyParam_my_string_tag;
+    int i             = 0;
+    while (string[i] != '\0')
     {
-        free(t_exec_response->res_payload);
+        param.param.my_string[i] = string[i];
+        i++;
     }
+
+    pt_faas->faas_request.params[pt_faas->faas_request.params_count++] = param;
+}
+
+ADD_ARRAY_FC(float, FLOAT, float)
+ADD_ARRAY_FC(double, DOUBLE, double)
+ADD_ARRAY_FC(int64, INT64, int64_t)
+ADD_ARRAY_FC(int32, INT32, int32_t)
+ADD_ARRAY_FC(uint32, UINT32, uint32_t)
+ADD_ARRAY_FC(uint64, UINT64, uint64_t)
+ADD_ARRAY_FC(sint32, SINT32, int32_t)
+ADD_ARRAY_FC(sint64, SINT64, int64_t)
+ADD_ARRAY_FC(fixed32, FIXED32, uint32_t)
+ADD_ARRAY_FC(fixed64, FIXED64, uint64_t)
+ADD_ARRAY_FC(sfixed32, SFIXED32, int32_t)
+ADD_ARRAY_FC(sfixed64, SFIXED64, int64_t)
+//ADD_ARRAY_FC(bool, BOOL, protobuf_c_boolean)
+
+ADD_VAR_FC(float, FLOAT, float)
+ADD_VAR_FC(double, DOUBLE, double)
+ADD_VAR_FC(int64, INT64, int64_t)
+ADD_VAR_FC(int32, INT32, int32_t)
+ADD_VAR_FC(uint32, UINT32, uint32_t)
+ADD_VAR_FC(uint64, UINT64, uint64_t)
+ADD_VAR_FC(sint32, SINT32, int32_t)
+ADD_VAR_FC(sint64, SINT64, int64_t)
+ADD_VAR_FC(fixed32, FIXED32, uint32_t)
+ADD_VAR_FC(fixed64, FIXED64, uint64_t)
+ADD_VAR_FC(sfixed32, SFIXED32, int32_t)
+ADD_VAR_FC(sfixed64, SFIXED64, int64_t)
+//ADD_VAR_FC(bool, BOOL, protobuf_c_boolean)
+
+void parse_response(MyParam response, void** result)
+{
+    switch (response.which_param)
+    {
+        case MyParam_my_float_tag:
+        {
+            *result = response.param.my_float.values;
+            COGNIT_LOG_DEBUG("Parsed response as FLOAT: %f", *((float*)*result));
+            break;
+        }
+        case MyParam_my_double_tag:
+        {
+            *result = response.param.my_double.values;
+            COGNIT_LOG_DEBUG("Parsed response as DOUBLE: %lf", *((double*)*result));
+            break;
+        }
+        case MyParam_my_int32_tag:
+        {
+            *result = response.param.my_int32.values;
+            COGNIT_LOG_DEBUG("Parsed response as INT32: %d", *((int32_t*)*result));
+            break;
+        }
+        case MyParam_my_int64_tag:
+        {
+            *result = response.param.my_int64.values;
+            COGNIT_LOG_DEBUG("Parsed response as INT64: %ld", *((int64_t*)*result));
+            break;
+        }
+        case MyParam_my_uint32_tag:
+        {
+            *result = response.param.my_uint32.values;
+            COGNIT_LOG_DEBUG("Parsed response as UINT32: %u", *((uint32_t*)*result));
+            break;
+        }
+        case MyParam_my_uint64_tag:
+        {
+            *result = response.param.my_uint64.values;
+            COGNIT_LOG_DEBUG("Parsed response as UINT64: %lu", *((uint64_t*)*result));
+            break;
+        }
+        case MyParam_my_sint32_tag:
+        {
+            *result = response.param.my_sint32.values;
+            COGNIT_LOG_DEBUG("Parsed response as SINT32: %d", *((int32_t*)*result));
+            break;
+        }
+        case MyParam_my_sint64_tag:
+        {
+            *result = response.param.my_sint64.values;
+            COGNIT_LOG_DEBUG("Parsed response as SINT64: %ld", *((int64_t*)*result));
+            break;
+        }
+        case MyParam_my_fixed32_tag:
+        {
+            *result = response.param.my_fixed32.values;
+            COGNIT_LOG_DEBUG("Parsed response as FIXED32: %u", *((uint32_t*)*result));
+            break;
+        }
+        case MyParam_my_fixed64_tag:
+        {
+            *result = response.param.my_fixed64.values;
+            COGNIT_LOG_DEBUG("Parsed response as FIXED64: %lu", *((uint64_t*)*result));
+            break;
+        }
+        case MyParam_my_sfixed32_tag:
+        {
+            *result = response.param.my_sfixed32.values;
+            COGNIT_LOG_DEBUG("Parsed response as SFIXED32: %d", *((int32_t*)*result));
+            break;
+        }
+        case MyParam_my_sfixed64_tag:
+        {
+            *result = response.param.my_sfixed64.values;
+            COGNIT_LOG_DEBUG("Parsed response as SFIXED64: %ld", *((int64_t*)*result));
+            break;
+        }
+        case MyParam_my_string_tag:
+        {
+            *result = response.param.my_string;
+            COGNIT_LOG_DEBUG("Parsed response as STRING: %s", (char*)*result);
+            break;
+        }
+        default:
+            COGNIT_LOG_DEBUG("Unsupported response type.");
+            *result = NULL;
+            break;
+    }
+}
+
+void addFC(faas_t* pt_faas, char* fc_name, char* fc_code)
+{
+    strcpy(pt_faas->myfunc.fc_code, fc_code);
+    strcpy(pt_faas->myfunc.fc_hash, "asdf");
+    pt_faas->myfunc.fc_id = 0;
+    strcpy(pt_faas->myfunc.fc_name, fc_name);
+
+    COGNIT_LOG_DEBUG("FC_NAME: %s", pt_faas->myfunc.fc_name);
+    COGNIT_LOG_DEBUG("FC_CODE:\n%s", pt_faas->myfunc.fc_code);
+    COGNIT_LOG_DEBUG("FC_ID: %d (still unset)", pt_faas->myfunc.fc_id);
+    COGNIT_LOG_DEBUG("FC_HASH: %s (not implemented)\n", pt_faas->myfunc.fc_hash);
+}
+
+int faas_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
+{
+    pb_ostream_t stream = pb_ostream_from_buffer(fc_req_buf, buf_len);
+
+    if (!pb_encode(&stream, MyFunc_fields, &pt_faas->myfunc))
+    {
+        COGNIT_LOG_ERROR("Error serializing: %s", PB_GET_ERROR(&stream));
+        return 0;
+    }
+    else
+    {
+        return stream.bytes_written;
+    }
+}
+
+int faas_serialize_faas_request(faas_t* pt_faas, uint8_t* req_buf, int len)
+{
+    printParams(pt_faas->faas_request);
+    pb_ostream_t stream = pb_ostream_from_buffer(req_buf, len);
+
+    if (!pb_encode(&stream, FaasRequest_fields, &pt_faas->faas_request))
+    {
+        COGNIT_LOG_ERROR("Error serializing: %s", PB_GET_ERROR(&stream));
+        return 0;
+    }
+    else
+
+    {
+        return stream.bytes_written;
+    }
+}
+
+void faas_add_fc_id_to_request(faas_t* pt_faas, int fc_id)
+{
+    pt_faas->faas_request.fc_id = fc_id;
+}
+
+int faas_deserialize_fc_upload_response(uint8_t* req_buf, int len)
+{
+
+    MyFunc myfunc_response = MyFunc_init_zero;
+
+    pb_istream_t istream = pb_istream_from_buffer(req_buf, len);
+
+    if (!pb_decode(&istream, MyFunc_fields, &myfunc_response))
+    {
+        COGNIT_LOG_ERROR("Error deserializing: %s", PB_GET_ERROR(&istream));
+        return 0;
+    }
+
+    COGNIT_LOG_DEBUG("\nResponse received!\n");
+    int ret = myfunc_response.fc_id;
+    COGNIT_LOG_DEBUG("FC_NAME: %s", myfunc_response.fc_name);
+    //COGNIT_LOG_DEBUG("FC_CODE:\n%s", myfunc_response.fc_code);
+    COGNIT_LOG_DEBUG("FC_ID: %d", myfunc_response.fc_id);
+    COGNIT_LOG_DEBUG("FC_HASH: %s (not implemented)\n", myfunc_response.fc_hash);
+
+    return ret;
+}
+
+int faas_deserialize_faas_response(uint8_t* res_buf, int len, void** result)
+{
+    FaasResponse faas_response = FaasResponse_init_zero;
+
+    pb_istream_t istream = pb_istream_from_buffer(res_buf, len);
+
+    if (!pb_decode(&istream, FaasResponse_fields, &faas_response))
+    {
+        COGNIT_LOG_ERROR("Error deserializing: %s", PB_GET_ERROR(&istream));
+        return -1;
+    }
+    else
+    {
+        parse_response(faas_response.res, result);
+        return 0;
+    }
+}
+
+void faas_parser_init(faas_t* pt_faas)
+{
+    pt_faas->faas_request.my_bytes.arg          = NULL;
+    pt_faas->faas_request.my_bytes.funcs.encode = encode_datos;
 }
