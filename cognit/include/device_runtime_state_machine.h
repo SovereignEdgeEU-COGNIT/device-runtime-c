@@ -4,8 +4,8 @@
 #include "cognit_frontend_cli.h"
 #include "edge_cluster_frontend_cli.h"
 
-#define MAX_REQ_UPLOAD_ATTEMPTS     3
-#define MAX_GET_ADDRESS_ATTEMPTS    3
+#define MAX_REQ_UPLOAD_ATTEMPTS  3
+#define MAX_GET_ADDRESS_ATTEMPTS 3
 
 typedef enum
 {
@@ -13,16 +13,17 @@ typedef enum
     E_ST_CODE_ERROR   = -1
 } e_status_code_t;
 
-
 // Enumeraciones para los estados y eventos
-typedef enum {
+typedef enum
+{
     INIT,
     SEND_INIT_REQUEST,
     GET_ECF_ADDRESS,
     READY
 } State_t;
 
-typedef enum {
+typedef enum
+{
     ADDRESS_OBTAINED,
     TOKEN_NOT_VALID_ADDRESS,
     RETRY_GET_ADDRESS,
@@ -42,12 +43,13 @@ typedef enum {
 } Event_t;
 
 // State machine transitions
-typedef struct SDeviceRuntimeStateMachine{
+typedef struct SDeviceRuntimeStateMachine
+{
     State_t current_state;
     cognit_config_t m_t_config;
     cognit_frontend_cli_t cfc;
     edge_cluster_frontend_cli_t ecf;
-    char biscuit_token[MAX_TOKEN_LENGTH];  /**< The biscuit token. */
+    char biscuit_token[MAX_TOKEN_LENGTH]; /**< The biscuit token. */
     int app_req_id;
     scheduling_t m_t_requirements;
     int up_req_counter;
@@ -59,7 +61,8 @@ typedef struct SDeviceRuntimeStateMachine{
 } device_runtime_sm_t;
 
 // Estructura de transición de estado
-typedef struct STransition{
+typedef struct STransition
+{
     State_t previous_state;
     Event_t event;
     State_t next_state;
@@ -69,9 +72,9 @@ typedef struct STransition{
 // Declaraciones de funciones
 int dr_state_machine_execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t event);
 
-int dr_state_machine_init(device_runtime_sm_t* pt_dr_state_machine, cognit_config_t t_config);
+int dr_state_machine_init(device_runtime_sm_t* pt_dr_state_machine, cognit_config_t t_config, faas_t* pt_faas);
 
-exec_response_t dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm);
+void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response);
 
 e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, scheduling_t t_reqs);
 

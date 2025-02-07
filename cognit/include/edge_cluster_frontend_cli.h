@@ -14,58 +14,19 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "faas_parser.h"
 /***************** DEFINES AND MACROS *********************/
-#define MAX_URL_LENGTH 512
+#define MAX_URL_LENGTH        512
+#define REQ_TIMEOUT           60
+#define FUNC_UPLOAD_ENDPOINT  "v1/daas/c/upload_fc"
+#define FAAS_REQUEST_ENDPOINT "v1/faas/c/faas_request"
 
 /**************** TYPEDEFS AND STRUCTS ********************/
-typedef enum
-{
-    OK      = 0,
-    WORKING = 1,
-    NOT_OK  = -1
-} e_status_exec_t;
-
-typedef struct
-{
-    char* state;
-    char* result; // NULL if not present
-} FaasUuidStatus;
-
-typedef enum
-{
-    SUCCESS = 0,
-    ERROR   = -1
-} exec_return_code_t;
-
-typedef struct
-{
-    exec_return_code_t ret_code;
-    char* res_payload; // NULL if not present
-    size_t res_payload_len;
-    long http_err_code;
-} exec_response_t;
-
-typedef struct
-{
-    char faas_task_uuid[256];
-} AsyncExecId;
-
-typedef struct
-{
-    char status[10]; // "WORKING", "READY", "FAILED"
-    exec_response_t res;
-    AsyncExecId exec_id;
-} async_exec_response_t;
 
 typedef struct SEdgeClusterFrontendCli
 {
     const char t_ecf_endpoint[MAX_URL_LENGTH];
-    char* token;
     int has_connection;
-    char c_a_exec_sync_url[MAX_URL_LENGTH];
-    char c_a_exec_async_url[MAX_URL_LENGTH];
-    char c_a_wait_task_url[MAX_URL_LENGTH];
-
 } edge_cluster_frontend_cli_t;
 /******************* GLOBAL VARIABLES *********************/
 
@@ -93,7 +54,9 @@ void ecf_cli_init(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, con
  * @param pt_exec_response Pointer to the execution response structure
  * @return 0 on success, an error code otherwise
 ***********************************************************/
-int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, int func_id, uint8_t* ui8_payload, size_t payload_len, exec_response_t* pt_exec_response);
+int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, char* biscuit_token, faas_t* pt_faas, void** pt_exec_response);
+
+int ecf_cli_upload_function_to_daas(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, char* biscuit_token, faas_t* pt_faas);
 
 void ecf_set_has_connection(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, bool value);
 

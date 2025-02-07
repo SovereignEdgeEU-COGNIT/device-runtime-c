@@ -18,10 +18,10 @@
 typedef struct
 {
     const char* cognit_frontend_endpoint; /**< The endpoint of the cognit frontend. */
-    const char* cognit_frontend_usr;   /**< The username for the provisioning engine. */
-    const char* cognit_frontend_pwd;   /**< The password for the provisioning engine. */
+    const char* cognit_frontend_usr;      /**< The username for the provisioning engine. */
+    const char* cognit_frontend_pwd;      /**< The password for the provisioning engine. */
+    const char* local_endpoint;
     // Add other fields as needed
 } cognit_config_t;
 
 #endif // COGNIT_CONFIG_HEADER_
- 

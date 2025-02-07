@@ -7,17 +7,19 @@
 
 int cognit_frontend_cli_init(cognit_frontend_cli_t* pt_cognit_frontend_cli, cognit_config_t* pt_cognit_config)
 {
-    if(pt_cognit_frontend_cli == NULL)
+    if (pt_cognit_frontend_cli == NULL)
     {
         COGNIT_LOG_ERROR("Cognit frontend not initialized");
         return -1;
     }
 
-    if(pt_cognit_config == NULL)
+    if (pt_cognit_config == NULL)
     {
         COGNIT_LOG_ERROR("Cognit config not provided");
         return -1;
     }
+
+    memset(pt_cognit_frontend_cli, 0, sizeof(cognit_frontend_cli_t));
 
     set_has_connection(pt_cognit_frontend_cli, false);
 
@@ -31,18 +33,18 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
 {
     int8_t i8_ret = 0;
     uint8_t ui8_payload[1024 * 16];
-    size_t payload_len = 0;
+    size_t payload_len          = 0;
     http_config_t t_http_config = { 0 };
     char url[MAX_URL_LENGTH];
 
-    if(pt_cognit_frontend_cli == NULL)
+    if (pt_cognit_frontend_cli == NULL)
     {
         COGNIT_LOG_ERROR("Cognit frontend not initialized");
         return -1;
     }
 
     memset(url, 0, sizeof(url));
-    snprintf(url, MAX_URL_LENGTH, "%s://%s/%s", STR_PROTOCOL, pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_AUTH_ENDPOINT);
+    snprintf(url, MAX_URL_LENGTH, "%s/%s", pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_AUTH_ENDPOINT);
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
@@ -55,7 +57,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
 
     if (i8_ret != 0
         || (t_http_config.t_http_response.l_http_code != 200
-        && t_http_config.t_http_response.l_http_code != 201))
+            && t_http_config.t_http_response.l_http_code != 201))
     {
         COGNIT_LOG_ERROR("Token creation failed with status code: %ld", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
@@ -91,20 +93,21 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
     http_config_t t_http_config = { 0 };
     char url[MAX_URL_LENGTH];
 
-    if(pt_cognit_frontend_cli == NULL)
+    if (pt_cognit_frontend_cli == NULL)
     {
         COGNIT_LOG_ERROR("Cognit frontend not initialized");
+        set_has_connection(pt_cognit_frontend_cli, false);
         return -1;
     }
 
-    if(biscuit_token == NULL)
+    if (biscuit_token == NULL)
     {
         COGNIT_LOG_ERROR("Token not provided");
         return -1;
     }
 
     memset(url, 0, sizeof(url));
-    snprintf(url, MAX_URL_LENGTH, "%s://%s/%s", STR_PROTOCOL, pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_REQ_ENDPOINT);
+    snprintf(url, MAX_URL_LENGTH, "%s/%s", pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_REQ_ENDPOINT);
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
@@ -119,19 +122,20 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
 
     if (i8_ret != 0
         || (t_http_config.t_http_response.l_http_code != 200
-        && t_http_config.t_http_response.l_http_code != 201))
+            && t_http_config.t_http_response.l_http_code != 201))
     {
         COGNIT_LOG_ERROR("Requirements update failed with status code: %s", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
+        set_has_connection(pt_cognit_frontend_cli, false);
 
         return COGNIT_ECODE_ERROR;
     }
     else
     {
+        set_has_connection(pt_cognit_frontend_cli, true);
         COGNIT_LOG_DEBUG("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
         // Copy the response json to the token string
         *pt_app_req_id = atoi((char*)t_http_config.t_http_response.ui8_response_data_buffer);
-        printf("app_req_id: %d", *pt_app_req_id);
         if (i8_ret != 0)
         {
             COGNIT_LOG_ERROR("Error parsing token");
@@ -152,14 +156,14 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     http_config_t t_http_config = { 0 };
     char url[MAX_URL_LENGTH];
 
-    if(pt_cognit_frontend_cli == NULL)
+    if (pt_cognit_frontend_cli == NULL)
     {
         COGNIT_LOG_ERROR("Cognit frontend not initialized");
         set_has_connection(pt_cognit_frontend_cli, false);
         return -1;
     }
 
-    if(biscuit_token == NULL)
+    if (biscuit_token == NULL)
     {
         COGNIT_LOG_ERROR("Token not provided");
         set_has_connection(pt_cognit_frontend_cli, false);
@@ -167,7 +171,7 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     }
 
     memset(url, 0, sizeof(url));
-    snprintf(url, MAX_URL_LENGTH, "%s://%s/%s/%d/%s", STR_PROTOCOL, pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_REQ_ENDPOINT, app_req_id, CF_ECF_ADDRESS_ENDPOINT);
+    snprintf(url, MAX_URL_LENGTH, "%s/%s/%d/%s", pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_REQ_ENDPOINT, app_req_id, CF_ECF_ADDRESS_ENDPOINT);
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_GET;
@@ -179,7 +183,7 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
 
     if (i8_ret != 0
         || (t_http_config.t_http_response.l_http_code != 200
-        && t_http_config.t_http_response.l_http_code != 201))
+            && t_http_config.t_http_response.l_http_code != 201))
     {
         COGNIT_LOG_ERROR("Get ECF failed with status code: %s", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
@@ -202,67 +206,6 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     }
 
     set_has_connection(pt_cognit_frontend_cli, true);
-
-    // TODO IMPOORTANT handle the free of the response buffer???
-
-    return 0;
-}
-
-int cognit_frontend_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, char* payload, int payload_len)
-{
-    int8_t i8_ret = 0;
-    uint8_t ui8_payload[1024 * 16];
-    //size_t payload_len;
-    http_config_t t_http_config = { 0 };
-    char url[MAX_URL_LENGTH];
-
-    if(pt_cognit_frontend_cli == NULL)
-    {
-        COGNIT_LOG_ERROR("Cognit frontend not initialized");
-        return -1;
-    }
-
-    if(biscuit_token == NULL)
-    {
-        COGNIT_LOG_ERROR("Token not provided");
-        return -1;
-    }
-
-    memset(url, 0, sizeof(url));
-    snprintf(url, MAX_URL_LENGTH, "%s://%s/%s", STR_PROTOCOL, pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_REQ_ENDPOINT);
-
-    t_http_config.c_url           = url;
-    t_http_config.c_method        = HTTP_METHOD_POST;
-    t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
-    t_http_config.c_token         = biscuit_token;
-
-    //i8_ret = cfparser_parse_requirements_as_str_json(&t_app_reqs, &ui8_payload, &payload_len);
-    COGNIT_LOG_DEBUG("Requirements JSON: %s", ui8_payload);
-
-    COGNIT_LOG_DEBUG("Sending requirements to %s", url);
-    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
-
-    if (i8_ret != 0
-        || (t_http_config.t_http_response.l_http_code != 200
-        && t_http_config.t_http_response.l_http_code != 201))
-    {
-        COGNIT_LOG_ERROR("Requirements update failed with status code: %s", t_http_config.t_http_response.l_http_code);
-        COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
-
-        return COGNIT_ECODE_ERROR;
-    }
-    else
-    {
-        COGNIT_LOG_DEBUG("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
-        // Copy the response json to the token string
-        //*pt_app_req_id = atoi((char*)t_http_config.t_http_response.ui8_response_data_buffer);
-        //printf("app_req_id: %d", *pt_app_req_id);
-        if (i8_ret != 0)
-        {
-            COGNIT_LOG_ERROR("Error parsing token");
-            return COGNIT_ECODE_ERROR;
-        }
-    }
 
     // TODO IMPOORTANT handle the free of the response buffer???
 

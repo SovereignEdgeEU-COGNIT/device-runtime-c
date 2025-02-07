@@ -3,11 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 
-## [Version 1.0.0] - 2024-02-16
+## [Version 2.0.0] - 2025-02-07
 
 ### Added
 
-- Communication with Provisioning Engine.
-- Task-offloading to Serverless Runtime.
+- Communication with Cognit Frontend.
+- Task-offloading to Edge Cluster.
 - C Cognit lib generation.
-- Unit test.
+

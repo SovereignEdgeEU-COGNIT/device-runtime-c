@@ -26,8 +26,8 @@ static int read_yaml_config(const char *filename, cognit_config_t *config) {
     while (!done) {
         if (!yaml_parser_parse(&parser, &event)) {
             COGNIT_LOG_ERROR("Parsing error in line %ld, column %ld: %s\n",
-                    parser.problem_mark.line + 1, parser.problem_mark.column + 1,
-                    parser.problem);
+                              parser.problem_mark.line + 1, parser.problem_mark.column + 1,
+                              parser.problem);
             break;
         }
 
@@ -47,6 +47,8 @@ static int read_yaml_config(const char *filename, cognit_config_t *config) {
                             config->cognit_frontend_pwd = strdup(pwd);
                         }
                         free(credentials);
+                    } else if (strcmp(key, "local_endpoint") == 0) {
+                        config->local_endpoint = strdup((char *)event.data.scalar.value);
                     }
                     free(key);
                     key = NULL;
@@ -74,7 +76,7 @@ static void free_config(cognit_config_t *config)
     free((void *)config->cognit_frontend_pwd);
 }
 
-e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, scheduling_t t_reqs)
+e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, scheduling_t t_reqs, faas_t *pt_faas)
 {
     if(pt_dr == NULL)
     {
@@ -82,6 +84,7 @@ e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, 
         return E_ST_CODE_ERROR;
     }
 
+    memset(pt_dr, 0, sizeof(device_runtime_t));
 
     if (read_yaml_config(config_path, &pt_dr->m_t_config) == 0) {
         COGNIT_LOG_DEBUG("Cognit Frontend Endpoint: %s", pt_dr->m_t_config.cognit_frontend_endpoint);
@@ -91,7 +94,7 @@ e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, 
         return E_ST_CODE_ERROR;
     }
 
-    int ret = dr_state_machine_init(&pt_dr->m_t_device_runtime_sm, pt_dr->m_t_config);
+    int ret = dr_state_machine_init(&pt_dr->m_t_device_runtime_sm, pt_dr->m_t_config, pt_faas);
 
     dr_sm_update_requirements(&pt_dr->m_t_device_runtime_sm, t_reqs);
     
@@ -99,7 +102,7 @@ e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, 
 }
 
 
-e_status_code_t device_runtime_call(device_runtime_t* pt_dr, scheduling_t t_new_reqs, exec_response_t* pt_exec_response)
+e_status_code_t device_runtime_call(device_runtime_t* pt_dr, faas_t *pt_faas, scheduling_t t_new_reqs, void** pt_exec_response)
 {
     if(pt_dr == NULL)
     {
@@ -109,8 +112,13 @@ e_status_code_t device_runtime_call(device_runtime_t* pt_dr, scheduling_t t_new_
 
     dr_sm_update_requirements(&pt_dr->m_t_device_runtime_sm, t_new_reqs);
 
-    exec_response_t res = dr_sm_offload_function(&pt_dr->m_t_device_runtime_sm);
+    dr_sm_offload_function(&pt_dr->m_t_device_runtime_sm, pt_faas, pt_exec_response);
     //Handle response
+    if(*pt_exec_response == NULL)
+    {
+        COGNIT_LOG_ERROR("Response not obtailed");
+        return E_ST_CODE_ERROR;
+    }
     
     return E_ST_CODE_SUCCESS;
 }

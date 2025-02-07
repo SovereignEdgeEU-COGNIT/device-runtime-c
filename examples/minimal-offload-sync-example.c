@@ -9,6 +9,17 @@
 #include <logger.h>
 #include <ip_utils.h>
 
+char fc_name[] = "my_calc";
+
+char* fc_str = "def my_calc(operation, param1, param2):\n"
+               "    if operation == \"sum\":\n"
+               "        result = param1 + param2\n"
+               "    elif operation == \"multiply\":\n"
+               "        result = param1 * param2\n"
+               "    else:\n"
+               "        result = 0.0\n"
+               "    return result\n";
+
 size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, void* user_buffer)
 {
     size_t realsize           = size * nmemb;
@@ -41,12 +52,19 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
     curl = curl_easy_init();
     if (curl)
     {
-        // Set the request header
-        headers = curl_slist_append(headers, "Accept: application/json");
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        headers = curl_slist_append(headers, "charset: utf-8");
+        if (config->binary)
+        {
+            headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
+        }
+        else
+        {
+            // Set the request header
+            headers = curl_slist_append(headers, "Accept: application/json");
+            headers = curl_slist_append(headers, "Content-Type: application/json");
+            headers = curl_slist_append(headers, "charset: utf-8");
+        }
 
-        if(config->c_token != NULL)
+        if (config->c_token != NULL)
         {
             char token_header[MAX_TOKEN_LENGTH] = "token: ";
             strcat(token_header, config->c_token);
@@ -95,8 +113,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, size) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_POSTFIELDS, c_buffer) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
-                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK
-                )
+                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
             {
                 COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->post() failed");
                 return -1;
@@ -159,30 +176,45 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 }
 
 scheduling_t app_reqs = {
-    .flavour = "NatureV2",
-    .max_latency = 100,
+    .flavour                     = "FaaS_generic_V2",
+    .max_latency                 = 100,
     .max_function_execution_time = 3.5,
-    .min_renewable = 85,
-    .geolocation = "IKERLAN ARRASATE/MONDRAGON 20500"
+    .min_renewable               = 85,
+    .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
 };
 
 scheduling_t new_reqs = {
-    .flavour = "NatureV2",
-    .max_latency = 80,
+    .flavour                     = "FaaS_generic_V2",
+    .max_latency                 = 80,
     .max_function_execution_time = 8.5,
-    .min_renewable = 50,
-    .geolocation = "IKERLAN ARRASATE/MONDRAGON 20500"
+    .min_renewable               = 50,
+    .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
 };
 
 int main(int argc, char const* argv[])
 {
-    device_runtime_t t_my_device_runtime = {0};
-    exec_response_t t_exec_response;
-    device_runtime_init(&t_my_device_runtime, "./examples/cognit-template.yml", app_reqs);
+    device_runtime_t t_my_device_runtime;
+    faas_t t_faas;
+    float* exec_response;
+    e_status_code_t ret;
 
-    device_runtime_call(&t_my_device_runtime, new_reqs, &t_exec_response);
+    device_runtime_init(&t_my_device_runtime, "./examples/cognit-template.yml", app_reqs, &t_faas);
 
-    COGNIT_LOG_INFO("Result: %s", t_exec_response.res_payload);
+    addFC(&t_faas, fc_name, fc_str);
+    
+    addSTRINGParam(&t_faas, "sum");
+    addINT32Var(&t_faas, 8);
+    addFLOATVar(&t_faas, 3.5);
 
+    ret = device_runtime_call(&t_my_device_runtime, &t_faas, new_reqs, (void**)&exec_response);
+
+    if (ret == E_ST_CODE_SUCCESS)
+    {
+        COGNIT_LOG_INFO("Result: %f", *exec_response);
+    }
+    else
+    {
+        COGNIT_LOG_ERROR("Error offloading function");
+    }
     return 0;
 }

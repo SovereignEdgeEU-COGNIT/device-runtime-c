@@ -26,7 +26,7 @@
 
 /******************* PUBLIC METHODS ***********************/
 
-void cfparser_parse_str_response_as_token(char* token, uint8_t *ui8_payload);
+void cfparser_parse_str_response_as_token(char* token, uint8_t* ui8_payload);
 
 /*******************************************************/ /**
  * @brief Parse the scheduling_t struct to a JSON string

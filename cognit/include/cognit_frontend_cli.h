@@ -19,26 +19,26 @@
 
 /***************** DEFINES AND MACROS *********************/
 #define MAX_ENERGY_SCHEDULING_POLICIES 1
-#define NAME_MAX_LEN            50
+#define NAME_MAX_LEN                   50
 
-#define CF_AUTH_ENDPOINT             "v1/authenticate"
-#define CF_REQ_ENDPOINT              "v1/app_requirements"
-#define CF_ECF_ADDRESS_ENDPOINT         "ec_fe"
+#define CF_AUTH_ENDPOINT        "v1/authenticate"
+#define CF_REQ_ENDPOINT         "v1/app_requirements"
+#define CF_ECF_ADDRESS_ENDPOINT "ec_fe"
 
-#define MAX_URL_LENGTH       512
-#define REQ_TIMEOUT          60
+#define MAX_URL_LENGTH 512
+#define REQ_TIMEOUT    10
 
-#define MAX_TOKEN_LENGTH    512
-#define MAX_HOSTS           15
-#define MAX_DATASTORES      15
-#define MAX_VNETS      15
+#define MAX_TOKEN_LENGTH 512
+#define MAX_HOSTS        15
+#define MAX_DATASTORES   15
+#define MAX_VNETS        15
 
 /**************** TYPEDEFS AND STRUCTS ********************/
 
 typedef enum ECFCState
 {
-    E_CFC_STATE_ERROR    = -1,
-    E_CFC_STATE_SUCCES    = 0
+    E_CFC_STATE_ERROR  = -1,
+    E_CFC_STATE_SUCCES = 0
 } e_cfc_state_t;
 
 typedef struct
@@ -109,8 +109,6 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
 e_cfc_state_t cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
-
-int cognit_frontend_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, char* payload, int payload_len);
 
 void set_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli, bool value);
 
