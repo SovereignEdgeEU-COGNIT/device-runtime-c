@@ -24,6 +24,15 @@ add_library(${PROJECT_NAME} STATIC ${SRC_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_PATHS})
 
+# Buscar la librería OpenSSL
+find_package(OpenSSL REQUIRED)
+
+# Incluir los directorios de OpenSSL
+target_include_directories(${PROJECT_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
+
+# Enlazar OpenSSL con tu ejecutable
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+
 # Ruta personalizada para libyaml
 set(YAML_INCLUDE_DIR "/usr/include")
 set(YAML_LIBRARY "/usr/lib/x86_64-linux-gnu/libyaml.so")

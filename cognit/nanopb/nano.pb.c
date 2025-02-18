@@ -9,46 +9,46 @@
 PB_BIND(MyDouble, MyDouble, 2)
 
 
-PB_BIND(MyFloat, MyFloat, 2)
+PB_BIND(MyFloat, MyFloat, AUTO)
 
 
-PB_BIND(MyInt32, MyInt32, 2)
+PB_BIND(MyInt32, MyInt32, AUTO)
 
 
 PB_BIND(MyInt64, MyInt64, 2)
 
 
-PB_BIND(MyUint32, MyUint32, 2)
+PB_BIND(MyUint32, MyUint32, AUTO)
 
 
 PB_BIND(MyUint64, MyUint64, 2)
 
 
-PB_BIND(MySint32, MySint32, 2)
+PB_BIND(MySint32, MySint32, AUTO)
 
 
 PB_BIND(MySint64, MySint64, 2)
 
 
-PB_BIND(MyFixed32, MyFixed32, 2)
+PB_BIND(MyFixed32, MyFixed32, AUTO)
 
 
 PB_BIND(MyFixed64, MyFixed64, 2)
 
 
-PB_BIND(MySfixed32, MySfixed32, 2)
+PB_BIND(MySfixed32, MySfixed32, AUTO)
 
 
 PB_BIND(MySfixed64, MySfixed64, 2)
 
 
-PB_BIND(MyBool, MyBool, 2)
+PB_BIND(MyBool, MyBool, AUTO)
 
 
 PB_BIND(MyParam, MyParam, 2)
 
 
-PB_BIND(FaasRequest, FaasRequest, 4)
+PB_BIND(FaasRequest, FaasRequest, 2)
 
 
 PB_BIND(FaasResponse, FaasResponse, 2)

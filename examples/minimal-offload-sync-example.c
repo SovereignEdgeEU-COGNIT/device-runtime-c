@@ -52,6 +52,29 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
     curl = curl_easy_init();
     if (curl)
     {
+        /* --- Configuración de la autenticación del cliente --- */
+        /* Ruta al certificado del cliente (en formato PEM) */
+        //curl_easy_setopt(curl, CURLOPT_SSLCERT, "/ruta/al/certificado_cliente.pem");
+        /* Ruta a la clave privada del cliente (en formato PEM) */
+        //curl_easy_setopt(curl, CURLOPT_SSLKEY, "/ruta/a/la/clave_privada.pem");
+        /* Si la clave privada está protegida por una contraseña, descomenta la siguiente línea */
+        // curl_easy_setopt(curl, CURLOPT_KEYPASSWD, "mi_contraseña");
+
+        /* --- Configuración de las CA de confianza --- */
+        /* Especifica la ruta al archivo que contiene los certificados de las CA de confianza */
+        //curl_easy_setopt(curl, CURLOPT_CAINFO, "/ruta/al/archivo/cacert.pem");
+        /* Opcional: Si tienes un directorio con múltiples certificados CA, puedes especificarlo */
+        // curl_easy_setopt(curl, CURLOPT_CAPATH, "/ruta/al/directorio/ca");
+        
+        /* --- Opciones de seguridad recomendadas --- */
+        /* Verifica el certificado del servidor */
+        //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        /* Verifica que el nombre del host en el certificado concuerde con la URL */
+        //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+
+        /* (Opcional) Activa el modo verbose para depuración */
+        // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
         if (config->binary)
         {
             headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
