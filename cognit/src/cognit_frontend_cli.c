@@ -48,7 +48,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
-    t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
+    t_http_config.ui32_timeout_ms = CFC_REQ_TIMEOUT * 1000;
     t_http_config.c_username      = pt_cognit_frontend_cli->m_t_config->cognit_frontend_usr;
     t_http_config.c_password      = pt_cognit_frontend_cli->m_t_config->cognit_frontend_pwd;
 
@@ -63,7 +63,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
         set_has_connection(pt_cognit_frontend_cli, false);
 
-        return COGNIT_ECODE_ERROR;
+        return -1;
     }
     else
     {
@@ -75,7 +75,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
         {
             COGNIT_LOG_ERROR("Error parsing token");
             set_has_connection(pt_cognit_frontend_cli, false);
-            return COGNIT_ECODE_ERROR;
+            return -1;
         }
     }
 
@@ -111,10 +111,10 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
-    t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
+    t_http_config.ui32_timeout_ms = CFC_REQ_TIMEOUT * 1000;
     t_http_config.c_token         = biscuit_token;
 
-    i8_ret = cfparser_parse_requirements_as_str_json(&t_app_reqs, &ui8_payload, &payload_len);
+    i8_ret = cfparser_parse_requirements_as_str_json(&t_app_reqs, ui8_payload, &payload_len);
     COGNIT_LOG_DEBUG("Requirements JSON: %s", ui8_payload);
 
     COGNIT_LOG_DEBUG("Sending requirements to %s", url);
@@ -124,11 +124,11 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
         || (t_http_config.t_http_response.l_http_code != 200
             && t_http_config.t_http_response.l_http_code != 201))
     {
-        COGNIT_LOG_ERROR("Requirements update failed with status code: %s", t_http_config.t_http_response.l_http_code);
+        COGNIT_LOG_ERROR("Requirements update failed with status code: %ld", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
         set_has_connection(pt_cognit_frontend_cli, false);
 
-        return COGNIT_ECODE_ERROR;
+        return -1;
     }
     else
     {
@@ -139,7 +139,7 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
         if (i8_ret != 0)
         {
             COGNIT_LOG_ERROR("Error parsing token");
-            return COGNIT_ECODE_ERROR;
+            return -1;
         }
     }
 
@@ -175,7 +175,7 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
 
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_GET;
-    t_http_config.ui32_timeout_ms = REQ_TIMEOUT * 1000;
+    t_http_config.ui32_timeout_ms = CFC_REQ_TIMEOUT * 1000;
     t_http_config.c_token         = biscuit_token;
 
     COGNIT_LOG_DEBUG("Sending ECF address request to %s", url);
@@ -185,11 +185,11 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
         || (t_http_config.t_http_response.l_http_code != 200
             && t_http_config.t_http_response.l_http_code != 201))
     {
-        COGNIT_LOG_ERROR("Get ECF failed with status code: %s", t_http_config.t_http_response.l_http_code);
+        COGNIT_LOG_ERROR("Get ECF failed with status code: %ld", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
         set_has_connection(pt_cognit_frontend_cli, false);
 
-        return COGNIT_ECODE_ERROR;
+        return -1;
     }
     else
     {
@@ -201,7 +201,7 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
         {
             COGNIT_LOG_ERROR("Error parsing token");
             set_has_connection(pt_cognit_frontend_cli, false);
-            return COGNIT_ECODE_ERROR;
+            return -1;
         }
     }
 

@@ -39,7 +39,7 @@ typedef struct SDeviceRuntime
   * @param t_reqs Requirements of the application
  * @return e_status_code_t Status returned by the cognit frontend client
 ***********************************************************/
-e_status_code_t device_runtime_init(device_runtime_t* pt_dr, char* config_path, scheduling_t t_reqs, faas_t* pt_faas);
+e_status_code_t device_runtime_init(device_runtime_t* pt_dr, cognit_config_t t_config, scheduling_t t_reqs, faas_t* pt_faas);
 
 /*******************************************************/ /**
  * @brief Parses faas_params, generates the payload and calls the edge cluster

@@ -198,6 +198,14 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
     return (res == CURLE_OK) ? 0 : -1;
 }
 
+cognit_config_t t_config = {
+    .cognit_frontend_endpoint   = "https://cognit-lab-frontend.sovereignedge.eu",
+    .cognit_frontend_usr        = "oneadmin",
+    .cognit_frontend_pwd        = "8ebGxK6kxsz7yCWV7nk",
+    // Only for testing with local Serverless Runtime, "" for normal execution
+    .local_endpoint             = "localhost:5555" 
+};
+
 scheduling_t app_reqs = {
     .flavour                     = "FaaS_generic_V2",
     .max_latency                 = 100,
@@ -220,8 +228,8 @@ int main(int argc, char const* argv[])
     faas_t t_faas;
     float* exec_response;
     e_status_code_t ret;
-
-    device_runtime_init(&t_my_device_runtime, "./examples/cognit-template.yml", app_reqs, &t_faas);
+    
+    device_runtime_init(&t_my_device_runtime, t_config, app_reqs, &t_faas);
 
     addFC(&t_faas, fc_name, fc_str);
     
