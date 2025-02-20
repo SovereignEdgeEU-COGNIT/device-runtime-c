@@ -26,7 +26,7 @@
 #define CF_ECF_ADDRESS_ENDPOINT "ec_fe"
 
 #define MAX_URL_LENGTH 512
-#define REQ_TIMEOUT    10
+#define CFC_REQ_TIMEOUT    10
 
 #define MAX_TOKEN_LENGTH 512
 #define MAX_HOSTS        15
@@ -34,12 +34,6 @@
 #define MAX_VNETS        15
 
 /**************** TYPEDEFS AND STRUCTS ********************/
-
-typedef enum ECFCState
-{
-    E_CFC_STATE_ERROR  = -1,
-    E_CFC_STATE_SUCCES = 0
-} e_cfc_state_t;
 
 typedef struct
 {
@@ -80,7 +74,7 @@ typedef struct SCognitFrontend
  * @param pt_cognit_config Pointer to the cognit_config_t structure containing the configuration.
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-e_cfc_state_t cognit_frontend_cli_init(cognit_frontend_cli_t* t_cognit_frontend_cli, cognit_config_t* pt_cognit_config);
+int cognit_frontend_cli_init(cognit_frontend_cli_t* t_cognit_frontend_cli, cognit_config_t* pt_cognit_config);
 
 /*******************************************************/ /**
  * @brief Authenticates to the cognit frontend and gets the token.
@@ -88,7 +82,7 @@ e_cfc_state_t cognit_frontend_cli_init(cognit_frontend_cli_t* t_cognit_frontend_
  * @param t_cognit_frontend_cli Pointer to the cognit_frontend_cli_t structure.
  * @return char pointer to the token.
 ***********************************************************/
-e_cfc_state_t cognit_frontend_cli_authenticate(cognit_frontend_cli_t* t_cognit_frontend_cli, char* token);
+int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* t_cognit_frontend_cli, char* token);
 
 /*******************************************************/ /**
  * @brief Updates the app requirement in the cognit frontend.
@@ -108,7 +102,7 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
  * @param ecf_address address of the edge cluster frontend.
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
-e_cfc_state_t cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
+int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
 
 void set_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli, bool value);
 

@@ -17,7 +17,7 @@
 #include "faas_parser.h"
 /***************** DEFINES AND MACROS *********************/
 #define MAX_URL_LENGTH        512
-#define REQ_TIMEOUT           60
+#define ECF_REQ_TIMEOUT           60
 #define FUNC_UPLOAD_ENDPOINT  "v1/daas/c/upload_fc"
 #define FAAS_REQUEST_ENDPOINT "v1/faas/c/faas_request"
 

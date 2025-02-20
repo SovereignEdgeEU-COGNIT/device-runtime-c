@@ -281,15 +281,25 @@ void parse_response(MyParam response, void** result)
 
 void addFC(faas_t* pt_faas, char* fc_name, char* fc_code)
 {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256((const unsigned char*)fc_code, strlen(fc_code), hash);
+
+    //3. Convertir el hash a una cadena hexadecimal
+    char hash_hex[SHA256_DIGEST_LENGTH * 2 + 1]; // 2 dígitos por byte + '\0'
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(&hash_hex[i * 2], "%02x", hash[i]);
+    }
+    hash_hex[SHA256_DIGEST_LENGTH * 2] = '\0';
+
     strcpy(pt_faas->myfunc.fc_code, fc_code);
-    strcpy(pt_faas->myfunc.fc_hash, "asdf");
+    strcpy(pt_faas->myfunc.fc_hash, hash_hex);
     pt_faas->myfunc.fc_id = 0;
     strcpy(pt_faas->myfunc.fc_name, fc_name);
 
     COGNIT_LOG_DEBUG("FC_NAME: %s", pt_faas->myfunc.fc_name);
     COGNIT_LOG_DEBUG("FC_CODE:\n%s", pt_faas->myfunc.fc_code);
     COGNIT_LOG_DEBUG("FC_ID: %d (still unset)", pt_faas->myfunc.fc_id);
-    COGNIT_LOG_DEBUG("FC_HASH: %s (not implemented)\n", pt_faas->myfunc.fc_hash);
+    COGNIT_LOG_DEBUG("FC_HASH: %s\n", pt_faas->myfunc.fc_hash);
 }
 
 int faas_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
@@ -347,7 +357,7 @@ int faas_deserialize_fc_upload_response(uint8_t* req_buf, int len)
     COGNIT_LOG_DEBUG("FC_NAME: %s", myfunc_response.fc_name);
     //COGNIT_LOG_DEBUG("FC_CODE:\n%s", myfunc_response.fc_code);
     COGNIT_LOG_DEBUG("FC_ID: %d", myfunc_response.fc_id);
-    COGNIT_LOG_DEBUG("FC_HASH: %s (not implemented)\n", myfunc_response.fc_hash);
+    COGNIT_LOG_DEBUG("FC_HASH: %s\n", myfunc_response.fc_hash);
 
     return ret;
 }
@@ -372,6 +382,9 @@ int faas_deserialize_faas_response(uint8_t* res_buf, int len, void** result)
 
 void faas_parser_init(faas_t* pt_faas)
 {
+    pt_faas->faas_request.bytes_pos = 0;
+    pt_faas->faas_request.params_count = 0;
+    pt_faas->faas_request.fc_id = 0;
     pt_faas->faas_request.my_bytes.arg          = NULL;
     pt_faas->faas_request.my_bytes.funcs.encode = encode_datos;
 }
