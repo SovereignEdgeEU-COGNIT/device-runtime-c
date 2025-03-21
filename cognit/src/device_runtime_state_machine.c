@@ -156,18 +156,18 @@ static e_status_code_t exec_offload_func(device_runtime_sm_t* pt_dr_sm, faas_t* 
 {
     //if ya se subio, simplemente devolver ID, si no añadir a array o algo
     COGNIT_LOG_INFO("Sending function to DaaS");
-    int fc_id = ecf_cli_upload_function_to_daas(&pt_dr_sm->ecf, pt_dr_sm->biscuit_token, pt_faas);
+    int fc_id = cfc_cli_upload_function_to_daas(&pt_dr_sm->cfc, pt_dr_sm->biscuit_token, pt_faas);
 
     if (fc_id != 0)
     {
-        faas_add_fc_id_to_request(pt_faas, fc_id);
+        pt_faas->fc_id = fc_id;
 
         COGNIT_LOG_INFO("Executing FaaS request...");
 
         COGNIT_LOG_INFO("Executing FaaS request...");
 
         COGNIT_LOG_DEBUG("Waiting for result...");
-        e_status_code_t ret = ecf_cli_faas_exec_sync(&pt_dr_sm->ecf, pt_dr_sm->biscuit_token, pt_faas, pt_exec_response);
+        e_status_code_t ret = ecf_cli_faas_exec_sync(&pt_dr_sm->ecf, pt_dr_sm->biscuit_token, pt_dr_sm->app_req_id, pt_faas, pt_exec_response);
 
         //Borrar datos de pt_faas?????
 
@@ -414,7 +414,7 @@ static void get_ecf_address_action(device_runtime_sm_t* pt_dr_sm)
     if (ret == 0)
     {
         COGNIT_LOG_DEBUG("ECF address obtained");
-        if (pt_dr_sm->m_t_config.local_endpoint == NULL)
+        if (pt_dr_sm->m_t_config.local_endpoint[0] == '\0')
         {
             ecf_cli_init(&pt_dr_sm->ecf, pt_dr_sm->cfc.ecf_resp.template);
         }
@@ -620,7 +620,7 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
         dr_state_machine_execute_transition(pt_dr_sm, RETRY_REQUIREMENTS_UPLOAD);
     }
 
-    COGNIT_LOG_INFO("rEQUIREMENTS SUCCESSFULLY UPLOADED! eNTERING get_ecf_address STATE...");
+    COGNIT_LOG_INFO("Requirements succesfully uploaded! Entering GET_ECF_ADDRESS state...");
     pt_dr_sm->requirements_changed = false;
     dr_state_machine_execute_transition(pt_dr_sm, REQUIREMENTS_UP);
 
@@ -640,7 +640,7 @@ int dr_state_machine_init(device_runtime_sm_t* pt_dr_sm, cognit_config_t t_confi
     pt_dr_sm->current_state = INIT;
     pt_dr_sm->m_t_config    = t_config;
 
-    faas_parser_init(pt_faas);
+    proto_parser_init(pt_faas);
 
     COGNIT_LOG_DEBUG("Starting state machine")
     execute_action(pt_dr_sm);

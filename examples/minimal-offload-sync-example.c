@@ -9,8 +9,6 @@
 #include <logger.h>
 #include <ip_utils.h>
 
-char fc_name[] = "my_calc";
-
 char* fc_str = "def my_calc(operation, param1, param2):\n"
                "    if operation == \"sum\":\n"
                "        result = param1 + param2\n"
@@ -52,40 +50,10 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
     curl = curl_easy_init();
     if (curl)
     {
-        /* --- Configuración de la autenticación del cliente --- */
-        /* Ruta al certificado del cliente (en formato PEM) */
-        //curl_easy_setopt(curl, CURLOPT_SSLCERT, "/ruta/al/certificado_cliente.pem");
-        /* Ruta a la clave privada del cliente (en formato PEM) */
-        //curl_easy_setopt(curl, CURLOPT_SSLKEY, "/ruta/a/la/clave_privada.pem");
-        /* Si la clave privada está protegida por una contraseña, descomenta la siguiente línea */
-        // curl_easy_setopt(curl, CURLOPT_KEYPASSWD, "mi_contraseña");
-
-        /* --- Configuración de las CA de confianza --- */
-        /* Especifica la ruta al archivo que contiene los certificados de las CA de confianza */
-        //curl_easy_setopt(curl, CURLOPT_CAINFO, "/ruta/al/archivo/cacert.pem");
-        /* Opcional: Si tienes un directorio con múltiples certificados CA, puedes especificarlo */
-        // curl_easy_setopt(curl, CURLOPT_CAPATH, "/ruta/al/directorio/ca");
-        
-        /* --- Opciones de seguridad recomendadas --- */
-        /* Verifica el certificado del servidor */
-        //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        /* Verifica que el nombre del host en el certificado concuerde con la URL */
-        //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
-
-        /* (Opcional) Activa el modo verbose para depuración */
-        // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-
-        if (config->binary)
-        {
-            headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
-        }
-        else
-        {
             // Set the request header
-            headers = curl_slist_append(headers, "Accept: application/json");
-            headers = curl_slist_append(headers, "Content-Type: application/json");
-            headers = curl_slist_append(headers, "charset: utf-8");
-        }
+        headers = curl_slist_append(headers, "Accept: application/json");
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        headers = curl_slist_append(headers, "charset: utf-8");
 
         if (config->c_token != NULL)
         {
@@ -100,7 +68,9 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
             // Set the callback function to handle the response data
             || curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&config->t_http_response) != CURLE_OK
             || curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_response_data_cb) != CURLE_OK
-            || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK)
+            || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK
+            || curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L) != CURLE_OK
+            || curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L) != CURLE_OK)
         {
             COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt() failed");
             return -1;
@@ -203,7 +173,7 @@ cognit_config_t t_config = {
     .cognit_frontend_usr        = "oneadmin",
     .cognit_frontend_pwd        = "8ebGxK6kxsz7yCWV7nk",
     // Only for testing with local Serverless Runtime, "" for normal execution
-    .local_endpoint             = "localhost:5555" 
+    .local_endpoint             = "" 
 };
 
 scheduling_t app_reqs = {
@@ -231,7 +201,7 @@ int main(int argc, char const* argv[])
     
     device_runtime_init(&t_my_device_runtime, t_config, app_reqs, &t_faas);
 
-    addFC(&t_faas, fc_name, fc_str);
+    addFC(&t_faas, fc_str);
     
     addSTRINGParam(&t_faas, "sum");
     addINT32Var(&t_faas, 8);

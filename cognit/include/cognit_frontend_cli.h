@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <cJSON.h>
 #include <cognit_config.h>
+#include <faas_parser.h>
 
 /***************** DEFINES AND MACROS *********************/
 #define MAX_ENERGY_SCHEDULING_POLICIES 1
@@ -24,6 +25,7 @@
 #define CF_AUTH_ENDPOINT        "v1/authenticate"
 #define CF_REQ_ENDPOINT         "v1/app_requirements"
 #define CF_ECF_ADDRESS_ENDPOINT "ec_fe"
+#define FUNC_UPLOAD_ENDPOINT  "v1/daas/upload"
 
 #define MAX_URL_LENGTH 512
 #define CFC_REQ_TIMEOUT    10
@@ -104,7 +106,9 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
 ***********************************************************/
 int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
 
-void set_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli, bool value);
+int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* biscuit_token, faas_t* pt_faas);
+
+void cfc_set_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli, bool value);
 
 bool cfc_get_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli);
 

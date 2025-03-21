@@ -21,7 +21,7 @@ int cognit_frontend_cli_init(cognit_frontend_cli_t* pt_cognit_frontend_cli, cogn
 
     memset(pt_cognit_frontend_cli, 0, sizeof(cognit_frontend_cli_t));
 
-    set_has_connection(pt_cognit_frontend_cli, false);
+    cfc_set_has_connection(pt_cognit_frontend_cli, false);
 
     // Setup the instance to point to the configuration
     pt_cognit_frontend_cli->m_t_config = pt_cognit_config;
@@ -61,7 +61,8 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
     {
         COGNIT_LOG_ERROR("Token creation failed with status code: %ld", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
-        set_has_connection(pt_cognit_frontend_cli, false);
+        faas_log_json_error_detail((const char*)t_http_config.t_http_response.ui8_response_data_buffer);
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
 
         return -1;
     }
@@ -74,12 +75,12 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
         if (token[0] == '\0')
         {
             COGNIT_LOG_ERROR("Error parsing token");
-            set_has_connection(pt_cognit_frontend_cli, false);
+            cfc_set_has_connection(pt_cognit_frontend_cli, false);
             return -1;
         }
     }
 
-    set_has_connection(pt_cognit_frontend_cli, true);
+    cfc_set_has_connection(pt_cognit_frontend_cli, true);
     // TODO IMPOORTANT handle the free of the response buffer???
 
     return 0;
@@ -96,7 +97,7 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
     if (pt_cognit_frontend_cli == NULL)
     {
         COGNIT_LOG_ERROR("Cognit frontend not initialized");
-        set_has_connection(pt_cognit_frontend_cli, false);
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
         return -1;
     }
 
@@ -126,13 +127,14 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
     {
         COGNIT_LOG_ERROR("Requirements update failed with status code: %ld", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
-        set_has_connection(pt_cognit_frontend_cli, false);
+        faas_log_json_error_detail((const char*)t_http_config.t_http_response.ui8_response_data_buffer);
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
 
         return -1;
     }
     else
     {
-        set_has_connection(pt_cognit_frontend_cli, true);
+        cfc_set_has_connection(pt_cognit_frontend_cli, true);
         COGNIT_LOG_DEBUG("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
         // Copy the response json to the token string
         *pt_app_req_id = atoi((char*)t_http_config.t_http_response.ui8_response_data_buffer);
@@ -159,14 +161,14 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     if (pt_cognit_frontend_cli == NULL)
     {
         COGNIT_LOG_ERROR("Cognit frontend not initialized");
-        set_has_connection(pt_cognit_frontend_cli, false);
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
         return -1;
     }
 
     if (biscuit_token == NULL)
     {
         COGNIT_LOG_ERROR("Token not provided");
-        set_has_connection(pt_cognit_frontend_cli, false);
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
         return -1;
     }
 
@@ -187,7 +189,8 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     {
         COGNIT_LOG_ERROR("Get ECF failed with status code: %ld", t_http_config.t_http_response.l_http_code);
         COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
-        set_has_connection(pt_cognit_frontend_cli, false);
+        faas_log_json_error_detail((const char*)t_http_config.t_http_response.ui8_response_data_buffer);
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
 
         return -1;
     }
@@ -200,19 +203,90 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
         if (i8_ret != 0)
         {
             COGNIT_LOG_ERROR("Error parsing token");
-            set_has_connection(pt_cognit_frontend_cli, false);
+            cfc_set_has_connection(pt_cognit_frontend_cli, false);
             return -1;
         }
     }
 
-    set_has_connection(pt_cognit_frontend_cli, true);
+    cfc_set_has_connection(pt_cognit_frontend_cli, true);
 
     // TODO IMPOORTANT handle the free of the response buffer???
 
     return 0;
 }
 
-void set_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli, bool value)
+int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* biscuit_token, faas_t* pt_faas)
+{
+    int8_t i8_ret               = 0;
+    uint8_t ui8_payload[1024 * 16];
+    size_t payload_len          = 0;
+    http_config_t t_http_config = { 0 };
+    char url[MAX_URL_LENGTH];
+    unsigned int fc_id             = 0;
+
+    if (pt_cfc_cli == NULL)
+    {
+        COGNIT_LOG_ERROR("Cognit frontend not initialized");
+        cfc_set_has_connection(pt_cfc_cli, false);
+        return 0;
+    }
+
+    if (biscuit_token == NULL)
+    {
+        COGNIT_LOG_ERROR("Token not provided");
+        cfc_set_has_connection(pt_cfc_cli, false);
+        return 0;
+    }
+
+    memset(url, 0, sizeof(url));
+    snprintf(url, MAX_URL_LENGTH, "%s/%s", pt_cfc_cli->m_t_config->cognit_frontend_endpoint, FUNC_UPLOAD_ENDPOINT);
+
+    t_http_config.c_url           = url;
+    t_http_config.c_method        = HTTP_METHOD_POST;
+    t_http_config.ui32_timeout_ms = CFC_REQ_TIMEOUT * 1000;
+    t_http_config.c_token         = biscuit_token;
+    t_http_config.binary          = false;
+
+    if (faasparser_parse_fc_as_str_json(pt_faas, ui8_payload, &payload_len) == JSON_ERR_CODE_OK)
+    {
+        COGNIT_LOG_DEBUG("FC parsed successfully, generated JSON: %s", ui8_payload);
+    }
+
+    COGNIT_LOG_DEBUG("FaaS execute sync [POST-URL]: %s", t_http_config.c_url);
+    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
+
+    if (i8_ret != 0
+        || t_http_config.t_http_response.ui8_response_data_buffer == NULL
+        || t_http_config.t_http_response.size == 0
+        || t_http_config.t_http_response.l_http_code != 200)
+    {
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
+        faas_log_json_error_detail((const char*)t_http_config.t_http_response.ui8_response_data_buffer);
+        cfc_set_has_connection(pt_cfc_cli, false);
+        return 0;
+    }
+    else
+    {
+        COGNIT_LOG_TRACE("JSON received size: %ld", t_http_config.t_http_response.size);
+        cfc_set_has_connection(pt_cfc_cli, false);
+
+        // Copy the response json to the response struct
+        i8_ret = faasparser_parse_json_str_as_fc_id_response(t_http_config.t_http_response.ui8_response_data_buffer, t_http_config.t_http_response.size);
+        fc_id = atoi((char*)t_http_config.t_http_response.ui8_response_data_buffer);
+        if (fc_id == 0)
+        {
+            COGNIT_LOG_ERROR("Error parsing JSON");
+        }
+    }
+
+    // TODO IMPOORTANT handle the free of the response buffer???
+
+    return fc_id;
+}
+
+
+
+void cfc_set_has_connection(cognit_frontend_cli_t* pt_cognit_frontend_cli, bool value)
 {
     pt_cognit_frontend_cli->has_connection = value;
 }

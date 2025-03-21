@@ -18,8 +18,7 @@
 /***************** DEFINES AND MACROS *********************/
 #define MAX_URL_LENGTH        512
 #define ECF_REQ_TIMEOUT           60
-#define FUNC_UPLOAD_ENDPOINT  "v1/daas/c/upload_fc"
-#define FAAS_REQUEST_ENDPOINT "v1/faas/c/faas_request"
+#define FAAS_REQUEST_ENDPOINT "v1/functions"
 
 /**************** TYPEDEFS AND STRUCTS ********************/
 
@@ -54,7 +53,7 @@ void ecf_cli_init(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, con
  * @param pt_exec_response Pointer to the execution response structure
  * @return 0 on success, an error code otherwise
 ***********************************************************/
-int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, char* biscuit_token, faas_t* pt_faas, void** pt_exec_response);
+int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, char* biscuit_token, int app_req_id, faas_t* pt_faas, void** pt_exec_response);
 
 int ecf_cli_upload_function_to_daas(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, char* biscuit_token, faas_t* pt_faas);
 
