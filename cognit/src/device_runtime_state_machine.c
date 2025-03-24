@@ -640,7 +640,7 @@ int dr_state_machine_init(device_runtime_sm_t* pt_dr_sm, cognit_config_t t_confi
     pt_dr_sm->current_state = INIT;
     pt_dr_sm->m_t_config    = t_config;
 
-    proto_parser_init(pt_faas);
+    pb_parser_init(pt_faas);
 
     COGNIT_LOG_DEBUG("Starting state machine")
     execute_action(pt_dr_sm);

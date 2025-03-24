@@ -5,7 +5,6 @@
 #include "nano.pb.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
-#include <openssl/sha.h>
 
 #define MAX_PARAMS  8
 
@@ -17,7 +16,7 @@ typedef struct SFaaS
     uint8_t params_count;
 } faas_t;
 
-void proto_parser_init(faas_t* pt_faas);
+void pb_parser_init(faas_t* pt_faas);
 
 #define ADD_VAR_FC(FIELD, FIELD_UPPER, TYPE)                \
     void add##FIELD_UPPER##Var(faas_t* pt_faas, TYPE val)   \
@@ -99,8 +98,8 @@ void addSTRINGParam(faas_t* pt_faas, const char* string);
 
 void addFC(faas_t* pt_faas, char* fc_code);
 
-int proto_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len);
+int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len);
 
-int proto_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, int len);
+int pb_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, int len);
 
-int proto_deserialize_faas_param(uint8_t* res_buf, int len, void** result);
+int pb_deserialize_faas_param(uint8_t* res_buf, int len, void** result);

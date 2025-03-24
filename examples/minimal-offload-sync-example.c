@@ -53,7 +53,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
             // Set the request header
         headers = curl_slist_append(headers, "Accept: application/json");
         headers = curl_slist_append(headers, "Content-Type: application/json");
-        headers = curl_slist_append(headers, "charset: utf-8");
+        //headers = curl_slist_append(headers, "charset: utf-8");
 
         if (config->c_token != NULL)
         {

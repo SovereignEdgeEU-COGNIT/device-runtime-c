@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <proto_parser.h>
+#include <pb_parser.h>
 
 /***************** DEFINES AND MACROS *********************/
 #define JSON_ERR_CODE_OK           0
@@ -41,8 +41,6 @@ typedef struct SExecResponse
 /******************* PUBLIC METHODS ***********************/
 
 int8_t faasparser_parse_fc_as_str_json(faas_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
-
-int8_t faasparser_parse_json_str_as_fc_id_response(const char* json_str, size_t len);
 
 /*******************************************************/ /**
  * @brief Parse the exec_faas_params_t struct to a JSON string

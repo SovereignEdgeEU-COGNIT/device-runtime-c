@@ -1,4 +1,4 @@
-#include "proto_parser.h"
+#include "pb_parser.h"
 #include "logger.h"
 
 #define MAX_BYTE_PARAMS 8 // Límite máximo de parámetros de tipo bytes
@@ -276,7 +276,7 @@ void addFC(faas_t* pt_faas, char* fc_code)
     COGNIT_LOG_DEBUG("FC_CODE:\n%s", pt_faas->myfunc.fc_code);
 }
 
-int proto_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
+int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
 {
     pb_ostream_t stream = pb_ostream_from_buffer(fc_req_buf, buf_len);
 
@@ -291,7 +291,7 @@ int proto_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
     }
 }
 
-int proto_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, int len)
+int pb_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, int len)
 {
     pb_ostream_t stream = pb_ostream_from_buffer(req_buf, len);
 
@@ -307,7 +307,7 @@ int proto_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, i
     }
 }
 
-int proto_deserialize_faas_param(uint8_t* res_buf, int len, void** result)
+int pb_deserialize_faas_param(uint8_t* res_buf, int len, void** result)
 {
     MyParam faas_response = MyParam_init_zero;
 
@@ -325,7 +325,7 @@ int proto_deserialize_faas_param(uint8_t* res_buf, int len, void** result)
     }
 }
 
-void proto_parser_init(faas_t* pt_faas)
+void pb_parser_init(faas_t* pt_faas)
 {
     pt_faas->params_count = 0;
     pt_faas->myfunc = MyFunc_init_zero;

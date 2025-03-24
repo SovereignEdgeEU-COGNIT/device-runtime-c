@@ -271,7 +271,6 @@ int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* bis
         cfc_set_has_connection(pt_cfc_cli, false);
 
         // Copy the response json to the response struct
-        i8_ret = faasparser_parse_json_str_as_fc_id_response(t_http_config.t_http_response.ui8_response_data_buffer, t_http_config.t_http_response.size);
         fc_id = atoi((char*)t_http_config.t_http_response.ui8_response_data_buffer);
         if (fc_id == 0)
         {
