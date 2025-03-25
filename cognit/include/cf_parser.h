@@ -48,6 +48,8 @@ int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements,
 
 int8_t cfparser_parse_json_str_as_ecf_address(const char* json_str, ecf_response_t* pt_ecf_res);
 
+int8_t faasparser_parse_fc_as_str_json(faas_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
+
 /******************* PRIVATE METHODS ***********************/
 
 #endif // CF_PARSER_H

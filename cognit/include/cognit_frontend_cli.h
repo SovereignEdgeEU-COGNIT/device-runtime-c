@@ -27,7 +27,7 @@
 #define CF_ECF_ADDRESS_ENDPOINT "ec_fe"
 #define FUNC_UPLOAD_ENDPOINT  "v1/daas/upload"
 
-#define MAX_URL_LENGTH 512
+#define MAX_URL_LENGTH 1024
 #define CFC_REQ_TIMEOUT    10
 
 #define MAX_TOKEN_LENGTH 512

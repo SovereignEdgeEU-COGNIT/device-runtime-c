@@ -39,19 +39,44 @@ In order to compile the project with a custom toolchain (for Arm systems, for ex
 
 ## User's manual
 ### Examples
-In the `examples/` folder one can find the minimal example for running a minimal example making use of the Cognit module. To run it:
+In the `examples/` folder one can find the minimal example making use of the Cognit module. To run it:
 
     ./examples/minimal-offload-example
 
 ### Configuration
-The configuration to connect to the Cognit Frontend is set in the cognit-template.yml file:
+The configuration to connect to the Cognit Frontend is set in a structure in the main file:
 
 ```c
-    api_endpoint: "https://cognit-lab-frontend.sovereignedge.eu" # no port needed
-    credentials: "your_username:your_password"
-    local_endpoint: "localhost:5555"
-
+    cognit_config_t t_config = {
+        .cognit_frontend_endpoint   = "https://cognit-lab-frontend.sovereignedge.eu",
+        .cognit_frontend_usr        = "",
+        b.cognit_frontend_pwd        = "",
+    };
 ```
-`Note: The "local_endpoint" field is used only for local testing purposes. If this field is not included (or is commented out), the Device Runtime will offload the functions to the Edge Cluster provided by the Cognit Frontend. Otherwise, the Device Runtime will connect to the Cognit Frontend but, afterward, will ignore the provided Edge Cluster and offload (or call) the functions to the local endpoint specified in the configuration file. This requires a Serverless Runtime to be running on the specified endpoint.`
 
+### Requirements
+The requirements of the application are also defined in a structure in the main file:
 
+```c
+    scheduling_t app_reqs = {
+        .flavour                     = "FaaS_generic_V2",
+        .max_latency                 = 100,
+        .max_function_execution_time = 3.5,
+        .min_renewable               = 85,
+        .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
+    };
+```
+
+`Note: This client requires the flavour of the app requirements to be "Faas_generic_V2". `
+
+### HTTP communication
+The HTTP requests are performed from the my_http_send_cb() function, which is called by the Cognit module when a request shall be done. The function receives the buffer to send and the rest of the needed parameters to configure the request. 
+
+```c
+    int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config)
+        {
+            ...
+        }
+```
+
+The minimal example implements this function using libcurl, but users can implement this function with the desired HTTP implementation. Just make your implementation of the function and modify the examples/CMakeLists.txt file to remove the linking of libcurl and add your library.

@@ -5,10 +5,10 @@
 #include <string.h>
 #include <logger.h>
 
-void ecf_cli_init(edge_cluster_frontend_cli_t* pt_ecf_cli, const char* c_endpoint)
+void ecf_cli_init(edge_cluster_frontend_cli_t* pt_ecf_cli, char* c_endpoint)
 {
     memset(pt_ecf_cli, 0, sizeof(edge_cluster_frontend_cli_t));
-    snprintf(pt_ecf_cli->t_ecf_endpoint, MAX_URL_LENGTH, c_endpoint);
+    snprintf(pt_ecf_cli->t_ecf_endpoint, MAX_URL_LENGTH, "%s", c_endpoint);
     ecf_set_has_connection(pt_ecf_cli, true);
 }
 
@@ -17,7 +17,7 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
     int8_t i8_ret               = 0;
     http_config_t t_http_config = { 0 };
     uint8_t ui8_payload[1024 * 16];
-    int payload_len;
+    size_t payload_len;
     char url[MAX_URL_LENGTH];
 
     if (pt_ecf_cli == NULL)
@@ -35,8 +35,12 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
     }
 
     memset(url, 0, sizeof(url));
-    snprintf(url, MAX_URL_LENGTH, "%s/%s/%d/execute?app_req_id=%d&mode=sync", pt_ecf_cli->t_ecf_endpoint, FAAS_REQUEST_ENDPOINT, pt_faas->fc_id, app_req_id);
-
+    
+    int url_len = snprintf(url, MAX_URL_LENGTH, "%s/%s/%d/execute?app_req_id=%d&mode=sync", pt_ecf_cli->t_ecf_endpoint, FAAS_REQUEST_ENDPOINT, pt_faas->fc_id, app_req_id);
+    if (url_len < 0 || url_len >= MAX_URL_LENGTH) 
+    {
+        return -1;
+    }
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
     t_http_config.ui32_timeout_ms = ECF_REQ_TIMEOUT * 1000;

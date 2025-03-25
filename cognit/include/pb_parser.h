@@ -92,7 +92,7 @@ void addSFIXED64Array(faas_t* pt_faas, int64_t array[], int length);
 
 //void addBOOLArray(faas_t *pt_faas, protobuf_c_boolean array[], int length);
 
-void addBYTESParam(faas_t* pt_faas, const uint8_t* bytes, size_t length);
+void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t length);
 
 void addSTRINGParam(faas_t* pt_faas, const char* string);
 

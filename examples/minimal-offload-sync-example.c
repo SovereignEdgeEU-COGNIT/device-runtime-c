@@ -163,17 +163,15 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
     // Clean global curl configuration
     curl_global_cleanup();
-    free(headers);
+    curl_slist_free_all(headers);
 
     return (res == CURLE_OK) ? 0 : -1;
 }
 
 cognit_config_t t_config = {
     .cognit_frontend_endpoint   = "https://cognit-lab-frontend.sovereignedge.eu",
-    .cognit_frontend_usr        = "oneadmin",
-    .cognit_frontend_pwd        = "8ebGxK6kxsz7yCWV7nk",
-    // Only for testing with local Serverless Runtime, "" for normal execution
-    .local_endpoint             = "" 
+    .cognit_frontend_usr        = "",
+    .cognit_frontend_pwd        = "",
 };
 
 scheduling_t app_reqs = {

@@ -129,7 +129,7 @@ bool encode_datos(pb_ostream_t* stream, const pb_field_iter_t* field, void* cons
     return pb_encode_string(stream, buffer, length);
 }
 
-void addBYTESParam(faas_t* pt_faas, const uint8_t* bytes, size_t length)
+void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t length)
 {
     MyParam param     = MyParam_init_zero;
     param.which_param = MyParam_my_bytes_tag;

@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include "faas_parser.h"
 /***************** DEFINES AND MACROS *********************/
-#define MAX_URL_LENGTH        512
+#define MAX_URL_LENGTH        1024
 #define ECF_REQ_TIMEOUT           60
 #define FAAS_REQUEST_ENDPOINT "v1/functions"
 
@@ -24,7 +24,7 @@
 
 typedef struct SEdgeClusterFrontendCli
 {
-    const char t_ecf_endpoint[MAX_URL_LENGTH];
+    char t_ecf_endpoint[MAX_URL_LENGTH];
     int has_connection;
 } edge_cluster_frontend_cli_t;
 /******************* GLOBAL VARIABLES *********************/
@@ -40,7 +40,7 @@ typedef struct SEdgeClusterFrontendCli
  * @param token Session token
  * @param c_endpoint Server endpoint URL
 ***********************************************************/
-void ecf_cli_init(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, const char* c_endpoint);
+void ecf_cli_init(edge_cluster_frontend_cli_t* pt_edge_cluster_frontend_cli, char* c_endpoint);
 
 /*******************************************************/ /**
  * @brief Executes a synchronous task on the edge_cluster

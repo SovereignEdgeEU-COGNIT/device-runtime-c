@@ -414,14 +414,8 @@ static void get_ecf_address_action(device_runtime_sm_t* pt_dr_sm)
     if (ret == 0)
     {
         COGNIT_LOG_DEBUG("ECF address obtained");
-        if (pt_dr_sm->m_t_config.local_endpoint[0] == '\0')
-        {
-            ecf_cli_init(&pt_dr_sm->ecf, pt_dr_sm->cfc.ecf_resp.template);
-        }
-        else
-        {
-            ecf_cli_init(&pt_dr_sm->ecf, pt_dr_sm->m_t_config.local_endpoint);
-        }
+        ecf_cli_init(&pt_dr_sm->ecf, pt_dr_sm->cfc.ecf_resp.template);
+        
     }
     else
     {
