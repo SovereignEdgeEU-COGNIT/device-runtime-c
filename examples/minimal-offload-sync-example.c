@@ -9,6 +9,7 @@
 #include <logger.h>
 #include <ip_utils.h>
 
+// Function to be offloaded.
 char* fc_str = "def my_calc(operation, param1, param2):\n"
                "    if operation == \"sum\":\n"
                "        result = param1 + param2\n"
@@ -50,7 +51,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
     curl = curl_easy_init();
     if (curl)
     {
-            // Set the request header
+        // Set the request header
         headers = curl_slist_append(headers, "Accept: application/json");
         headers = curl_slist_append(headers, "Content-Type: application/json");
         //headers = curl_slist_append(headers, "charset: utf-8");
@@ -170,23 +171,25 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
 cognit_config_t t_config = {
     .cognit_frontend_endpoint   = "https://cognit-lab-frontend.sovereignedge.eu",
-    .cognit_frontend_usr        = "",
-    .cognit_frontend_pwd        = "",
+    .cognit_frontend_usr        = "", // Put your username here.
+    .cognit_frontend_pwd        = "", // Put your password here.
 };
 
+// Set your own App requirements.
 scheduling_t app_reqs = {
-    .flavour                     = "FaaS_generic_V2",
-    .max_latency                 = 100,
-    .max_function_execution_time = 3.5,
-    .min_renewable               = 85,
+    .flavour                     = "FaaS_generic_V2", // Put a Flavour that your username is allowed to use.
+    .max_latency                 = 100,		      // Max latency required in miliseconds.
+    .max_function_execution_time = 3.5,		      // Max execution time required in seconds.
+    .min_renewable               = 85,		      // Minimal renewable energy resources required in percentage.
     .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
 };
 
+// Set your new App requirements.
 scheduling_t new_reqs = {
-    .flavour                     = "FaaS_generic_V2",
-    .max_latency                 = 80,
-    .max_function_execution_time = 8.5,
-    .min_renewable               = 50,
+    .flavour                     = "FaaS_generic_V2", // Put a Flavour that your username is allowed to use.
+    .max_latency                 = 80,		      // Max latency required in miliseconds.
+    .max_function_execution_time = 8.5,               // Max execution time required in seconds.
+    .min_renewable               = 50,                // Minimal renewable energy resources required in percentage.
     .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
 };
 

@@ -52,7 +52,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
     t_http_config.c_username      = pt_cognit_frontend_cli->m_t_config->cognit_frontend_usr;
     t_http_config.c_password      = pt_cognit_frontend_cli->m_t_config->cognit_frontend_pwd;
 
-    COGNIT_LOG_DEBUG("Requiesting token to %s", url);
+    COGNIT_LOG_DEBUG("Requesting token to %s", url);
     i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
 
     if (i8_ret != 0

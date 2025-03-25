@@ -553,7 +553,7 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
     }
     pt_dr_sm->requirements_changed = true;
     pt_dr_sm->m_t_requirements     = t_reqs;
-    COGNIT_LOG_INFO("Requirements have changed! Applying...");
+    COGNIT_LOG_INFO("Requirements have changed! Applying them...");
     pt_dr_sm->requirements_uploaded = false;
 
     if (!cfc_get_has_connection(&pt_dr_sm->cfc))
