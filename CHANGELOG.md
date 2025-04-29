@@ -2,12 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-
-## [Version 2.0.0] - 2025-02-07
-
+## [release-cognit-3.0]
+- Release M27.
 ### Added
 
-- Communication with Cognit Frontend.
-- Task-offloading to Edge Cluster.
-- C Cognit lib generation.
+- New serialization scheme using nanopb (constranied device implementation of Protobuf).
+- C client fully compliant with COGNIT v2 architecture.
+- mbedTLS for base64 and hash compute.
 
+## [Version 2.0.0] - 2025-02-07
