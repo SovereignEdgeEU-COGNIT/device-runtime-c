@@ -3,19 +3,21 @@
 #include <curl/curl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <serverless_runtime_context.h>
+#include <device_runtime.h>
 #include <unistd.h>
-#include <offload_fc_c.h>
-#include <faas_parser.h>
 #include <cognit_http.h>
 #include <logger.h>
 #include <ip_utils.h>
 
-FUNC_TO_STR(
-    mult_fc,
-    void mult(int a, int b, float* c) {
-        *c = a * b;
-    })
+// Function to be offloaded.
+char* fc_str = "def my_calc(operation, param1, param2):\n"
+               "    if operation == \"sum\":\n"
+               "        result = param1 + param2\n"
+               "    elif operation == \"multiply\":\n"
+               "        result = param1 * param2\n"
+               "    else:\n"
+               "        result = 0.0\n"
+               "    return result\n";
 
 size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, void* user_buffer)
 {
@@ -52,7 +54,14 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         // Set the request header
         headers = curl_slist_append(headers, "Accept: application/json");
         headers = curl_slist_append(headers, "Content-Type: application/json");
-        headers = curl_slist_append(headers, "charset: utf-8");
+        //headers = curl_slist_append(headers, "charset: utf-8");
+
+        if (config->c_token != NULL)
+        {
+            char token_header[MAX_TOKEN_LENGTH] = "token: ";
+            strcat(token_header, config->c_token);
+            headers = curl_slist_append(headers, token_header);
+        }
 
         if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers) != CURLE_OK
             // Configure URL and payload
@@ -60,9 +69,11 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
             // Set the callback function to handle the response data
             || curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&config->t_http_response) != CURLE_OK
             || curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_response_data_cb) != CURLE_OK
-            || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK)
+            || curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, config->ui32_timeout_ms) != CURLE_OK
+            || curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L) != CURLE_OK
+            || curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L) != CURLE_OK)
         {
-            COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt() failed");
+            COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt() failed");
             return -1;
         }
 
@@ -74,7 +85,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         {
             if (curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->IPRESOLVE_V6 failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->IPRESOLVE_V6 failed");
                 return -1;
             }
         }
@@ -85,7 +96,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->get() failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->get() failed");
                 return -1;
             }
         }
@@ -98,7 +109,19 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->post() failed");
+                return -1;
+            }
+        }
+        else if (strcmp(config->c_method, HTTP_METHOD_PUT) == 0)
+        {
+            if (curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT") != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, size) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_POSTFIELDS, c_buffer) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
+                || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
+            {
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->put() failed");
                 return -1;
             }
         }
@@ -108,13 +131,13 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
                 || curl_easy_setopt(curl, CURLOPT_USERNAME, config->c_username) != CURLE_OK
                 || curl_easy_setopt(curl, CURLOPT_PASSWORD, config->c_password) != CURLE_OK)
             {
-                COGNIT_LOG_ERROR("[hhtp_send_req_cb] curl_easy_setopt()->post() failed");
+                COGNIT_LOG_ERROR("[http_send_req_cb] curl_easy_setopt()->post() failed");
                 return -1;
             }
         }
         else
         {
-            COGNIT_LOG_ERROR("[hhtp_send_req_cb] Invalid HTTP method");
+            COGNIT_LOG_ERROR("[http_send_req_cb] Invalid HTTP method");
             return -1;
         }
 
@@ -122,7 +145,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         res = curl_easy_perform(curl);
 
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-        COGNIT_LOG_ERROR("HTTP err code %ld ", http_code);
+        COGNIT_LOG_INFO("HTTP err code %ld ", http_code);
 
         // Check errors
         if (res != CURLE_OK)
@@ -141,86 +164,59 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
 
     // Clean global curl configuration
     curl_global_cleanup();
-    free(headers);
+    curl_slist_free_all(headers);
 
     return (res == CURLE_OK) ? 0 : -1;
 }
 
+cognit_config_t t_config = {
+    .cognit_frontend_endpoint   = "https://cognit-lab-frontend.sovereignedge.eu",
+    .cognit_frontend_usr        = "", // Put your username here.
+    .cognit_frontend_pwd        = "", // Put your password here.
+};
+
+// Set your own App requirements.
+scheduling_t app_reqs = {
+    .flavour                     = "FaaS_generic_V2", // Put a Flavour that your username is allowed to use.
+    .max_latency                 = 100,		      // Max latency required in miliseconds.
+    .max_function_execution_time = 3.5,		      // Max execution time required in seconds.
+    .min_renewable               = 85,		      // Minimal renewable energy resources required in percentage.
+    .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
+};
+
+// Set your new App requirements.
+scheduling_t new_reqs = {
+    .flavour                     = "FaaS_generic_V2", // Put a Flavour that your username is allowed to use.
+    .max_latency                 = 80,		      // Max latency required in miliseconds.
+    .max_function_execution_time = 8.5,               // Max execution time required in seconds.
+    .min_renewable               = 50,                // Minimal renewable energy resources required in percentage.
+    .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
+};
+
 int main(int argc, char const* argv[])
 {
-    cognit_config_t t_my_cognit_config;
-    serverless_runtime_context_t t_my_serverless_runtime_context;
-    serverless_runtime_conf_t t_my_serverless_runtime_conf;
-    exec_response_t t_exec_response;
-    exec_faas_params_t exec_params = { 0 };
+    device_runtime_t t_my_device_runtime;
+    faas_t t_faas;
+    float* exec_response;
+    e_status_code_t ret;
+    
+    device_runtime_init(&t_my_device_runtime, t_config, app_reqs, &t_faas);
 
-    // Initialize the config for the serverless runtime context instance
-    t_my_cognit_config.prov_engine_endpoint   = "";
-    t_my_cognit_config.prov_engine_pe_usr     = "";
-    t_my_cognit_config.prov_engine_pe_pwd     = "";
-    t_my_cognit_config.prov_engine_port       = 0;
-    t_my_cognit_config.ui32_serv_runtime_port = 0;
+    addFC(&t_faas, fc_str);
+    
+    addSTRINGParam(&t_faas, "sum");
+    addINT32Var(&t_faas, 8);
+    addFLOATVar(&t_faas, 3.5);
 
-    serverless_runtime_ctx_init(&t_my_serverless_runtime_context, &t_my_cognit_config);
+    ret = device_runtime_call(&t_my_device_runtime, &t_faas, new_reqs, (void**)&exec_response);
 
-    // Cofigure the initial serverless runtime requirements
-    t_my_serverless_runtime_conf.name                                                  = "my_serverless_runtime";
-    t_my_serverless_runtime_conf.faas_flavour                                          = "DC_C_version_tests";
-    t_my_serverless_runtime_conf.m_t_energy_scheduling_policies.ui32_energy_percentage = 50;
-
-    if (serverless_runtime_ctx_create(&t_my_serverless_runtime_context, &t_my_serverless_runtime_conf) != E_ST_CODE_SUCCESS)
+    if (ret == E_ST_CODE_SUCCESS)
     {
-        printf("Error configuring serverless runtime\n");
-        return -1;
+        COGNIT_LOG_INFO("Result: %f", *exec_response);
     }
-
-    // Check the serverless runtime status
-
-    while (true)
+    else
     {
-        if (serverless_runtime_ctx_status(&t_my_serverless_runtime_context) == E_FAAS_STATE_RUNNING)
-        {
-            printf("Serverless runtime is ready\n");
-            break;
-        }
-
-        printf("Serverless runtime is not ready\n");
-
-        sleep(1);
+        COGNIT_LOG_ERROR("Error offloading function");
     }
-
-    // Offload the function exection to the serverless runtime
-    // This will use the callback function my_http_send_req to send the request
-
-    const char* includes = INCLUDE_HEADERS(#include<stdio.h> \n);
-    offload_fc_c_create(&exec_params, includes, mult_fc_str);
-    // Param 1
-    offload_fc_c_add_param(&exec_params, "a", "IN");
-    offload_fc_c_set_param(&exec_params, "int", "3");
-    // Param 2
-    offload_fc_c_add_param(&exec_params, "b", "IN");
-    offload_fc_c_set_param(&exec_params, "int", "4");
-    // Param 3
-    offload_fc_c_add_param(&exec_params, "c", "OUT");
-    offload_fc_c_set_param(&exec_params, "float", NULL);
-
-    serverless_runtime_ctx_call_sync(&t_my_serverless_runtime_context, &exec_params, &t_exec_response);
-
-    COGNIT_LOG_INFO("Result: %s", t_exec_response.res_payload);
-
-    // Free the resources
-    faasparser_destroy_exec_response(&t_exec_response);
-    offload_fc_c_destroy(&exec_params);
-
-    COGNIT_LOG_INFO("Deleting serverless runtime");
-
-    while (prov_engine_delete_runtime(&t_my_serverless_runtime_context.m_t_prov_engine_cli, t_my_serverless_runtime_context.m_t_serverless_runtime.ui32_id, &t_my_serverless_runtime_context.m_t_serverless_runtime) != 0)
-    {
-        COGNIT_LOG_ERROR("Error deleting serverless runtime");
-        sleep(1);
-    }
-
-    COGNIT_LOG_INFO("Serverless runtime deleted");
-
     return 0;
 }

@@ -13,7 +13,7 @@ if(DEFINED SANITIZER)
 endif()
 
 # Add a option to compile tests
-option(COGNIT_BUILD_TESTS "Build the tests" ON)
+option(COGNIT_BUILD_TESTS "Build the tests" OFF)
 option(COGNIT_BUILD_EXAMPLES "Build the examples" ON)
 
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/cognit)

@@ -15,7 +15,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <serverless_runtime_client.h>
+#include <pb_parser.h>
+
 /***************** DEFINES AND MACROS *********************/
 #define JSON_ERR_CODE_OK           0
 #define JSON_ERR_CODE_INVALID_JSON -1
@@ -23,29 +24,20 @@
 #define INCLUDE_HEADERS(...) \
     (#__VA_ARGS__)
 
-// Macro to create a string from a function
-#define FUNC_TO_STR(name, fn) \
-    fn const char name##_str[] = #fn;
-#define MAX_PARAMS 5
+
 /**************** TYPEDEFS AND STRUCTS ********************/
-typedef struct
+typedef enum
 {
-    char* type; // Float, int, char, bool
-    char* var_name;
-    char* value;  // Coded b64
-    char mode[4]; // "IN" or "OUT"
-} param_t;
+    SUCCESS = 0,
+    ERROR   = -1
+} exec_return_code_t;
 
-typedef struct
+typedef struct SExecResponse
 {
-    char lang[2]; // "PY", "C"
-    char* fc;
-    param_t params[MAX_PARAMS];
-    size_t params_count;
-} exec_faas_params_t;
-
-/******************* GLOBAL VARIABLES *********************/
-
+    exec_return_code_t ret_code;
+    void* res;
+    long err_code;
+} exec_response_t;
 /******************* PUBLIC METHODS ***********************/
 
 /*******************************************************/ /**
@@ -56,33 +48,18 @@ typedef struct
  * @param payload_len Length of the JSON string
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-int8_t faasparser_parse_exec_faas_params_as_str_json(exec_faas_params_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
+int8_t faasparser_parse_exec_faas_params_as_str_json(faas_t* exec_faas_params, uint8_t* ui8_payload_buff, size_t* payload_len);
 
 /*******************************************************/ /**
  * @brief Parse JSON string to exec_response_t struct
  * 
  * @param json_str JSON string
- * @param t_exec_response Struct to store the response
+ * @param pt_res Pointer to store the response
  * @return int8_t 0 if OK, -1 if error
 ***********************************************************/
-int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, exec_response_t* t_exec_response);
+int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, void** pt_res);
 
-/*******************************************************/ /**
- * @brief Parse JSON string to async_exec_response_t struct
- * 
- * @param json_str JSON string
- * @param t_async_exec_response Struct to store the response 
- * @return int8_t 0 if OK, -1 if error
-***********************************************************/
-int8_t faasparser_parse_json_str_as_async_exec_response(const char* json_str, async_exec_response_t* t_async_exec_response);
-
-/*******************************************************/ /**
- * @brief Frees the memory allocated for exec_faas_params_t struct
- * 
- * @param t_exec_response Struct to free
-***********************************************************/
-void faasparser_destroy_exec_response(exec_response_t* t_exec_response);
-
+void faas_log_json_error_detail(const char* response_body);
 /******************* PRIVATE METHODS ***********************/
 
 #endif // FAAS_PARSER_H
