@@ -6,7 +6,7 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(MyDouble, MyDouble, 4)
+PB_BIND(MyDouble, MyDouble, 2)
 
 
 PB_BIND(MyFloat, MyFloat, 2)
@@ -15,40 +15,40 @@ PB_BIND(MyFloat, MyFloat, 2)
 PB_BIND(MyInt32, MyInt32, 2)
 
 
-PB_BIND(MyInt64, MyInt64, 4)
+PB_BIND(MyInt64, MyInt64, 2)
 
 
 PB_BIND(MyUint32, MyUint32, 2)
 
 
-PB_BIND(MyUint64, MyUint64, 4)
+PB_BIND(MyUint64, MyUint64, 2)
 
 
 PB_BIND(MySint32, MySint32, 2)
 
 
-PB_BIND(MySint64, MySint64, 4)
+PB_BIND(MySint64, MySint64, 2)
 
 
 PB_BIND(MyFixed32, MyFixed32, 2)
 
 
-PB_BIND(MyFixed64, MyFixed64, 4)
+PB_BIND(MyFixed64, MyFixed64, 2)
 
 
 PB_BIND(MySfixed32, MySfixed32, 2)
 
 
-PB_BIND(MySfixed64, MySfixed64, 4)
+PB_BIND(MySfixed64, MySfixed64, 2)
 
 
 PB_BIND(MyBool, MyBool, 2)
 
 
-PB_BIND(MyParam, MyParam, 4)
+PB_BIND(MyParam, MyParam, 2)
 
 
-PB_BIND(MyFunc, MyFunc, 2)
+PB_BIND(MyFunc, MyFunc, 4)
 
 
 
