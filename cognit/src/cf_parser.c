@@ -1,7 +1,5 @@
 #include <cf_parser.h>
-#include "mbedtls/compat-2.x.h"
-#include <mbedtls/base64.h>
-#include <mbedtls/sha256.h>
+#include "cognit_encoding.h"
 #include <cJSON.h>
 #include <logger.h>
 
@@ -162,7 +160,7 @@ int8_t faasparser_parse_fc_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buf
     uint8_t ui8_payload[1024 * 16];
     int fc_len = pb_serialize_fc(pt_faas, ui8_payload, sizeof(ui8_payload));
 
-    if (mbedtls_base64_encode(str_encoded_fc, sizeof(str_encoded_fc), &out_fc_len, ui8_payload, fc_len) != 0) {
+    if (cognit_base64_encode(str_encoded_fc, sizeof(str_encoded_fc), &out_fc_len, ui8_payload, fc_len) != 0) {
         COGNIT_LOG_ERROR("Error coding in base64s");
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -172,7 +170,7 @@ int8_t faasparser_parse_fc_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buf
     
     str_to_hex(pt_faas->myfunc.fc_code, strlen(pt_faas->myfunc.fc_code), fc_hex);
     
-    if (mbedtls_sha256_ret((const unsigned char *)fc_hex, strlen(fc_hex), hash, 0) != 0) {
+    if (cognit_hash((const unsigned char *)fc_hex, strlen(fc_hex), hash) != 0) {
         COGNIT_LOG_ERROR("Error calculating hash SHA-256");
         return JSON_ERR_CODE_INVALID_JSON;
     }

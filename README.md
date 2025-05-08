@@ -69,14 +69,23 @@ The requirements of the application are also defined in a structure in the main 
 
 `Note: This client requires the flavour of the app requirements to be "Faas_generic_V2". `
 
-### HTTP communication
-The HTTP requests are performed from the my_http_send_cb() function, which is called by the Cognit module when a request shall be done. The function receives the buffer to send and the rest of the needed parameters to configure the request. 
+### Callbacks
+
+#### HTTP
+The HTTP requests are performed from the my_http_send_cb() callback, which is called by the Cognit module when a request shall be done. The callback receives the buffer to send and the rest of the needed parameters to configure the request. The minimal example implements this callback using libcurl, but users can implement it with the desired HTTP implementation. Just make your implementation and modify the examples/CMakeLists.txt file to remove the linking of libcurl and add your library.
 
 ```c
-    int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config)
-        {
-            ...
-        }
+    int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config);
 ```
 
-The minimal example implements this function using libcurl, but users can implement this function with the desired HTTP implementation. Just make your implementation of the function and modify the examples/CMakeLists.txt file to remove the linking of libcurl and add your library.
+#### Base64 and hash
+The library executes 3 different callbacks to manage the base64 encoding and the hash calculation, necessary for the communication with the Cognit platform. These callbacks shall be implemented using the library of choice of the user. The minimal example implements these callbacks using MbedTLS, but users can implement them with their library of choice. Modify the examples/CMakeLists.txt file to add your library and make your implementations.
+
+```c
+    int cognit_base64_encode(unsigned char str_b64_buff[], size_t buff_len, size_t *base64_len, char str[], int str_len);
+
+    int cognit_base64_decode(char decoded_buff[], size_t buff_size, size_t* decoded_len, const unsigned char* str, size_t str_len);
+
+    int cognit_hash(const unsigned char* str, size_t str_len, unsigned char hash[]);
+```
+

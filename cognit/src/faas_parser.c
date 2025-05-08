@@ -1,7 +1,7 @@
 #include <faas_parser.h>
 #include <cJSON.h>
 #include <logger.h>
-#include "mbedtls/base64.h"
+#include "cognit_encoding.h"
 
 int8_t faasparser_parse_exec_faas_params_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buff, size_t* payload_len)
 {
@@ -36,7 +36,7 @@ int8_t faasparser_parse_exec_faas_params_as_str_json(faas_t* pt_faas, uint8_t* u
         uint8_t str_param[1024 * 16];
         int param_len = pb_serialize_faas_param(pt_faas, i, str_param, sizeof(str_param));
         
-        if (mbedtls_base64_encode(str_b64_param, sizeof(str_b64_param), &base64_len, str_param, param_len) != 0) {
+        if (cognit_base64_encode(str_b64_param, sizeof(str_b64_param), &base64_len, str_param, param_len) != 0) {
             COGNIT_LOG_ERROR("Error coding in base64\n");
             return JSON_ERR_CODE_INVALID_JSON;
         }
@@ -88,8 +88,7 @@ int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, void** p
     t_exec_response.ret_code = ret_code_item->valueint;
 
     // Decode base64 res_item
-    int ret = mbedtls_base64_decode(res_payload, sizeof(res_payload), &out_len, (const unsigned char *) res_item->valuestring, strlen(res_item->valuestring));
-
+    int ret = cognit_base64_decode(res_payload, sizeof(res_payload), &out_len, (const unsigned char *) res_item->valuestring, strlen(res_item->valuestring));
     if (ret != 0) {
         COGNIT_LOG_ERROR("Error decoding base64: -0x%04x\n", -ret);
         return JSON_ERR_CODE_INVALID_JSON;
