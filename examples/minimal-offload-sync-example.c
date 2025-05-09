@@ -8,7 +8,7 @@
 #include <cognit_http.h>
 #include <cognit_encoding.h>
 #include <logger.h>
-#include <ip_utils.h>
+//#include <ip_utils.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/sha256.h>
 
@@ -55,10 +55,10 @@ size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, vo
     return realsize;
 }
 
-int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config)
+int8_t my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config)
 {
     CURL* curl;
-    CURLcode res;
+    CURLcode res = CURLE_OK;
     long http_code             = 0;
     struct curl_slist* headers = NULL;
     memset(&config->t_http_response.ui8_response_data_buffer, 0, sizeof(config->t_http_response.ui8_response_data_buffer));
@@ -168,7 +168,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         // Check errors
         if (res != CURLE_OK)
         {
-            long http_code = 0;
+            http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
             COGNIT_LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(res));
             COGNIT_LOG_ERROR("HTTP err code %ld ", http_code);

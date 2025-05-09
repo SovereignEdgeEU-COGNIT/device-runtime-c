@@ -31,7 +31,7 @@ void pb_parser_init(faas_t* pt_faas);
     {                                                                               \
         MyParam param                       = MyParam_init_zero;                    \
         param.which_param                   = MyParam_my_##FIELD##_tag;             \
-        param.param.my_##FIELD.values_count = length;                               \
+        param.param.my_##FIELD.values_count = (pb_size_t) length;                               \
         for (int i = 0; i < length; i++)                                            \
             param.param.my_##FIELD.values[i] = array[i];                        \
         if(pt_faas->params_count < MAX_PARAMS - 1)                          \
@@ -92,7 +92,7 @@ void addSFIXED64Array(faas_t* pt_faas, int64_t array[], int length);
 
 //void addBOOLArray(faas_t *pt_faas, protobuf_c_boolean array[], int length);
 
-void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t length);
+void addBYTESParam(faas_t* pt_faas, uint8_t* bytes);
 
 void addSTRINGParam(faas_t* pt_faas, const char* string);
 
@@ -100,6 +100,6 @@ void addFC(faas_t* pt_faas, char* fc_code);
 
 int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len);
 
-int pb_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, int len);
+int pb_serialize_faas_param(faas_t* pt_faas, int num, uint8_t* req_buf, int len);
 
 int pb_deserialize_faas_param(uint8_t* res_buf, int len, void** result);

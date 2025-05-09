@@ -31,7 +31,7 @@
 ***********************************************************/
 int cognit_base64_encode(unsigned char str_b64_buff[], size_t buff_len, size_t *base64_len, char str[], int str_len);
 
-int cognit_base64_decode(char decoded_buff[], size_t buff_size, size_t* decoded_len, const unsigned char* str, size_t str_len);
+int cognit_base64_decode(unsigned char decoded_buff[], size_t buff_size, size_t* decoded_len, const unsigned char* str, size_t str_len);
 
 int cognit_hash(const unsigned char* str, size_t str_len, unsigned char hash[]);
 

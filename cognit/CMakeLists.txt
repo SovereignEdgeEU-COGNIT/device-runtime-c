@@ -8,7 +8,6 @@ set(SRC_FILES
     "${PROJECT_ROOT}/src/cognit_frontend_cli.c"
     "${PROJECT_ROOT}/src/edge_cluster_frontend_cli.c"
     "${PROJECT_ROOT}/src/device_runtime.c"
-    "${PROJECT_ROOT}/src/ip_utils.c"
     "${PROJECT_ROOT}/src/device_runtime_state_machine.c"
     "${PROJECT_ROOT}/src/cf_parser.c"
     "${PROJECT_ROOT}/src/faas_parser.c"

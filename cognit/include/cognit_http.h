@@ -59,7 +59,7 @@ typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config
  * @param config HTTP client configuration
  * @return int 0 if success, -1 otherwise
 ***********************************************************/
-int cognit_http_send(const char* c_buffer, size_t size, http_config_t* config);
+int8_t cognit_http_send(const char* c_buffer, size_t size, http_config_t* config);
 
 /******************* PRIVATE METHODS ***********************/
 
