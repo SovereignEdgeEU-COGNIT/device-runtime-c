@@ -108,35 +108,31 @@ void printParams(faas_t* pt_faas)
     }
 }
 
-static bool encode_datos(pb_ostream_t* stream, const pb_field_iter_t* field, void* const* arg)
+typedef struct { const uint8_t *data; size_t len; } bytes_ctx_t;
+
+static bool encode_bytes(pb_ostream_t *stream,
+                         const pb_field_iter_t *field,
+                         void *const *arg)
 {
-    uint8_t* buffer = (uint8_t*)(*arg);
-    size_t length;
-    if (buffer == NULL)
-    {
-        length = 0;
-    }
-    else
-    {
-        length = strlen((char*)buffer); // O la longitud real de tus datos
-    }
-
-    if (!pb_encode_tag_for_field(stream, field))
-    {
-        return false;
-    }
-
-    return pb_encode_string(stream, buffer, length);
+    const bytes_ctx_t *ctx = (const bytes_ctx_t *)(*arg);
+    if (!pb_encode_tag_for_field(stream, field)) return false;
+    return pb_encode_string(stream, ctx->data, ctx->len);
 }
 
-void addBYTESParam(faas_t* pt_faas, uint8_t* bytes)
+
+void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t len)
 {
-    MyParam param     = MyParam_init_zero;
-    param.which_param = MyParam_my_bytes_tag;
-    
-    param.param.my_bytes.arg = bytes;
-    param.param.my_bytes.funcs.encode = encode_datos;
-    pt_faas->params[pt_faas->params_count++] = param;
+    static bytes_ctx_t ctx_pool[MAX_BYTE_PARAMS];
+    bytes_ctx_t *ctx = &ctx_pool[pt_faas->params_count];
+    ctx->data = bytes;
+    ctx->len  = len;
+
+    MyParam p = MyParam_init_zero;
+    p.which_param          = MyParam_my_bytes_tag;
+    p.param.my_bytes.arg   = ctx;
+    p.param.my_bytes.funcs.encode = encode_bytes;
+
+    pt_faas->params[pt_faas->params_count++] = p;
 }
 
 void addSTRINGParam(faas_t* pt_faas, const char* string)
@@ -144,11 +140,12 @@ void addSTRINGParam(faas_t* pt_faas, const char* string)
     MyParam param     = MyParam_init_zero;
     param.which_param = MyParam_my_string_tag;
     int i             = 0;
-    while (string[i] != '\0')
+    
+    do
     {
         param.param.my_string[i] = string[i];
         i++;
-    }
+    }while (string[i] != '\0');
 
     pt_faas->params[pt_faas->params_count++] = param;
 }
@@ -181,92 +178,175 @@ ADD_VAR_FC(sfixed32, SFIXED32, int32_t)
 ADD_VAR_FC(sfixed64, SFIXED64, int64_t)
 //ADD_VAR_FC(bool, BOOL, protobuf_c_boolean)
 
-static void parse_response(MyParam response, void** result)
+static void parse_response(FaasResponse response, void** result, size_t len)
 {
-    switch (response.which_param)
+    for(int i = 0; i < len; i++)
     {
-        case MyParam_my_float_tag:
+        MyParam my_param = response.my_faas_response[i];
+        
+        switch (my_param.which_param)
         {
-            *result = response.param.my_float.values;
-            COGNIT_LOG_DEBUG("Parsed response as FLOAT: %f", *((float*)*result));
-            break;
+            case MyParam_my_float_tag:
+            {
+                size_t count = my_param.param.my_float.values_count;
+                float *pt = malloc(count * sizeof(float));
+                memcpy(pt,
+                       my_param.param.my_float.values,
+                       count * sizeof(float));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_double_tag:
+            {
+                size_t count = my_param.param.my_double.values_count;
+                double *pt = malloc(count * sizeof(double));
+                memcpy(pt,
+                       my_param.param.my_double.values,
+                       count * sizeof(double));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_int32_tag:
+            {
+                size_t count = my_param.param.my_int32.values_count;
+                int32_t *pt = malloc(count * sizeof(int32_t));
+                memcpy(pt,
+                       my_param.param.my_int32.values,
+                       count * sizeof(int32_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_int64_tag:
+            {
+                size_t count = my_param.param.my_int64.values_count;
+                int64_t *pt = malloc(count * sizeof(int64_t));
+                memcpy(pt,
+                       my_param.param.my_int64.values,
+                       count * sizeof(int64_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_uint32_tag:
+            {
+                size_t count = my_param.param.my_uint32.values_count;
+                uint32_t *pt = malloc(count * sizeof(uint32_t));
+                memcpy(pt,
+                       my_param.param.my_uint32.values,
+                       count * sizeof(uint32_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_uint64_tag:
+            {
+                size_t count = my_param.param.my_uint64.values_count;
+                uint64_t *pt = malloc(count * sizeof(uint64_t));
+                memcpy(pt,
+                       my_param.param.my_uint64.values,
+                       count * sizeof(uint64_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_sint32_tag:
+            {
+                size_t count = my_param.param.my_sint32.values_count;
+                int32_t *pt = malloc(count * sizeof(int32_t));
+                memcpy(pt,
+                       my_param.param.my_sint32.values,
+                       count * sizeof(int32_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_sint64_tag:
+            {
+                size_t count = my_param.param.my_sint64.values_count;
+                int64_t *pt = malloc(count * sizeof(int64_t));
+                memcpy(pt,
+                       my_param.param.my_sint64.values,
+                       count * sizeof(int64_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_fixed32_tag:
+            {
+                size_t count = my_param.param.my_fixed32.values_count;
+                uint32_t *pt = malloc(count * sizeof(uint32_t));
+                memcpy(pt,
+                       my_param.param.my_fixed32.values,
+                       count * sizeof(uint32_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_fixed64_tag:
+            {
+                size_t count = my_param.param.my_fixed64.values_count;
+                uint64_t *pt = malloc(count * sizeof(uint64_t));
+                memcpy(pt,
+                       my_param.param.my_fixed64.values,
+                       count * sizeof(uint64_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_sfixed32_tag:
+            {
+                size_t count = my_param.param.my_sfixed32.values_count;
+                int32_t *pt = malloc(count * sizeof(int32_t));
+                memcpy(pt,
+                       my_param.param.my_sfixed32.values,
+                       count * sizeof(int32_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_sfixed64_tag:
+            {
+                size_t count = my_param.param.my_sfixed64.values_count;
+                int64_t *pt = malloc(count * sizeof(int64_t));
+                memcpy(pt,
+                       my_param.param.my_sfixed64.values,
+                       count * sizeof(int64_t));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_bool_tag:
+            {
+                size_t count = my_param.param.my_bool.values_count;
+                bool *pt = malloc(count * sizeof(bool));
+                memcpy(pt,
+                       my_param.param.my_bool.values,
+                       count * sizeof(bool));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_string_tag:
+            {
+                size_t len_str = strlen(my_param.param.my_string);
+                char *pt = malloc((len_str + 1) * sizeof(char));
+                memcpy(pt,
+                       my_param.param.my_string,
+                       (len_str + 1) * sizeof(char));
+                result[i] = pt;
+                break;
+            }
+            case MyParam_my_bytes_tag:
+            {
+                pb_bytes_array_t *orig = (pb_bytes_array_t*)my_param.param.my_bytes.arg;
+                if (orig != NULL)
+                {
+                    size_t total_size = sizeof(pb_bytes_array_t) + (orig->size - 1) * sizeof(uint8_t);
+                    pb_bytes_array_t *copy = malloc(total_size);
+                    memcpy(copy, orig, total_size);
+                    result[i] = copy;
+                }
+                else
+                {
+                    result[i] = NULL;
+                }
+                break;
+            }
+            default:
+                COGNIT_LOG_DEBUG("Unsupported param type.");
+                result[i] = NULL;
+                break;
         }
-        case MyParam_my_double_tag:
-        {
-            *result = response.param.my_double.values;
-            COGNIT_LOG_DEBUG("Parsed response as DOUBLE: %lf", *((double*)*result));
-            break;
-        }
-        case MyParam_my_int32_tag:
-        {
-            *result = response.param.my_int32.values;
-            COGNIT_LOG_DEBUG("Parsed response as INT32: %d", *((int32_t*)*result));
-            break;
-        }
-        case MyParam_my_int64_tag:
-        {
-            *result = response.param.my_int64.values;
-            COGNIT_LOG_DEBUG("Parsed response as INT64: %ld", *((int64_t*)*result));
-            break;
-        }
-        case MyParam_my_uint32_tag:
-        {
-            *result = response.param.my_uint32.values;
-            COGNIT_LOG_DEBUG("Parsed response as UINT32: %u", *((uint32_t*)*result));
-            break;
-        }
-        case MyParam_my_uint64_tag:
-        {
-            *result = response.param.my_uint64.values;
-            COGNIT_LOG_DEBUG("Parsed response as UINT64: %lu", *((uint64_t*)*result));
-            break;
-        }
-        case MyParam_my_sint32_tag:
-        {
-            *result = response.param.my_sint32.values;
-            COGNIT_LOG_DEBUG("Parsed response as SINT32: %d", *((int32_t*)*result));
-            break;
-        }
-        case MyParam_my_sint64_tag:
-        {
-            *result = response.param.my_sint64.values;
-            COGNIT_LOG_DEBUG("Parsed response as SINT64: %ld", *((int64_t*)*result));
-            break;
-        }
-        case MyParam_my_fixed32_tag:
-        {
-            *result = response.param.my_fixed32.values;
-            COGNIT_LOG_DEBUG("Parsed response as FIXED32: %u", *((uint32_t*)*result));
-            break;
-        }
-        case MyParam_my_fixed64_tag:
-        {
-            *result = response.param.my_fixed64.values;
-            COGNIT_LOG_DEBUG("Parsed response as FIXED64: %lu", *((uint64_t*)*result));
-            break;
-        }
-        case MyParam_my_sfixed32_tag:
-        {
-            *result = response.param.my_sfixed32.values;
-            COGNIT_LOG_DEBUG("Parsed response as SFIXED32: %d", *((int32_t*)*result));
-            break;
-        }
-        case MyParam_my_sfixed64_tag:
-        {
-            *result = response.param.my_sfixed64.values;
-            COGNIT_LOG_DEBUG("Parsed response as SFIXED64: %ld", *((int64_t*)*result));
-            break;
-        }
-        case MyParam_my_string_tag:
-        {
-            *result = response.param.my_string;
-            COGNIT_LOG_DEBUG("Parsed response as STRING: %s", (char*)*result);
-            break;
-        }
-        default:
-            COGNIT_LOG_DEBUG("Unsupported response type.");
-            *result = NULL;
-            break;
     }
 }
 
@@ -307,20 +387,21 @@ int pb_serialize_faas_param(faas_t* pt_faas, int num, uint8_t* req_buf, int len)
     }
 }
 
-int pb_deserialize_faas_param(uint8_t* res_buf, int len, void** result)
+int pb_deserialize_faas_param(uint8_t* res_buf, size_t buf_len, size_t* res_len, void** result)
 {
-    MyParam faas_response = MyParam_init_zero;
+    FaasResponse faas_response = MyParam_init_zero;
 
-    pb_istream_t istream = pb_istream_from_buffer(res_buf, (size_t) len);
+    pb_istream_t istream = pb_istream_from_buffer(res_buf, buf_len);
 
-    if (!pb_decode(&istream, MyParam_fields, &faas_response))
+    if (!pb_decode(&istream, FaasResponse_fields, &faas_response))
     {
         COGNIT_LOG_ERROR("Error deserializing: %s", PB_GET_ERROR(&istream));
         return -1;
     }
     else
     {
-        parse_response(faas_response, result);
+        *res_len = faas_response.my_faas_response_count;
+        parse_response(faas_response, result, *res_len);
         return 0;
     }
 }

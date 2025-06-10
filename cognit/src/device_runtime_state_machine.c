@@ -60,7 +60,7 @@ static void handle_send_init_request_state(device_runtime_sm_t* pt_dr_sm)
         }
         else
         {
-            if (is_requirement_upload_limit_reached(pt_dr_sm))
+            if (!is_requirement_upload_limit_reached(pt_dr_sm))
             {
                 COGNIT_LOG_DEBUG("Retrying to upload requirements...");
                 dr_state_machine_execute_transition(pt_dr_sm, RETRY_REQUIREMENTS_UPLOAD);
@@ -189,8 +189,11 @@ void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void
     {
         COGNIT_LOG_DEBUG("State is not READY. Handling transitions...");
         handle_transitions(pt_dr_sm);
-        COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
-        exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+        if (pt_dr_sm->current_state == READY)
+        {
+            COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
+            exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+        }
     }
 }
 
@@ -352,7 +355,7 @@ static int token_not_valid_requirements_condition(device_runtime_sm_t* pt_dr_sm)
 
 static int retry_requirements_upload_condition(device_runtime_sm_t* pt_dr_sm)
 {
-    if (have_requirements_changed(pt_dr_sm) && is_cfc_connected(pt_dr_sm) && !are_requirements_uploaded(pt_dr_sm) && !is_requirement_upload_limit_reached(pt_dr_sm))
+    if (have_requirements_changed(pt_dr_sm) && !are_requirements_uploaded(pt_dr_sm) && !is_requirement_upload_limit_reached(pt_dr_sm))
     {
         return 1;
     }
@@ -452,6 +455,7 @@ static void send_init_request_action(device_runtime_sm_t* pt_dr_sm)
     if (ret == 0)
     {
         pt_dr_sm->requirements_uploaded = true;
+
     }
     else
     {
@@ -553,6 +557,7 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
     {
         return E_ST_CODE_SUCCESS;
     }
+    
     pt_dr_sm->requirements_changed = true;
     pt_dr_sm->m_t_requirements     = t_reqs;
     COGNIT_LOG_INFO("Requirements have changed! Applying them...");
@@ -561,7 +566,6 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
     if (!cfc_get_has_connection(&pt_dr_sm->cfc))
     {
         COGNIT_LOG_ERROR("Frontend client is not connected: requirements could not be uploaded.");
-        memset(&pt_dr_sm->m_t_requirements, 0, sizeof(scheduling_t));
         if (pt_dr_sm->current_state == INIT)
         {
             dr_state_machine_execute_transition(pt_dr_sm, TOKEN_NOT_VALID_READY);
@@ -611,9 +615,11 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
             memset(&pt_dr_sm->m_t_requirements, 0, sizeof(scheduling_t));
             dr_state_machine_execute_transition(pt_dr_sm, LIMIT_REQUIREMENTS_UPLOAD);
             pt_dr_sm->requirements_changed = false;
+            pt_dr_sm->up_req_counter = 0;
             return E_ST_CODE_ERROR;
         }
         dr_state_machine_execute_transition(pt_dr_sm, RETRY_REQUIREMENTS_UPLOAD);
+
     }
 
     COGNIT_LOG_INFO("Requirements succesfully uploaded! Entering GET_ECF_ADDRESS state...");

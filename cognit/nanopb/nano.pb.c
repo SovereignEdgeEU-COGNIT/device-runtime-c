@@ -48,6 +48,9 @@ PB_BIND(MyBool, MyBool, 2)
 PB_BIND(MyParam, MyParam, 2)
 
 
+PB_BIND(FaasResponse, FaasResponse, 4)
+
+
 PB_BIND(MyFunc, MyFunc, 4)
 
 
