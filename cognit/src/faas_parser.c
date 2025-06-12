@@ -103,7 +103,7 @@ int8_t faasparser_parse_json_str_as_exec_response(const char* json_str, void** p
 
     cJSON_Delete(root);
 
-    return i_ret;
+    return (int) i_ret;
 }
 
 void faas_log_json_error_detail(const char* response_body)

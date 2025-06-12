@@ -245,7 +245,7 @@ char *mock_decision_algo_py =
 "    print(\"cycle_timedelta_s:\", cycle_timedelta_s)\n"
 "\n"
 "    # 2.1. conf_temp_per_room: usar preferred_temp tal cual\n"
-"    conf_temp_per_room: dict[str, float] = {}\n"
+"    conf_temp_per_room = {}\n"
 "    for idx, room_params in enumerate(heating_parameters_list):\n"
 "        room_name = f\"room_{idx}\"\n"
 "        conf_temp_per_room[room_name] = room_params[\"preferred_temp\"]\n"
@@ -260,7 +260,7 @@ char *mock_decision_algo_py =
 "    }\n"
 "\n"
 "    # 2.3. ev_params: si está disponible, cargar al 10% más\n"
-"    ev_params: dict[str, float | int] = {}\n"
+"    ev_params = {}\n"
 "    if ev_battery_parameters_dict[\"is_available\"]:\n"
 "        curr_ev = ev_battery_parameters_dict[\"curr_charge_level\"]\n"
 "        max_ev = ev_battery_parameters_dict[\"max_capacity\"]\n"
@@ -362,6 +362,11 @@ int main(int argc, char const* argv[])
         COGNIT_LOG_INFO("Result: %s", exec_response[0]);
         COGNIT_LOG_INFO("Result: %s", exec_response[1]);
         COGNIT_LOG_INFO("Result: %s", exec_response[2]);
+
+        //Free response pointers
+        for (int i = 0; i < 3; i++) {
+            free(exec_response[i]);
+        }
     }
     else
     {
