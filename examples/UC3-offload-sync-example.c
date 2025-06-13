@@ -223,18 +223,6 @@ char *mock_decision_algo_py =
 "    ev_battery_parameters_dict = json.loads(ev_battery_parameters)\n"
 "    heating_parameters_list = json.loads(heating_parameters_per_room)\n"
 "\n"
-"    # Opcional: imprimir valores para debug\n"
-"    print(\"timestamp:\", timestamp)\n"
-"    print(\"trained_model (bytes):\", trained_model)\n"
-"    print(\"home_model_parameters:\", home_model_parameters_dict)\n"
-"    print(\"storage_parameters:\", storage_parameters_dict)\n"
-"    print(\"ev_battery_parameters:\", ev_battery_parameters_dict)\n"
-"    print(\"heating_parameters_per_room:\", heating_parameters_list)\n"
-"    print(\"energy_pv_produced_pred:\", energy_pv_produced_pred)\n"
-"    print(\"uncontrolled_energy_consumption_pred:\", uncontrolled_energy_consumption_pred)\n"
-"    print(\"temp_outside_pred:\", temp_outside_pred)\n"
-"    print(\"cycle_timedelta_s:\", cycle_timedelta_s)\n"
-"\n"
 "    # 2.1. conf_temp_per_room: usar preferred_temp tal cual\n"
 "    conf_temp_per_room = {}\n"
 "    for idx, room_params in enumerate(heating_parameters_list):\n"
@@ -329,7 +317,7 @@ int main(int argc, char const* argv[])
     device_runtime_t t_my_device_runtime;
     faas_t t_faas;
     char* exec_response[3];
-    e_status_code_t ret;
+    e_status_code_t ret = E_ST_CODE_ERROR;
     
     device_runtime_init(&t_my_device_runtime, t_config, app_reqs, &t_faas);
 
@@ -349,7 +337,7 @@ int main(int argc, char const* argv[])
     ret = device_runtime_call(&t_my_device_runtime, &t_faas, new_reqs, (void*)exec_response);
 
     if (ret == E_ST_CODE_SUCCESS)
-    {
+    { 
         COGNIT_LOG_INFO("Result: %s", exec_response[0]);
         COGNIT_LOG_INFO("Result: %s", exec_response[1]);
         COGNIT_LOG_INFO("Result: %s", exec_response[2]);
@@ -363,6 +351,7 @@ int main(int argc, char const* argv[])
     {
         COGNIT_LOG_ERROR("Error offloading function");
     }
+
     return 0;
 }
 

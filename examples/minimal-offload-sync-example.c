@@ -188,8 +188,8 @@ int8_t my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* con
 
 cognit_config_t t_config = {
     .cognit_frontend_endpoint   = "https://cognit-lab-frontend.sovereignedge.eu",
-    .cognit_frontend_usr        = "oneadmin", // Put your username here.
-    .cognit_frontend_pwd        = "8ebGxK6kxsz7yCWV7nk", // Put your password here.
+    .cognit_frontend_usr        = "", // Put your username here.
+    .cognit_frontend_pwd        = "", // Put your password here.
 };
 
 // Set your own App requirements.

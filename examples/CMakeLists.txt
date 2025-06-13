@@ -1,6 +1,6 @@
 set(TEST_SRC_FILES "${PROJECT_ROOT}/src/cognit.c")
 
-set(MINIMAL_OFFLOAD_SYNC_EXAMPLE_TARGET minimal-offload-sync_example)
+set(MINIMAL_OFFLOAD_SYNC_EXAMPLE_TARGET minimal-offload-sync-example)
 
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
@@ -31,3 +31,13 @@ target_include_directories(${MINIMAL_OFFLOAD_SYNC_EXAMPLE_TARGET}
                            ${MBEDTLS_INCLUDE_DIR})
 
 target_link_libraries(${MINIMAL_OFFLOAD_SYNC_EXAMPLE_TARGET} ${CURL_LIBRARIES} ${MBEDTLS_LIBRARY} ${MBEDX509_LIBRARY} ${MBEDCRYPTO_LIBRARY}  ${PROJECT_NAME})
+
+add_executable(UC3-offload-sync-example
+               ${EXAMPLES_FOLDER}/UC3-offload-sync-example.c)
+target_include_directories(UC3-offload-sync-example
+  PRIVATE ${PROJECT_ROOT}/include ${MBEDTLS_INCLUDE_DIR})
+target_link_libraries(UC3-offload-sync-example
+  ${CURL_LIBRARIES} ${MBEDTLS_LIBRARY} ${MBEDX509_LIBRARY} ${MBEDCRYPTO_LIBRARY} ${PROJECT_NAME})
+
+add_custom_target(minimal DEPENDS minimal-offload-sync-example)
+add_custom_target(uc3     DEPENDS UC3-offload-sync-example)

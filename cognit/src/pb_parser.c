@@ -180,14 +180,15 @@ ADD_VAR_FC(sfixed64, SFIXED64, int64_t)
 
 static void parse_response(FaasResponse response, void** result, size_t len)
 {
-    for(int i = 0; i < len; i++)
+    for (int i = 0; i < len; i++)
     {
         MyParam my_param = response.my_faas_response[i];
-        
+
         switch (my_param.which_param)
         {
             case MyParam_my_float_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as float");
                 size_t count = my_param.param.my_float.values_count;
                 float *pt = malloc(count * sizeof(float));
                 memcpy(pt,
@@ -198,6 +199,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_double_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as double");
                 size_t count = my_param.param.my_double.values_count;
                 double *pt = malloc(count * sizeof(double));
                 memcpy(pt,
@@ -208,6 +210,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_int32_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as int32");
                 size_t count = my_param.param.my_int32.values_count;
                 int32_t *pt = malloc(count * sizeof(int32_t));
                 memcpy(pt,
@@ -218,6 +221,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_int64_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as int64");
                 size_t count = my_param.param.my_int64.values_count;
                 int64_t *pt = malloc(count * sizeof(int64_t));
                 memcpy(pt,
@@ -228,6 +232,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_uint32_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as uint32");
                 size_t count = my_param.param.my_uint32.values_count;
                 uint32_t *pt = malloc(count * sizeof(uint32_t));
                 memcpy(pt,
@@ -238,6 +243,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_uint64_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as uint64");
                 size_t count = my_param.param.my_uint64.values_count;
                 uint64_t *pt = malloc(count * sizeof(uint64_t));
                 memcpy(pt,
@@ -248,6 +254,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_sint32_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as sint32");
                 size_t count = my_param.param.my_sint32.values_count;
                 int32_t *pt = malloc(count * sizeof(int32_t));
                 memcpy(pt,
@@ -258,6 +265,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_sint64_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as sint64");
                 size_t count = my_param.param.my_sint64.values_count;
                 int64_t *pt = malloc(count * sizeof(int64_t));
                 memcpy(pt,
@@ -268,6 +276,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_fixed32_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as fixed32");
                 size_t count = my_param.param.my_fixed32.values_count;
                 uint32_t *pt = malloc(count * sizeof(uint32_t));
                 memcpy(pt,
@@ -278,6 +287,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_fixed64_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as fixed64");
                 size_t count = my_param.param.my_fixed64.values_count;
                 uint64_t *pt = malloc(count * sizeof(uint64_t));
                 memcpy(pt,
@@ -288,6 +298,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_sfixed32_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as sfixed32");
                 size_t count = my_param.param.my_sfixed32.values_count;
                 int32_t *pt = malloc(count * sizeof(int32_t));
                 memcpy(pt,
@@ -298,6 +309,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_sfixed64_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as sfixed64");
                 size_t count = my_param.param.my_sfixed64.values_count;
                 int64_t *pt = malloc(count * sizeof(int64_t));
                 memcpy(pt,
@@ -308,6 +320,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_bool_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as bool");
                 size_t count = my_param.param.my_bool.values_count;
                 bool *pt = malloc(count * sizeof(bool));
                 memcpy(pt,
@@ -318,6 +331,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_string_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as string");
                 size_t len_str = strlen(my_param.param.my_string);
                 char *pt = malloc((len_str + 1) * sizeof(char));
                 memcpy(pt,
@@ -328,6 +342,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
             }
             case MyParam_my_bytes_tag:
             {
+                COGNIT_LOG_DEBUG("Param parsed as bytes");
                 pb_bytes_array_t *orig = (pb_bytes_array_t*)my_param.param.my_bytes.arg;
                 if (orig != NULL)
                 {
@@ -343,7 +358,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
                 break;
             }
             default:
-                COGNIT_LOG_DEBUG("Unsupported param type.");
+                COGNIT_LOG_DEBUG("Unsupported param type");
                 result[i] = NULL;
                 break;
         }
