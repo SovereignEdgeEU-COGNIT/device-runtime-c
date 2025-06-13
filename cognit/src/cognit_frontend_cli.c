@@ -53,7 +53,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
     t_http_config.c_password      = pt_cognit_frontend_cli->m_t_config->cognit_frontend_pwd;
 
     COGNIT_LOG_DEBUG("Requesting token to %s", url);
-    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
+    i8_ret = cognit_http_send((char*) ui8_payload, payload_len, &t_http_config);
 
     if (i8_ret != 0
         || (t_http_config.t_http_response.l_http_code != 200
@@ -119,7 +119,7 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
     COGNIT_LOG_DEBUG("Requirements JSON: %s", ui8_payload);
 
     COGNIT_LOG_DEBUG("Sending requirements to %s", url);
-    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
+    i8_ret = cognit_http_send((char*)ui8_payload, payload_len, &t_http_config);
 
     if (i8_ret != 0
         || (t_http_config.t_http_response.l_http_code != 200
@@ -154,7 +154,7 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
 {
     int8_t i8_ret = 0;
     uint8_t ui8_payload[1024 * 16];
-    size_t payload_len;
+    size_t payload_len = 0;
     http_config_t t_http_config = { 0 };
     char url[MAX_URL_LENGTH];
 
@@ -181,7 +181,7 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     t_http_config.c_token         = biscuit_token;
 
     COGNIT_LOG_DEBUG("Sending ECF address request to %s", url);
-    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
+    i8_ret = cognit_http_send((char*) ui8_payload, payload_len, &t_http_config);
 
     if (i8_ret != 0
         || (t_http_config.t_http_response.l_http_code != 200
@@ -198,7 +198,7 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     {
         COGNIT_LOG_DEBUG("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
         // Copy the response json to the token string
-        cfparser_parse_json_str_as_ecf_address(t_http_config.t_http_response.ui8_response_data_buffer, &pt_cognit_frontend_cli->ecf_resp);
+        cfparser_parse_json_str_as_ecf_address((const char*) t_http_config.t_http_response.ui8_response_data_buffer, &pt_cognit_frontend_cli->ecf_resp);
         COGNIT_LOG_DEBUG("ECF IP: %s", pt_cognit_frontend_cli->ecf_resp.template);
         if (i8_ret != 0)
         {
@@ -222,7 +222,7 @@ int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* bis
     size_t payload_len          = 0;
     http_config_t t_http_config = { 0 };
     char url[MAX_URL_LENGTH];
-    unsigned int fc_id             = 0;
+    int fc_id             = 0;
 
     if (pt_cfc_cli == NULL)
     {
@@ -253,7 +253,7 @@ int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* bis
     }
 
     COGNIT_LOG_DEBUG("FaaS execute sync [POST-URL]: %s", t_http_config.c_url);
-    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
+    i8_ret = cognit_http_send((char*) ui8_payload, payload_len, &t_http_config);
 
     if (i8_ret != 0
         || t_http_config.t_http_response.ui8_response_data_buffer == NULL

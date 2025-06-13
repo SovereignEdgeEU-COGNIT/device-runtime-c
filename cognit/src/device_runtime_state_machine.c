@@ -2,44 +2,44 @@
 #include "logger.h"
 #include <string.h>
 
-bool is_cfc_connected(device_runtime_sm_t* pt_dr_sm)
+static bool is_cfc_connected(device_runtime_sm_t* pt_dr_sm)
 {
     return cfc_get_has_connection(&pt_dr_sm->cfc);
 }
 
-bool is_ecf_connected(device_runtime_sm_t* pt_dr_sm)
+static bool is_ecf_connected(device_runtime_sm_t* pt_dr_sm)
 {
     return ecf_get_has_connection(&pt_dr_sm->ecf);
 }
 
-bool have_requirements_changed(device_runtime_sm_t* pt_dr_sm)
+static bool have_requirements_changed(device_runtime_sm_t* pt_dr_sm)
 {
     return pt_dr_sm->requirements_changed;
 }
 
-bool is_get_address_limit_reached(device_runtime_sm_t* pt_dr_sm)
+static bool is_get_address_limit_reached(device_runtime_sm_t* pt_dr_sm)
 {
     return pt_dr_sm->get_address_counter >= MAX_GET_ADDRESS_ATTEMPTS;
 }
 
-bool is_token_empty(device_runtime_sm_t* pt_dr_sm)
+static bool is_token_empty(device_runtime_sm_t* pt_dr_sm)
 {
     return pt_dr_sm->biscuit_token[0] == '\0';
 }
 
-bool are_requirements_uploaded(device_runtime_sm_t* pt_dr_sm)
+static bool are_requirements_uploaded(device_runtime_sm_t* pt_dr_sm)
 {
     return pt_dr_sm->requirements_uploaded;
 }
 
-bool is_requirement_upload_limit_reached(device_runtime_sm_t* pt_dr_sm)
+static bool is_requirement_upload_limit_reached(device_runtime_sm_t* pt_dr_sm)
 {
     return pt_dr_sm->has_requirements_upload_limit_reached;
 }
 
 static void handle_init_state(device_runtime_sm_t* pt_dr_sm)
 {
-    if (!is_token_empty)
+    if (!is_token_empty(pt_dr_sm))
     {
         dr_state_machine_execute_transition(pt_dr_sm, SUCCESS_AUTH);
     }
@@ -60,7 +60,7 @@ static void handle_send_init_request_state(device_runtime_sm_t* pt_dr_sm)
         }
         else
         {
-            if (is_requirement_upload_limit_reached)
+            if (is_requirement_upload_limit_reached(pt_dr_sm))
             {
                 COGNIT_LOG_DEBUG("Retrying to upload requirements...");
                 dr_state_machine_execute_transition(pt_dr_sm, RETRY_REQUIREMENTS_UPLOAD);
@@ -148,6 +148,8 @@ static void handle_transitions(device_runtime_sm_t* pt_dr_sm)
             break;
         case READY:
             handle_ready_state(pt_dr_sm);
+            break;
+        default:
             break;
     }
 }
@@ -486,7 +488,7 @@ static void execute_action(device_runtime_sm_t* pt_dr_sm)
 // Function to get the next state based on the current state and event
 int dr_state_machine_execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t event)
 {
-    for (int i = 0; i < sizeof(transitions) / sizeof(sm_transition_t); i++)
+    for (size_t i = 0; i < sizeof(transitions) / sizeof(sm_transition_t); i++)
     {
         if (transitions[i].previous_state == pt_dr_sm->current_state && transitions[i].event == event)
         {

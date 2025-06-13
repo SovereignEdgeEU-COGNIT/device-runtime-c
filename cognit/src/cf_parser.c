@@ -1,11 +1,9 @@
 #include <cf_parser.h>
-#include "mbedtls/compat-2.x.h"
-#include <mbedtls/base64.h>
-#include <mbedtls/sha256.h>
+#include "cognit_encoding.h"
 #include <cJSON.h>
 #include <logger.h>
 
-static void str_to_hex(unsigned char *hash, unsigned int longitud_hash, char *hash_hex) {
+static void str_to_hex(unsigned char *hash, size_t longitud_hash, char *hash_hex) {
     for (unsigned int i = 0; i < longitud_hash; i++) {
         sprintf(&hash_hex[i * 2], "%02x", hash[i]);
     }
@@ -14,7 +12,7 @@ static void str_to_hex(unsigned char *hash, unsigned int longitud_hash, char *ha
 
 void cfparser_parse_str_response_as_token(char* token, uint8_t* ui8_payload)
 {
-    int len = strlen(ui8_payload);
+    size_t len = strlen((char*) ui8_payload);
     if (len > 1 && ui8_payload[0] == '"' && ui8_payload[len - 1] == '"')
     {
         // Mueve todos los caracteres una posición hacia atrás
@@ -104,9 +102,9 @@ int8_t cfparser_parse_json_str_as_ecf_address(const char* json_str, ecf_response
 
     cJSON* cname_item             = cJSON_GetObjectItem(root, "NAME");
     cJSON* ui32_id_item           = cJSON_GetObjectItem(root, "ID");
-    cJSON* hosts_item             = cJSON_GetObjectItem(root, "HOSTS");
-    cJSON* datastores_item        = cJSON_GetObjectItem(root, "DATASTORES");
-    cJSON* scheduling_config_item = cJSON_GetObjectItem(root, "VNETS");
+    //cJSON* hosts_item             = cJSON_GetObjectItem(root, "HOSTS");
+    //cJSON* datastores_item        = cJSON_GetObjectItem(root, "DATASTORES");
+    //cJSON* scheduling_config_item = cJSON_GetObjectItem(root, "VNETS");
     cJSON* template_item          = cJSON_GetObjectItem(root, "TEMPLATE");
 
     if (!cJSON_IsNumber(ui32_id_item) || !cJSON_IsString(cname_item))
@@ -138,10 +136,7 @@ int8_t cfparser_parse_json_str_as_ecf_address(const char* json_str, ecf_response
 int8_t faasparser_parse_fc_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buff, size_t* payload_len)
 {
     cJSON* root           = NULL;
-    cJSON* param          = NULL;
-    cJSON* params_array   = NULL;
     char* str_faas_json   = NULL;
-    int i_coded_param_len = 0;
     unsigned char str_encoded_fc[1024 * 16];
     size_t out_fc_len = 0;
     unsigned char hash[32];
@@ -162,7 +157,7 @@ int8_t faasparser_parse_fc_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buf
     uint8_t ui8_payload[1024 * 16];
     int fc_len = pb_serialize_fc(pt_faas, ui8_payload, sizeof(ui8_payload));
 
-    if (mbedtls_base64_encode(str_encoded_fc, sizeof(str_encoded_fc), &out_fc_len, ui8_payload, fc_len) != 0) {
+    if (cognit_base64_encode(str_encoded_fc, sizeof(str_encoded_fc), &out_fc_len, (char*) ui8_payload, fc_len) != 0) {
         COGNIT_LOG_ERROR("Error coding in base64s");
         return JSON_ERR_CODE_INVALID_JSON;
     }
@@ -170,9 +165,9 @@ int8_t faasparser_parse_fc_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buf
     // COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld", strlen(str_encoded_fc));
     cJSON_AddStringToObject(root, "FC", (const char*)str_encoded_fc);
     
-    str_to_hex(pt_faas->myfunc.fc_code, strlen(pt_faas->myfunc.fc_code), fc_hex);
+    str_to_hex((unsigned char*) pt_faas->myfunc.fc_code, strlen(pt_faas->myfunc.fc_code), fc_hex);
     
-    if (mbedtls_sha256_ret((const unsigned char *)fc_hex, strlen(fc_hex), hash, 0) != 0) {
+    if (cognit_hash((const unsigned char *)fc_hex, strlen(fc_hex), hash) != 0) {
         COGNIT_LOG_ERROR("Error calculating hash SHA-256");
         return JSON_ERR_CODE_INVALID_JSON;
     }

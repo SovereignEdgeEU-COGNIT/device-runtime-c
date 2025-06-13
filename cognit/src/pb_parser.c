@@ -108,7 +108,7 @@ void printParams(faas_t* pt_faas)
     }
 }
 
-bool encode_datos(pb_ostream_t* stream, const pb_field_iter_t* field, void* const* arg)
+static bool encode_datos(pb_ostream_t* stream, const pb_field_iter_t* field, void* const* arg)
 {
     uint8_t* buffer = (uint8_t*)(*arg);
     size_t length;
@@ -129,7 +129,7 @@ bool encode_datos(pb_ostream_t* stream, const pb_field_iter_t* field, void* cons
     return pb_encode_string(stream, buffer, length);
 }
 
-void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t length)
+void addBYTESParam(faas_t* pt_faas, uint8_t* bytes)
 {
     MyParam param     = MyParam_init_zero;
     param.which_param = MyParam_my_bytes_tag;
@@ -278,7 +278,7 @@ void addFC(faas_t* pt_faas, char* fc_code)
 
 int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
 {
-    pb_ostream_t stream = pb_ostream_from_buffer(fc_req_buf, buf_len);
+    pb_ostream_t stream = pb_ostream_from_buffer(fc_req_buf, (size_t) buf_len);
 
     if (!pb_encode(&stream, MyFunc_fields, &pt_faas->myfunc))
     {
@@ -287,13 +287,13 @@ int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
     }
     else
     {
-        return stream.bytes_written;
+        return (int) stream.bytes_written;
     }
 }
 
-int pb_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, int len)
+int pb_serialize_faas_param(faas_t* pt_faas, int num, uint8_t* req_buf, int len)
 {
-    pb_ostream_t stream = pb_ostream_from_buffer(req_buf, len);
+    pb_ostream_t stream = pb_ostream_from_buffer(req_buf, (size_t) len);
 
     if (!pb_encode(&stream, MyParam_fields, &pt_faas->params[num]))
     {
@@ -303,7 +303,7 @@ int pb_serialize_faas_param(faas_t* pt_faas, uint8_t num, uint8_t* req_buf, int 
     else
 
     {
-        return stream.bytes_written;
+        return (int) stream.bytes_written;
     }
 }
 
@@ -311,7 +311,7 @@ int pb_deserialize_faas_param(uint8_t* res_buf, int len, void** result)
 {
     MyParam faas_response = MyParam_init_zero;
 
-    pb_istream_t istream = pb_istream_from_buffer(res_buf, len);
+    pb_istream_t istream = pb_istream_from_buffer(res_buf, (size_t) len);
 
     if (!pb_decode(&istream, MyParam_fields, &faas_response))
     {

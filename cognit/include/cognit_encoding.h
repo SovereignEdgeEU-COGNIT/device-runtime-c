@@ -8,45 +8,15 @@
 *
 *	\version $(date) ${user} $(remarks)
 ***********************************************************/
-#ifndef COGNIT_HTTP_H
-#define COGNIT_HTTP_H
+#ifndef COGNIT_ENCODING_H
+#define COGNIT_ENCODING_H
 /********************** INCLUDES **************************/
-#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 /***************** DEFINES AND MACROS *********************/
-#define STR_PROTOCOL "https"
-
-#define HTTP_METHOD_GET    "GET"
-#define HTTP_METHOD_POST   "POST"
-#define HTTP_METHOD_PUT    "PUT"
-#define HTTP_METHOD_DELETE "DELETE"
-
-#define MAX_HTTP_RESPONSE_SIZE     30000
-#define MAX_HTTP_TRANSMISSION_SIZE 20000
 
 /**************** TYPEDEFS AND STRUCTS ********************/
 
-typedef struct
-{
-    uint8_t ui8_response_data_buffer[MAX_HTTP_RESPONSE_SIZE];
-    size_t size;
-    long l_http_code;
-} http_response_t;
-
-typedef struct
-{
-    http_response_t t_http_response;
-    const char* c_url;
-    const char* c_method;
-    uint32_t ui32_timeout_ms;
-    const char* c_username;
-    const char* c_password;
-    const char* c_token;
-    bool binary;
-} http_config_t;
-
-typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config_t* config);
 /******************* GLOBAL VARIABLES *********************/
 
 /******************* PUBLIC METHODS ***********************/
@@ -59,8 +29,12 @@ typedef int (*send_http_req_cb_t)(const char* c_buffer, size_t size, http_config
  * @param config HTTP client configuration
  * @return int 0 if success, -1 otherwise
 ***********************************************************/
-int8_t cognit_http_send(const char* c_buffer, size_t size, http_config_t* config);
+int cognit_base64_encode(unsigned char str_b64_buff[], size_t buff_len, size_t *base64_len, char str[], int str_len);
+
+int cognit_base64_decode(unsigned char decoded_buff[], size_t buff_size, size_t* decoded_len, const unsigned char* str, size_t str_len);
+
+int cognit_hash(const unsigned char* str, size_t str_len, unsigned char hash[]);
 
 /******************* PRIVATE METHODS ***********************/
 
-#endif // COGNIT_HTTP_H
+#endif // COGNIT_ENCODING_H

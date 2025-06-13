@@ -6,8 +6,11 @@
 #include <device_runtime.h>
 #include <unistd.h>
 #include <cognit_http.h>
+#include <cognit_encoding.h>
 #include <logger.h>
-#include <ip_utils.h>
+//#include <ip_utils.h>
+#include <mbedtls/base64.h>
+#include <mbedtls/sha256.h>
 
 // Function to be offloaded.
 char* fc_str = "def my_calc(operation, param1, param2):\n"
@@ -18,6 +21,21 @@ char* fc_str = "def my_calc(operation, param1, param2):\n"
                "    else:\n"
                "        result = 0.0\n"
                "    return result\n";
+
+int my_base64_encode_cb(unsigned char str_b64_buff[], size_t buff_len, size_t *base64_len, char str[], int str_len)
+{
+    return mbedtls_base64_encode(str_b64_buff, buff_len, base64_len, str, str_len);
+}
+
+int my_base64_decode_cb(char decoded_buff[], size_t buff_size, size_t* decoded_len, const unsigned char* str, size_t str_len)
+{
+    return mbedtls_base64_decode(decoded_buff, buff_size, decoded_len, str, str_len);
+}
+
+int my_hash_cb(const unsigned char* str, size_t str_len, unsigned char hash[])
+{
+    return mbedtls_sha256_ret(str, str_len, hash, 0);
+}
 
 size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, void* user_buffer)
 {
@@ -37,10 +55,10 @@ size_t handle_response_data_cb(void* data_content, size_t size, size_t nmemb, vo
     return realsize;
 }
 
-int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config)
+int8_t my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config)
 {
     CURL* curl;
-    CURLcode res;
+    CURLcode res = CURLE_OK;
     long http_code             = 0;
     struct curl_slist* headers = NULL;
     memset(&config->t_http_response.ui8_response_data_buffer, 0, sizeof(config->t_http_response.ui8_response_data_buffer));
@@ -150,7 +168,7 @@ int my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* config
         // Check errors
         if (res != CURLE_OK)
         {
-            long http_code = 0;
+            http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
             COGNIT_LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(res));
             COGNIT_LOG_ERROR("HTTP err code %ld ", http_code);

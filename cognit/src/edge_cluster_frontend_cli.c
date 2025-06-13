@@ -58,7 +58,7 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
         return -1;
     }
 
-    i8_ret = cognit_http_send(ui8_payload, payload_len, &t_http_config);
+    i8_ret = cognit_http_send((char*) ui8_payload, payload_len, &t_http_config);
     COGNIT_LOG_DEBUG("FaaS execute sync [POST-URL]: %s", t_http_config.c_url);
 
     if (i8_ret != 0
@@ -76,7 +76,7 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
         COGNIT_LOG_TRACE("JSON received size: %ld", t_http_config.t_http_response.size);
         ecf_set_has_connection(pt_ecf_cli, true);
 
-        faasparser_parse_json_str_as_exec_response(t_http_config.t_http_response.ui8_response_data_buffer, pt_exec_response);
+        faasparser_parse_json_str_as_exec_response((const char*) t_http_config.t_http_response.ui8_response_data_buffer, pt_exec_response);
 
         if (i8_ret != 0)
         {
