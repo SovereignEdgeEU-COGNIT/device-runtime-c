@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cognit_frontend_cli.h>
+#include "cognit_frontend_cli.h"
 
 /***************** DEFINES AND MACROS *********************/
 #define JSON_ERR_CODE_OK           0
