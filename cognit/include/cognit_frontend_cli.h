@@ -14,9 +14,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <cJSON.h>
-#include <cognit_config.h>
-#include <faas_parser.h>
+#include "cJSON.h"
+#include "cognit_config.h"
+#include "faas_parser.h"
 
 /***************** DEFINES AND MACROS *********************/
 #define MAX_ENERGY_SCHEDULING_POLICIES 1

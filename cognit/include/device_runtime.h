@@ -13,9 +13,9 @@
 /********************** INCLUDES **************************/
 #include <stdio.h>
 #include <stdbool.h>
-#include <cognit_frontend_cli.h>
-#include <cognit_config.h>
-#include <device_runtime_state_machine.h>
+#include "cognit_frontend_cli.h"
+#include "cognit_config.h"
+#include "device_runtime_state_machine.h"
 /***************** DEFINES AND MACROS *********************/
 #define FAAS_MAX_SEND_PAYLOD_SIZE 16384 // 16KB
 

@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pb_parser.h>
+#include "pb_parser.h"
 
 /***************** DEFINES AND MACROS *********************/
 #define JSON_ERR_CODE_OK           0
