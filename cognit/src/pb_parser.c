@@ -119,6 +119,10 @@ static bool encode_bytes(pb_ostream_t *stream,
     return pb_encode_string(stream, ctx->data, ctx->len);
 }
 
+void clearFaasArgs(faas_t* pt_faas)
+{
+    pt_faas->params_count = 0;
+}
 
 void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t len)
 {
