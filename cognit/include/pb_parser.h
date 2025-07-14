@@ -90,6 +90,8 @@ void addSFIXED32Array(faas_t* pt_faas, int32_t array[], int length);
 
 void addSFIXED64Array(faas_t* pt_faas, int64_t array[], int length);
 
+void clearFaasArgs(faas_t* pt_faas);
+
 //void addBOOLArray(faas_t *pt_faas, protobuf_c_boolean array[], int length);
 
 void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t len);
