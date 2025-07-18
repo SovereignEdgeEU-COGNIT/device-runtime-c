@@ -73,7 +73,9 @@ int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements,
 
     if (t_app_requirements->geolocation[0] != '\0')
     {
-        cJSON_AddStringToObject(root, "GEOLOCATION", t_app_requirements->geolocation);
+        cJSON* json = cJSON_AddObjectToObject(root, "GEOLOCATION"); /* TODO: add error handling for memory safety */
+        cJSON_AddNumberToObject(json, "latitude", 43.05);
+        cJSON_AddNumberToObject(json, "longitude", -2.53);
     }
 
     str_sr_json = cJSON_Print(root);
