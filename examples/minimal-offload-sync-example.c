@@ -21,6 +21,7 @@ char* fc_str = "def my_calc(operation, param1, param2):\n"
                "    else:\n"
                "        result = 0.0\n"
                "    return result\n";
+
 int my_base64_encode_cb(unsigned char str_b64_buff[], size_t buff_len, size_t *base64_len, char str[], int str_len)
 {
     return mbedtls_base64_encode(str_b64_buff, buff_len, base64_len, str, str_len);
@@ -194,20 +195,26 @@ cognit_config_t t_config = {
 
 // Set your own App requirements.
 scheduling_t app_reqs = {
-    .flavour                     = "FaaS_generic_V2", // Put a Flavour that your username is allowed to use.
+    .flavour                     = "Energy", // Put a Flavour that your username is allowed to use.
     .max_latency                 = 100,		      // Max latency required in miliseconds.
     .max_function_execution_time = 3.5,		      // Max execution time required in seconds.
     .min_renewable               = 85,		      // Minimal renewable energy resources required in percentage.
-    .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
+    .geolocation                 = {        
+        .latitude  = 40.4168f,
+        .longitude = -3.7038f
+    } 
 };
 
 // Set your new App requirements.
 scheduling_t new_reqs = {
-    .flavour                     = "FaaS_generic_V2", // Put a Flavour that your username is allowed to use.
+    .flavour                     = "Energy", // Put a Flavour that your username is allowed to use.
     .max_latency                 = 80,		      // Max latency required in miliseconds.
     .max_function_execution_time = 8.5,               // Max execution time required in seconds.
     .min_renewable               = 50,                // Minimal renewable energy resources required in percentage.
-    .geolocation                 = "IKERLAN ARRASATE/MONDRAGON 20500"
+    .geolocation                 = {        
+        .latitude  = 40.4168f,
+        .longitude = -3.7038f
+    }
 };
 
 int main(int argc, char const* argv[])
@@ -225,7 +232,7 @@ int main(int argc, char const* argv[])
     addINT32Var(&t_faas, 8);
     addFLOATVar(&t_faas, 3.5);
 
-    ret = device_runtime_call(&t_my_device_runtime, &t_faas, new_reqs, (void**)&exec_response);
+    ret = device_runtime_call(&t_my_device_runtime, &t_faas, app_reqs, (void**)&exec_response);
 
     if (ret == E_ST_CODE_SUCCESS)
     {

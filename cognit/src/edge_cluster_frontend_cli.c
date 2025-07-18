@@ -84,7 +84,7 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
         }
         else
         {
-            COGNIT_LOG_DEBUG("Response JSON parsed correctly");
+            COGNIT_LOG_DEBUG("Response JSON parsed correctly: %S", t_http_config.t_http_response.ui8_response_data_buffer);
         }
     }
 

@@ -542,7 +542,7 @@ static bool check_reqs(const scheduling_t* old_reqs, const scheduling_t* new_req
     {
         return true;
     }
-    if (strcmp(old_reqs->geolocation, new_reqs->geolocation) != 0)
+    if (old_reqs->geolocation.latitude != new_reqs->geolocation.latitude || old_reqs->geolocation.longitude != new_reqs->geolocation.longitude)
     {
         return true;
     }

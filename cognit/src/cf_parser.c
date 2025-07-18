@@ -63,7 +63,7 @@ int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements,
 
     if (t_app_requirements->max_latency > 0)
     {
-        if (t_app_requirements->geolocation == NULL)
+        if (t_app_requirements->geolocation.latitude == 0 && t_app_requirements->geolocation.longitude == 0)
         {
             COGNIT_LOG_ERROR("Geolocation is required if MAX_LATENCY is defined");
             cJSON_Delete(root);
@@ -71,9 +71,17 @@ int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements,
         }
     }
 
-    if (t_app_requirements->geolocation[0] != '\0')
+    if (t_app_requirements->geolocation.latitude != 0 || t_app_requirements->geolocation.longitude != 0)
     {
-        cJSON_AddStringToObject(root, "GEOLOCATION", t_app_requirements->geolocation);
+        cJSON* geolocation_item = cJSON_CreateObject();
+        if (root == NULL)
+        {
+            COGNIT_LOG_ERROR("Error creating cJSON object");
+            return JSON_ERR_CODE_INVALID_JSON;
+        }
+        cJSON_AddNumberToObject(geolocation_item, "latitude", t_app_requirements->geolocation.latitude);
+        cJSON_AddNumberToObject(geolocation_item, "longitude", t_app_requirements->geolocation.longitude);
+        cJSON_AddItemToObject(root, "GEOLOCATION", geolocation_item);
     }
 
     str_sr_json = cJSON_Print(root);
