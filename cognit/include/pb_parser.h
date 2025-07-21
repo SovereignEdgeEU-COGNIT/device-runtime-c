@@ -14,6 +14,7 @@ typedef struct SFaaS
     int fc_id;
     MyParam params[MAX_PARAMS];
     uint8_t params_count;
+    uint32_t timeout_ms;
 } faas_t;
 
 void pb_parser_init(faas_t* pt_faas);

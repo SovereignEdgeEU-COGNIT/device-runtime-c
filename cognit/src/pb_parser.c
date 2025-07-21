@@ -429,4 +429,5 @@ void pb_parser_init(faas_t* pt_faas)
 {
     pt_faas->params_count = 0;
     pt_faas->myfunc = MyFunc_init_zero;
+    pt_faas->timeout_ms = 0;
 }
