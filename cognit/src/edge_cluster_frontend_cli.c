@@ -43,7 +43,7 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
     }
     t_http_config.c_url           = url;
     t_http_config.c_method        = HTTP_METHOD_POST;
-    t_http_config.ui32_timeout_ms = ECF_REQ_TIMEOUT * 1000;
+    t_http_config.ui32_timeout_ms = pt_faas->timeout_ms > 0 ? pt_faas->timeout_ms : ECF_REQ_TIMEOUT * 1000;
     t_http_config.c_token         = biscuit_token;
     t_http_config.binary          = false;
 
