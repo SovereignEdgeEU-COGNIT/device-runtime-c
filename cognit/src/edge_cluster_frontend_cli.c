@@ -76,11 +76,15 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
         COGNIT_LOG_TRACE("JSON received size: %ld", t_http_config.t_http_response.size);
         ecf_set_has_connection(pt_ecf_cli, true);
 
-        faasparser_parse_json_str_as_exec_response((const char*) t_http_config.t_http_response.ui8_response_data_buffer, pt_exec_response);
+        i8_ret = faasparser_parse_json_str_as_exec_response((const char*) t_http_config.t_http_response.ui8_response_data_buffer, pt_exec_response);
 
         if (i8_ret != 0)
         {
             COGNIT_LOG_ERROR("Error parsing JSON");
+        }
+        else
+        {
+            COGNIT_LOG_DEBUG("Response JSON parsed correctly: %S", t_http_config.t_http_response.ui8_response_data_buffer);
         }
     }
 

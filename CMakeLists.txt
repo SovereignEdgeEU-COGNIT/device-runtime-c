@@ -5,10 +5,10 @@ cmake_minimum_required(VERSION 3.5)
 if(DEFINED SANITIZER)
   set(SANITIZER ${SANITIZER})
   set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -fstack-protector-all  -fstack-check -fsanitize=address -fsanitize=leak  -fno-omit-frame-pointer -g"
+      "${CMAKE_CXX_FLAGS} -fstack-protector-all  -fstack-check -fsanitize=address -fsanitize=leak  -fno-omit-frame-pointer -g -std=c11 -pedantic -Wall -Wextra -Wpointer-sign -Waddress -Wdiscarded-qualifiers -Wmaybe-uninitialized -Wconversion -Wsign-conversion -Wshadow -Wcast-align -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wundef -Wnested-externs -Wfloat-equal -Wformat=2 -Wformat-security -Wswitch-default -Wswitch-enum -Wstrict-overflow=5 -Winit-self"
   )
   set(CMAKE_C_FLAGS
-      "${CMAKE_C_FLAGS} -fstack-check -fstack-protector-all -fsanitize=address  -fsanitize=leak -fno-omit-frame-pointer -g -Wno-comment"
+      "${CMAKE_C_FLAGS} -fstack-check -fstack-protector-all -fsanitize=address  -fsanitize=leak -fno-omit-frame-pointer -g -Wno-comment -std=c11 -pedantic -Wall -Wextra -Wpointer-sign -Waddress -Wdiscarded-qualifiers -Wmaybe-uninitialized -Wconversion -Wsign-conversion -Wshadow -Wcast-align -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wundef -Wnested-externs -Wfloat-equal -Wformat=2 -Wformat-security -Wswitch-default -Wswitch-enum -Wstrict-overflow=5 -Winit-self"
   )
 endif()
 

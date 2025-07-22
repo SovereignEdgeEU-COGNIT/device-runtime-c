@@ -35,8 +35,9 @@ typedef enum
 typedef struct SExecResponse
 {
     exec_return_code_t ret_code;
-    void* res;
+    void** res;
     long err_code;
+    size_t ret_len;
 } exec_response_t;
 /******************* PUBLIC METHODS ***********************/
 

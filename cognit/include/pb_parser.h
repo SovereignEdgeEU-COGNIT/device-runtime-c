@@ -6,7 +6,7 @@
 #include "pb_encode.h"
 #include "pb_decode.h"
 
-#define MAX_PARAMS  8
+#define MAX_PARAMS  16
 
 typedef struct SFaaS
 {
@@ -92,7 +92,7 @@ void addSFIXED64Array(faas_t* pt_faas, int64_t array[], int length);
 
 //void addBOOLArray(faas_t *pt_faas, protobuf_c_boolean array[], int length);
 
-void addBYTESParam(faas_t* pt_faas, uint8_t* bytes);
+void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t len);
 
 void addSTRINGParam(faas_t* pt_faas, const char* string);
 
@@ -102,4 +102,4 @@ int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len);
 
 int pb_serialize_faas_param(faas_t* pt_faas, int num, uint8_t* req_buf, int len);
 
-int pb_deserialize_faas_param(uint8_t* res_buf, int len, void** result);
+int pb_deserialize_faas_param(uint8_t* res_buf, size_t buf_len, size_t* res_len, void** result);

@@ -28,7 +28,7 @@
 #define FUNC_UPLOAD_ENDPOINT  "v1/daas/upload"
 
 #define MAX_URL_LENGTH 1024
-#define CFC_REQ_TIMEOUT    10
+#define CFC_REQ_TIMEOUT    60
 
 #define MAX_TOKEN_LENGTH 512
 #define MAX_HOSTS        15
@@ -39,11 +39,17 @@
 
 typedef struct
 {
+    float latitude;
+    float longitude;
+}geolocation_t;
+
+typedef struct
+{
     char flavour[NAME_MAX_LEN];
     int max_latency;
     float max_function_execution_time;
     int min_renewable;
-    char geolocation[NAME_MAX_LEN];
+    geolocation_t geolocation;
 } scheduling_t;
 
 typedef struct SEdgeClusterFrontendResponse

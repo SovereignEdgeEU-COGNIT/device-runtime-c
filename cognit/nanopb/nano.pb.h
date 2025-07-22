@@ -106,10 +106,15 @@ typedef struct _MyParam {
         MySfixed32 my_sfixed32;
         MySfixed64 my_sfixed64;
         MyBool my_bool;
-        char my_string[129];
+        char my_string[1025];
         pb_callback_t my_bytes;
     } param;
 } MyParam;
+
+typedef struct _FaasResponse {
+    pb_size_t my_faas_response_count;
+    MyParam my_faas_response[8];
+} FaasResponse;
 
 /* Mensaje que describe una "función", 
  con campos string que necesitan un max_length si los vas a manejar con nanopb. */
@@ -137,6 +142,7 @@ extern "C" {
 #define MySfixed64_init_default                  {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 #define MyBool_init_default                      {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 #define MyParam_init_default                     {0, {MyDouble_init_default}}
+#define FaasResponse_init_default                {0, {MyParam_init_default, MyParam_init_default, MyParam_init_default, MyParam_init_default, MyParam_init_default, MyParam_init_default, MyParam_init_default, MyParam_init_default}}
 #define MyFunc_init_default                      {""}
 #define MyDouble_init_zero                       {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 #define MyFloat_init_zero                        {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
@@ -152,7 +158,8 @@ extern "C" {
 #define MySfixed64_init_zero                     {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 #define MyBool_init_zero                         {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 #define MyParam_init_zero                        {0, {MyDouble_init_zero}}
-#define MyFunc_init_zero                         ((MyFunc){""})
+#define FaasResponse_init_zero                   {0, {MyParam_init_zero, MyParam_init_zero, MyParam_init_zero, MyParam_init_zero, MyParam_init_zero, MyParam_init_zero, MyParam_init_zero, MyParam_init_zero}}
+#define MyFunc_init_zero                         (MyFunc){""}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define MyDouble_values_tag                      1
@@ -183,6 +190,7 @@ extern "C" {
 #define MyParam_my_bool_tag                      13
 #define MyParam_my_string_tag                    14
 #define MyParam_my_bytes_tag                     15
+#define FaasResponse_my_faas_response_tag        1
 #define MyFunc_fc_code_tag                       1
 
 /* Struct field encoding specification for nanopb */
@@ -283,6 +291,12 @@ X(a, CALLBACK, ONEOF,    BYTES,    (param,my_bytes,param.my_bytes),  15)
 #define MyParam_param_my_sfixed64_MSGTYPE MySfixed64
 #define MyParam_param_my_bool_MSGTYPE MyBool
 
+#define FaasResponse_FIELDLIST(X, a) \
+X(a, STATIC,   REPEATED, MESSAGE,  my_faas_response,   1)
+#define FaasResponse_CALLBACK NULL
+#define FaasResponse_DEFAULT NULL
+#define FaasResponse_my_faas_response_MSGTYPE MyParam
+
 #define MyFunc_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   fc_code,           1)
 #define MyFunc_CALLBACK NULL
@@ -302,6 +316,7 @@ extern const pb_msgdesc_t MySfixed32_msg;
 extern const pb_msgdesc_t MySfixed64_msg;
 extern const pb_msgdesc_t MyBool_msg;
 extern const pb_msgdesc_t MyParam_msg;
+extern const pb_msgdesc_t FaasResponse_msg;
 extern const pb_msgdesc_t MyFunc_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -319,10 +334,12 @@ extern const pb_msgdesc_t MyFunc_msg;
 #define MySfixed64_fields &MySfixed64_msg
 #define MyBool_fields &MyBool_msg
 #define MyParam_fields &MyParam_msg
+#define FaasResponse_fields &FaasResponse_msg
 #define MyFunc_fields &MyFunc_msg
 
 /* Maximum encoded size of messages (where known) */
 /* MyParam_size depends on runtime parameters */
+/* FaasResponse_size depends on runtime parameters */
 #define MyBool_size                              256
 #define MyDouble_size                            1152
 #define MyFixed32_size                           640
