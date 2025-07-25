@@ -49,7 +49,7 @@ int ecf_cli_faas_exec_sync(edge_cluster_frontend_cli_t* pt_ecf_cli, char* biscui
 
     if(faasparser_parse_exec_faas_params_as_str_json(pt_faas, ui8_payload, &payload_len) == 0)
     {
-        COGNIT_LOG_DEBUG("Params parsed successfully, generated JSON: %s", ui8_payload);
+        COGNIT_LOG_TRACE("Params parsed successfully, generated JSON: %s", ui8_payload);
     }
 
 
