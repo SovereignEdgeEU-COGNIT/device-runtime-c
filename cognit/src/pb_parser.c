@@ -372,7 +372,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
 void addFC(faas_t* pt_faas, char* fc_code)
 {
     strcpy(pt_faas->myfunc.fc_code, fc_code);
-    COGNIT_LOG_DEBUG("FC_CODE:\n%s", pt_faas->myfunc.fc_code);
+    COGNIT_LOG_TRACE("FC_CODE:\n%s", pt_faas->myfunc.fc_code);
 }
 
 int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)

@@ -68,7 +68,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
     }
     else
     {
-        COGNIT_LOG_DEBUG("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
         // Copy the response json to the token string
         cfparser_parse_str_response_as_token(token, t_http_config.t_http_response.ui8_response_data_buffer);
 

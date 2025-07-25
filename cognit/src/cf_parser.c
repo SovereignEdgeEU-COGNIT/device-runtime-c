@@ -164,7 +164,7 @@ int8_t faasparser_parse_fc_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buf
         return JSON_ERR_CODE_INVALID_JSON;
     }
 
-    // COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld", strlen(str_encoded_fc));
+    COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld", strlen(str_encoded_fc));
     cJSON_AddStringToObject(root, "FC", (const char*)str_encoded_fc);
     
     str_to_hex((unsigned char*) pt_faas->myfunc.fc_code, strlen(pt_faas->myfunc.fc_code), fc_hex);
