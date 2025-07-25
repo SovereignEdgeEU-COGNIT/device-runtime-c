@@ -179,7 +179,7 @@ static e_status_code_t exec_offload_func(device_runtime_sm_t* pt_dr_sm, faas_t* 
     return E_ST_CODE_ERROR;
 }
 
-void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response)
+e_status_code_t dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response)
 {
     if (pt_dr_sm->current_state == READY)
     {
@@ -201,6 +201,9 @@ void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void
                 exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
         }
     }
+
+    COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
+    return exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
 }
 
 static int address_obtained_condition(device_runtime_sm_t* pt_dr_sm)
@@ -440,7 +443,6 @@ static void get_ecf_address_action(device_runtime_sm_t* pt_dr_sm)
     {
         COGNIT_LOG_DEBUG("ECF address obtained");
         ecf_cli_init(&pt_dr_sm->ecf, pt_dr_sm->cfc.ecf_resp.template);
-        
     }
     else
     {
@@ -475,7 +477,6 @@ static void send_init_request_action(device_runtime_sm_t* pt_dr_sm)
     if (ret == 0)
     {
         pt_dr_sm->requirements_uploaded = true;
-
     }
     else
     {
@@ -582,7 +583,7 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
     {
         return E_ST_CODE_SUCCESS;
     }
-    
+
     pt_dr_sm->requirements_changed = true;
     pt_dr_sm->m_t_requirements     = t_reqs;
     COGNIT_LOG_INFO("Requirements have changed! Applying them...");
@@ -640,11 +641,10 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
             memset(&pt_dr_sm->m_t_requirements, 0, sizeof(scheduling_t));
             dr_state_machine_execute_transition(pt_dr_sm, LIMIT_REQUIREMENTS_UPLOAD);
             pt_dr_sm->requirements_changed = false;
-            pt_dr_sm->up_req_counter = 0;
+            pt_dr_sm->up_req_counter       = 0;
             return E_ST_CODE_ERROR;
         }
         dr_state_machine_execute_transition(pt_dr_sm, RETRY_REQUIREMENTS_UPLOAD);
-
     }
 
     COGNIT_LOG_INFO("Requirements succesfully uploaded! Entering GET_ECF_ADDRESS state...");
