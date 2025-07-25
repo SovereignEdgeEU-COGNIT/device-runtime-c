@@ -74,7 +74,7 @@ int dr_state_machine_execute_transition(device_runtime_sm_t* pt_dr_sm, Event_t e
 
 int dr_state_machine_init(device_runtime_sm_t* pt_dr_state_machine, cognit_config_t t_config, faas_t* pt_faas);
 
-void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response);
+e_status_code_t dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response);
 
 e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, scheduling_t t_reqs);
 

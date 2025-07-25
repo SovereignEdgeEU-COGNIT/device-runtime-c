@@ -179,11 +179,11 @@ static e_status_code_t exec_offload_func(device_runtime_sm_t* pt_dr_sm, faas_t* 
     return E_ST_CODE_ERROR;
 }
 
-void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response)
+e_status_code_t dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response)
 {
     if (pt_dr_sm->current_state == READY)
     {
-        exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+        return exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
     }
     else
     {
@@ -192,7 +192,7 @@ void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void
         if (pt_dr_sm->current_state == READY)
         {
             COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
-            exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+            return exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
         }
     }
 }

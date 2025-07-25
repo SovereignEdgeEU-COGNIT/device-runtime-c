@@ -260,7 +260,7 @@ int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* bis
         || t_http_config.t_http_response.size == 0
         || t_http_config.t_http_response.l_http_code != 200)
     {
-        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", t_http_config.t_http_response.l_http_code);
         faas_log_json_error_detail((const char*)t_http_config.t_http_response.ui8_response_data_buffer);
         cfc_set_has_connection(pt_cfc_cli, false);
         return 0;
