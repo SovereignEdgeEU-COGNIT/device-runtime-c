@@ -189,32 +189,38 @@ int8_t my_http_send_req_cb(const char* c_buffer, size_t size, http_config_t* con
 
 cognit_config_t t_config = {
     .cognit_frontend_endpoint   = "https://cognit-lab-frontend.sovereignedge.eu",
-    .cognit_frontend_usr        = "", // Put your username here.
-    .cognit_frontend_pwd        = "", // Put your password here.
+    .cognit_frontend_usr        = "oneadmin", // Put your username here.
+    .cognit_frontend_pwd        = "8ebGxK6kxsz7yCWV7nk", // Put your password here.
 };
 
 // Set your own App requirements.
 scheduling_t app_reqs = {
-    .flavour                     = "Energy", // Put a Flavour that your username is allowed to use.
+    .device_id                  = "device_12345", // Set to NULL to let the provisioning engine choose the device.
+    .flavour                     = "Nature", // Put a Flavour that your username is allowed to use.
     .max_latency                 = 100,		      // Max latency required in miliseconds.
     .max_function_execution_time = 3.5,		      // Max execution time required in seconds.
     .min_renewable               = 85,		      // Minimal renewable energy resources required in percentage.
     .geolocation                 = {        
         .latitude  = 40.4168f,
         .longitude = -3.7038f
-    } 
+    },
+    .provider                    = NULL,
+    .confidential_computing       = false
 };
 
 // Set your new App requirements.
 scheduling_t new_reqs = {
-    .flavour                     = "Energy", // Put a Flavour that your username is allowed to use.
+    .device_id                  = "device_12345", // Set
+    .flavour                     = "Nature", // Put a Flavour that your username is allowed to use.
     .max_latency                 = 80,		      // Max latency required in miliseconds.
     .max_function_execution_time = 8.5,               // Max execution time required in seconds.
     .min_renewable               = 50,                // Minimal renewable energy resources required in percentage.
     .geolocation                 = {        
         .latitude  = 40.4168f,
         .longitude = -3.7038f
-    }
+    },
+    .provider                    = NULL,
+    .confidential_computing       = false
 };
 
 int main(int argc, char const* argv[])
@@ -232,7 +238,7 @@ int main(int argc, char const* argv[])
     addINT32Var(&t_faas, 8);
     addFLOATVar(&t_faas, 3.5);
 
-    ret = device_runtime_call(&t_my_device_runtime, &t_faas, app_reqs, (void**)&exec_response);
+    ret = device_runtime_call(&t_my_device_runtime, &t_faas, new_reqs, (void**)&exec_response);
 
     if (ret == E_ST_CODE_SUCCESS)
     {
@@ -245,5 +251,8 @@ int main(int argc, char const* argv[])
     {
         COGNIT_LOG_ERROR("Error offloading function");
     }
+    
+    device_runtime_free(&t_my_device_runtime);
+
     return 0;
 }

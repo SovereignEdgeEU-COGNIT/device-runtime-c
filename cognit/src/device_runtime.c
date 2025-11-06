@@ -50,6 +50,21 @@ e_status_code_t device_runtime_call(device_runtime_t* pt_dr, faas_t *pt_faas, sc
     return E_ST_CODE_SUCCESS;
 }
 
+e_status_code_t device_runtime_free(device_runtime_t* pt_dr)
+{
+    if(pt_dr == NULL)
+    {
+        COGNIT_LOG_ERROR("Device runtime not initialized");
+        return E_ST_CODE_ERROR;
+    }
+
+    int ret = dr_state_machine_stop(&pt_dr->m_t_device_runtime_sm);
+
+    memset(pt_dr, 0, sizeof(device_runtime_t));
+
+    return E_ST_CODE_SUCCESS;
+}
+
 
 
 

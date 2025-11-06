@@ -45,11 +45,14 @@ typedef struct
 
 typedef struct
 {
+    char *device_id;
     char flavour[NAME_MAX_LEN];
     int max_latency;
     float max_function_execution_time;
     int min_renewable;
     geolocation_t geolocation;
+    char *provider;
+    bool confidential_computing;
 } scheduling_t;
 
 typedef struct SEdgeClusterFrontendResponse
@@ -111,6 +114,17 @@ int cognit_frontend_cli_update_requirements(cognit_frontend_cli_t* pt_cognit_fro
  * @return int 0 if success, -1 otherwise.
 ***********************************************************/
 int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
+
+/*******************************************************/ /**
+ * @brief Deletes the app requirements.
+ * 
+ * This function deletes the app requirements from the cognit frontend.
+ * 
+ * @param t_cognit_frontend_cli Pointer to the cognit_frontend_cli_t structure.
+ * @param ecf_address address of the edge cluster frontend.
+ * @return int 0 if success, -1 otherwise.
+***********************************************************/
+int cognit_frontend_cli_delete(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id);
 
 int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* biscuit_token, faas_t* pt_faas);
 
