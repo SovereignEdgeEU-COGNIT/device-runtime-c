@@ -185,6 +185,7 @@ cognit_config_t t_config = {
 
 // Set your own App requirements.
 scheduling_t app_reqs = {
+    .device_id                  = "device_UC3", // Optional: set your device ID to prefer a specific device.
     .flavour                     = "Energy", // Put a Flavour that your username is allowed to use.
     .max_latency                 = 100,		      // Max latency required in miliseconds.
     .max_function_execution_time = 3.5,		      // Max execution time required in seconds.
@@ -192,11 +193,14 @@ scheduling_t app_reqs = {
     .geolocation                 = {
         .latitude  = 40.4168f,
         .longitude = -3.7038f
-    }
+    },
+    .provider                    = NULL,
+    .confidential_computing      = false
 };
 
 // Set your new App requirements.
 scheduling_t new_reqs = {
+    .device_id                  = "device_UC3", // Optional: set your device ID to prefer a specific device.
     .flavour                     = "Energy", // Put a Flavour that your username is allowed to use.
     .max_latency                 = 80,		      // Max latency required in miliseconds.
     .max_function_execution_time = 8.5,               // Max execution time required in seconds.
@@ -204,7 +208,9 @@ scheduling_t new_reqs = {
     .geolocation                 = {
         .latitude  = 40.4168f,
         .longitude = -3.7038f
-    }
+    },
+    .provider                    = NULL,
+    .confidential_computing      = false
 };
 
 char *mock_decision_algo_py =
@@ -357,6 +363,8 @@ int main(int argc, char const* argv[])
     {
         COGNIT_LOG_ERROR("Error offloading function");
     }
+
+    device_runtime_free(&t_my_device_runtime);
 
     return 0;
 }
