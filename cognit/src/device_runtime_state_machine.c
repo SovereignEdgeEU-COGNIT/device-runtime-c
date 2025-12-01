@@ -175,26 +175,35 @@ static e_status_code_t exec_offload_func(device_runtime_sm_t* pt_dr_sm, faas_t* 
 
         return ret;
     }
-
+    
     return E_ST_CODE_ERROR;
 }
 
-void dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response)
+e_status_code_t dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt_faas, void** pt_exec_response)
 {
     if (pt_dr_sm->current_state == READY)
     {
-        exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+        dr_state_machine_execute_transition(pt_dr_sm, UPDATE_ECF_ADDRESS);
     }
-    else
+    
+    COGNIT_LOG_DEBUG("State is not READY. Handling transitions...");
+    handle_transitions(pt_dr_sm);
+    if (pt_dr_sm->current_state == READY)
     {
-        COGNIT_LOG_DEBUG("State is not READY. Handling transitions...");
-        handle_transitions(pt_dr_sm);
-        if (pt_dr_sm->current_state == READY)
+        COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
+        e_status_code_t ret = exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+        if (ret != E_ST_CODE_SUCCESS)
         {
-            COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
-            exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+            COGNIT_LOG_DEBUG("Offload failed, re-authenticating...");
+            dr_state_machine_execute_transition(pt_dr_sm, TOKEN_NOT_VALID_READY);
+            dr_state_machine_execute_transition(pt_dr_sm, TOKEN_UPDATED);
+            if (pt_dr_sm->current_state == READY)
+                exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
         }
     }
+
+    COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
+    return exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
 }
 
 static int address_obtained_condition(device_runtime_sm_t* pt_dr_sm)
@@ -259,7 +268,7 @@ static int address_update_requirements_condition(device_runtime_sm_t* pt_dr_sm)
 
 static int success_auth_condition(device_runtime_sm_t* pt_dr_sm)
 {
-    if (!is_token_empty(pt_dr_sm))
+    if (!is_token_empty(pt_dr_sm) && is_cfc_connected(pt_dr_sm))
     {
         return 1;
     }
@@ -389,6 +398,18 @@ static int send_init_update_requirements_condition(device_runtime_sm_t* pt_dr_sm
     }
 }
 
+static int update_ecf_address_condition(device_runtime_sm_t* pt_dr_sm)
+{
+    if (is_cfc_connected(pt_dr_sm))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 // Transition table for state machine
 sm_transition_t transitions[] = {
     { GET_ECF_ADDRESS, ADDRESS_OBTAINED, READY, address_obtained_condition },
@@ -398,6 +419,7 @@ sm_transition_t transitions[] = {
     { GET_ECF_ADDRESS, ADDRESS_UPDATE_REQUIREMENTS, SEND_INIT_REQUEST, address_update_requirements_condition },
     { INIT, SUCCESS_AUTH, SEND_INIT_REQUEST, success_auth_condition },
     { INIT, REPEAT_AUTH, INIT, repeat_auth_condition },
+    { INIT, TOKEN_UPDATED, READY, success_auth_condition },
     { READY, RESULT_GIVEN, READY, result_given_condition },
     { READY, TOKEN_NOT_VALID_READY, INIT, token_not_valid_ready_condition },
     { READY, TOKEN_NOT_VALID_READY_2, INIT, token_not_valid_ready_2_condition },
@@ -406,7 +428,8 @@ sm_transition_t transitions[] = {
     { SEND_INIT_REQUEST, TOKEN_NOT_VALID_REQUIREMENTS, INIT, token_not_valid_requirements_condition },
     { SEND_INIT_REQUEST, RETRY_REQUIREMENTS_UPLOAD, SEND_INIT_REQUEST, retry_requirements_upload_condition },
     { SEND_INIT_REQUEST, LIMIT_REQUIREMENTS_UPLOAD, INIT, limit_requirements_upload_condition },
-    { SEND_INIT_REQUEST, SEND_INIT_UPDATE_REQUIREMENTS, SEND_INIT_REQUEST, send_init_update_requirements_condition }
+    { SEND_INIT_REQUEST, SEND_INIT_UPDATE_REQUIREMENTS, SEND_INIT_REQUEST, send_init_update_requirements_condition },
+    { READY, UPDATE_ECF_ADDRESS, GET_ECF_ADDRESS, update_ecf_address_condition }   
 };
 
 // State functions
@@ -420,7 +443,6 @@ static void get_ecf_address_action(device_runtime_sm_t* pt_dr_sm)
     {
         COGNIT_LOG_DEBUG("ECF address obtained");
         ecf_cli_init(&pt_dr_sm->ecf, pt_dr_sm->cfc.ecf_resp.template);
-        
     }
     else
     {
@@ -455,7 +477,6 @@ static void send_init_request_action(device_runtime_sm_t* pt_dr_sm)
     if (ret == 0)
     {
         pt_dr_sm->requirements_uploaded = true;
-
     }
     else
     {
@@ -547,6 +568,11 @@ static bool check_reqs(const scheduling_t* old_reqs, const scheduling_t* new_req
         return true;
     }
 
+    if (strcmp(old_reqs->provider, new_reqs->provider) != 0)
+    {
+        return true;
+    }
+
     COGNIT_LOG_INFO("New requirements are equal to old requirements");
     return false;
 }
@@ -557,7 +583,7 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
     {
         return E_ST_CODE_SUCCESS;
     }
-    
+
     pt_dr_sm->requirements_changed = true;
     pt_dr_sm->m_t_requirements     = t_reqs;
     COGNIT_LOG_INFO("Requirements have changed! Applying them...");
@@ -615,11 +641,10 @@ e_status_code_t dr_sm_update_requirements(device_runtime_sm_t* pt_dr_sm, schedul
             memset(&pt_dr_sm->m_t_requirements, 0, sizeof(scheduling_t));
             dr_state_machine_execute_transition(pt_dr_sm, LIMIT_REQUIREMENTS_UPLOAD);
             pt_dr_sm->requirements_changed = false;
-            pt_dr_sm->up_req_counter = 0;
+            pt_dr_sm->up_req_counter       = 0;
             return E_ST_CODE_ERROR;
         }
         dr_state_machine_execute_transition(pt_dr_sm, RETRY_REQUIREMENTS_UPLOAD);
-
     }
 
     COGNIT_LOG_INFO("Requirements succesfully uploaded! Entering GET_ECF_ADDRESS state...");
@@ -647,5 +672,26 @@ int dr_state_machine_init(device_runtime_sm_t* pt_dr_sm, cognit_config_t t_confi
     COGNIT_LOG_DEBUG("Starting state machine")
     execute_action(pt_dr_sm);
 
+    return 0;
+}
+
+int dr_state_machine_stop(device_runtime_sm_t* pt_dr_state_machine)
+{
+    if (pt_dr_state_machine == NULL)
+    {
+        COGNIT_LOG_ERROR("Device runtime state machine not initialized");
+        return -1;
+    }
+
+    int ret = cognit_frontend_cli_delete(&pt_dr_state_machine->cfc, pt_dr_state_machine->biscuit_token, pt_dr_state_machine->app_req_id);
+    
+    if(ret != 0)
+    {
+        COGNIT_LOG_ERROR("Could not delete application requirements from Cognit Frontend");
+        return -1;
+    }
+
+    COGNIT_LOG_DEBUG("Application requirements deleted from Cognit Frontend");
+    
     return 0;
 }

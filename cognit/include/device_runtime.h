@@ -13,9 +13,9 @@
 /********************** INCLUDES **************************/
 #include <stdio.h>
 #include <stdbool.h>
-#include <cognit_frontend_cli.h>
-#include <cognit_config.h>
-#include <device_runtime_state_machine.h>
+#include "cognit_frontend_cli.h"
+#include "cognit_config.h"
+#include "device_runtime_state_machine.h"
 /***************** DEFINES AND MACROS *********************/
 #define FAAS_MAX_SEND_PAYLOD_SIZE 16384 // 16KB
 
@@ -50,6 +50,15 @@ e_status_code_t device_runtime_init(device_runtime_t* pt_dr, cognit_config_t t_c
  * @return e_status_code_t Execution status
 ***********************************************************/
 e_status_code_t device_runtime_call(device_runtime_t* pt_dr, faas_t* pt_faas, scheduling_t t_new_reqs, void** pt_exec_response);
+/******************* PRIVATE METHODS ***********************/
+
+/*******************************************************/ /**
+ * @brief Frees the device runtime library
+ * 
+ * @param pt_dr Device runtime instance
+ * @return e_status_code_t Execution status
+***********************************************************/
+e_status_code_t device_runtime_free(device_runtime_t* pt_dr);
 /******************* PRIVATE METHODS ***********************/
 
 #endif // DEVICE_RUNTIME_H

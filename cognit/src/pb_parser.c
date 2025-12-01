@@ -119,6 +119,10 @@ static bool encode_bytes(pb_ostream_t *stream,
     return pb_encode_string(stream, ctx->data, ctx->len);
 }
 
+void clearFaasArgs(faas_t* pt_faas)
+{
+    pt_faas->params_count = 0;
+}
 
 void addBYTESParam(faas_t* pt_faas, uint8_t* bytes, size_t len)
 {
@@ -368,7 +372,7 @@ static void parse_response(FaasResponse response, void** result, size_t len)
 void addFC(faas_t* pt_faas, char* fc_code)
 {
     strcpy(pt_faas->myfunc.fc_code, fc_code);
-    COGNIT_LOG_DEBUG("FC_CODE:\n%s", pt_faas->myfunc.fc_code);
+    COGNIT_LOG_TRACE("FC_CODE:\n%s", pt_faas->myfunc.fc_code);
 }
 
 int pb_serialize_fc(faas_t* pt_faas, uint8_t* fc_req_buf, int buf_len)
@@ -425,4 +429,5 @@ void pb_parser_init(faas_t* pt_faas)
 {
     pt_faas->params_count = 0;
     pt_faas->myfunc = MyFunc_init_zero;
+    pt_faas->timeout_ms = 0;
 }

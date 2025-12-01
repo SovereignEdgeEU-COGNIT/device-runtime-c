@@ -35,6 +35,17 @@ int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements,
         return JSON_ERR_CODE_INVALID_JSON;
     }
 
+    if (t_app_requirements->device_id != NULL)
+    {
+        cJSON_AddStringToObject(root, "DEVICE_ID", t_app_requirements->device_id);
+    }
+    else
+    {
+        COGNIT_LOG_ERROR("Device ID not specified");
+        cJSON_Delete(root);
+        return -1;
+    }
+
     if (t_app_requirements->flavour != NULL)
     {
         cJSON_AddStringToObject(root, "FLAVOUR", t_app_requirements->flavour);
@@ -84,6 +95,22 @@ int8_t cfparser_parse_requirements_as_str_json(scheduling_t* t_app_requirements,
         cJSON_AddItemToObject(root, "GEOLOCATION", geolocation_item);
     }
 
+    if (t_app_requirements->provider != NULL)
+    {
+        cJSON_AddStringToObject(root, "PROVIDER", t_app_requirements->provider);
+    }
+
+    if (t_app_requirements->confidential_computing == true || t_app_requirements->confidential_computing == false)
+    {
+        cJSON_AddBoolToObject(root, "CONFIDENTIAL_COMPUTING", t_app_requirements->confidential_computing);
+    }
+    else
+    {
+        COGNIT_LOG_ERROR("Confidentiality not specified");
+        cJSON_Delete(root);
+        return -1;
+    }
+    
     str_sr_json = cJSON_Print(root);
 
     // Copy the json string to the payload buffer
@@ -170,7 +197,7 @@ int8_t faasparser_parse_fc_as_str_json(faas_t* pt_faas, uint8_t* ui8_payload_buf
         return JSON_ERR_CODE_INVALID_JSON;
     }
 
-    // COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld", strlen(str_encoded_fc));
+    COGNIT_LOG_DEBUG("strlen(str_encoded_fc): %ld", strlen(str_encoded_fc));
     cJSON_AddStringToObject(root, "FC", (const char*)str_encoded_fc);
     
     str_to_hex((unsigned char*) pt_faas->myfunc.fc_code, strlen(pt_faas->myfunc.fc_code), fc_hex);

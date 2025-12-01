@@ -68,7 +68,7 @@ int cognit_frontend_cli_authenticate(cognit_frontend_cli_t* pt_cognit_frontend_c
     }
     else
     {
-        COGNIT_LOG_DEBUG("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
+        COGNIT_LOG_TRACE("Response JSON: %s", t_http_config.t_http_response.ui8_response_data_buffer);
         // Copy the response json to the token string
         cfparser_parse_str_response_as_token(token, t_http_config.t_http_response.ui8_response_data_buffer);
 
@@ -215,6 +215,55 @@ int cognit_frontend_cli_get_ecf_address(cognit_frontend_cli_t* pt_cognit_fronten
     return 0;
 }
 
+int cognit_frontend_cli_delete(cognit_frontend_cli_t* pt_cognit_frontend_cli, char* biscuit_token, int app_req_id)
+{
+    int8_t i8_ret = 0;
+    uint8_t ui8_payload[1024 * 16];
+    size_t payload_len = 0;
+    http_config_t t_http_config = { 0 };
+    char url[MAX_URL_LENGTH];
+
+    if (pt_cognit_frontend_cli == NULL)
+    {
+        COGNIT_LOG_ERROR("Cognit frontend not initialized");
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
+        return -1;
+    }
+
+    if (biscuit_token == NULL)
+    {
+        COGNIT_LOG_ERROR("Token not provided");
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
+        return -1;
+    }
+
+    memset(url, 0, sizeof(url));
+    snprintf(url, MAX_URL_LENGTH, "%s/%s/%d", pt_cognit_frontend_cli->m_t_config->cognit_frontend_endpoint, CF_REQ_ENDPOINT, app_req_id);
+
+    t_http_config.c_url           = url;
+    t_http_config.c_method        = HTTP_METHOD_DELETE;
+    t_http_config.ui32_timeout_ms = CFC_REQ_TIMEOUT * 1000;
+    t_http_config.c_token         = biscuit_token;
+
+    COGNIT_LOG_DEBUG("Sending ECF address request to %s", url);
+    i8_ret = cognit_http_send((char*) ui8_payload, payload_len, &t_http_config);
+
+    if (i8_ret != 0
+        || t_http_config.t_http_response.l_http_code != 204)
+    {
+        COGNIT_LOG_ERROR("Requirement deletion failed with status code: %ld", t_http_config.t_http_response.l_http_code);
+        COGNIT_LOG_ERROR("i8_ret: %d", i8_ret);
+        faas_log_json_error_detail((const char*)t_http_config.t_http_response.ui8_response_data_buffer);
+        cfc_set_has_connection(pt_cognit_frontend_cli, false);
+
+        return -1;
+    }
+   
+    cfc_set_has_connection(pt_cognit_frontend_cli, true);
+
+    return 0;
+}
+
 int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* biscuit_token, faas_t* pt_faas)
 {
     int8_t i8_ret               = 0;
@@ -260,7 +309,7 @@ int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* bis
         || t_http_config.t_http_response.size == 0
         || t_http_config.t_http_response.l_http_code != 200)
     {
-        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %d", i8_ret);
+        COGNIT_LOG_ERROR("Error sending HTTP request, HTTP code: %ld", t_http_config.t_http_response.l_http_code);
         faas_log_json_error_detail((const char*)t_http_config.t_http_response.ui8_response_data_buffer);
         cfc_set_has_connection(pt_cfc_cli, false);
         return 0;

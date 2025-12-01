@@ -14,6 +14,7 @@ typedef struct SFaaS
     int fc_id;
     MyParam params[MAX_PARAMS];
     uint8_t params_count;
+    uint32_t timeout_ms;
 } faas_t;
 
 void pb_parser_init(faas_t* pt_faas);
@@ -89,6 +90,8 @@ void addFIXED64Array(faas_t* pt_faas, uint64_t array[], int length);
 void addSFIXED32Array(faas_t* pt_faas, int32_t array[], int length);
 
 void addSFIXED64Array(faas_t* pt_faas, int64_t array[], int length);
+
+void clearFaasArgs(faas_t* pt_faas);
 
 //void addBOOLArray(faas_t *pt_faas, protobuf_c_boolean array[], int length);
 

@@ -39,7 +39,12 @@ e_status_code_t device_runtime_call(device_runtime_t* pt_dr, faas_t *pt_faas, sc
 
     dr_sm_update_requirements(&pt_dr->m_t_device_runtime_sm, t_new_reqs);
 
-    dr_sm_offload_function(&pt_dr->m_t_device_runtime_sm, pt_faas, pt_exec_response);
+    e_status_code_t ret = dr_sm_offload_function(&pt_dr->m_t_device_runtime_sm, pt_faas, pt_exec_response);
+
+    if (ret != E_ST_CODE_SUCCESS) {
+        COGNIT_LOG_ERROR("Offloading function failed");
+        return ret;
+    }
     //Handle response
     if(*pt_exec_response == NULL)
     {
@@ -47,6 +52,21 @@ e_status_code_t device_runtime_call(device_runtime_t* pt_dr, faas_t *pt_faas, sc
         return E_ST_CODE_ERROR;
     }
     
+    return E_ST_CODE_SUCCESS;
+}
+
+e_status_code_t device_runtime_free(device_runtime_t* pt_dr)
+{
+    if(pt_dr == NULL)
+    {
+        COGNIT_LOG_ERROR("Device runtime not initialized");
+        return E_ST_CODE_ERROR;
+    }
+
+    int ret = dr_state_machine_stop(&pt_dr->m_t_device_runtime_sm);
+
+    memset(pt_dr, 0, sizeof(device_runtime_t));
+
     return E_ST_CODE_SUCCESS;
 }
 
