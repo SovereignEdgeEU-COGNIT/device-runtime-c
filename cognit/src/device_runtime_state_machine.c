@@ -42,6 +42,7 @@ static void handle_init_state(device_runtime_sm_t* pt_dr_sm)
     if (!is_token_empty(pt_dr_sm))
     {
         dr_state_machine_execute_transition(pt_dr_sm, SUCCESS_AUTH);
+
     }
     else
     {
@@ -111,6 +112,8 @@ static void handle_get_ecf_address_state(device_runtime_sm_t* pt_dr_sm)
     {
         COGNIT_LOG_DEBUG("Cognit Frontend Client disconnected, re-authenticating...");
         dr_state_machine_execute_transition(pt_dr_sm, TOKEN_NOT_VALID_ADDRESS);
+        dr_state_machine_execute_transition(pt_dr_sm, TOKEN_UPDATED);
+
     }
 }
 
@@ -188,18 +191,11 @@ e_status_code_t dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt
     
     COGNIT_LOG_DEBUG("State is not READY. Handling transitions...");
     handle_transitions(pt_dr_sm);
+
     if (pt_dr_sm->current_state == READY)
     {
         COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
         e_status_code_t ret = exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
-        if (ret != E_ST_CODE_SUCCESS)
-        {
-            COGNIT_LOG_DEBUG("Offload failed, re-authenticating...");
-            dr_state_machine_execute_transition(pt_dr_sm, TOKEN_NOT_VALID_READY);
-            dr_state_machine_execute_transition(pt_dr_sm, TOKEN_UPDATED);
-            if (pt_dr_sm->current_state == READY)
-                exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
-        }
     }
 
     COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
@@ -277,6 +273,19 @@ static int success_auth_condition(device_runtime_sm_t* pt_dr_sm)
         return 0;
     }
 }
+
+static int token_updated_condition(device_runtime_sm_t* pt_dr_sm)
+{
+    if (!is_token_empty(pt_dr_sm) && is_cfc_connected(pt_dr_sm) && pt_dr_sm->app_req_id != 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 
 static int repeat_auth_condition(device_runtime_sm_t* pt_dr_sm)
 {
@@ -419,7 +428,7 @@ sm_transition_t transitions[] = {
     { GET_ECF_ADDRESS, ADDRESS_UPDATE_REQUIREMENTS, SEND_INIT_REQUEST, address_update_requirements_condition },
     { INIT, SUCCESS_AUTH, SEND_INIT_REQUEST, success_auth_condition },
     { INIT, REPEAT_AUTH, INIT, repeat_auth_condition },
-    { INIT, TOKEN_UPDATED, READY, success_auth_condition },
+    { INIT, TOKEN_UPDATED, READY, token_updated_condition },
     { READY, RESULT_GIVEN, READY, result_given_condition },
     { READY, TOKEN_NOT_VALID_READY, INIT, token_not_valid_ready_condition },
     { READY, TOKEN_NOT_VALID_READY_2, INIT, token_not_valid_ready_2_condition },
@@ -566,6 +575,13 @@ static bool check_reqs(const scheduling_t* old_reqs, const scheduling_t* new_req
     if (old_reqs->geolocation.latitude != new_reqs->geolocation.latitude || old_reqs->geolocation.longitude != new_reqs->geolocation.longitude)
     {
         return true;
+    }
+
+    if (old_reqs->provider == NULL && new_reqs->provider == NULL) {
+        return false;  // los consideramos iguales
+    }
+    else if (old_reqs->provider == NULL || new_reqs->provider == NULL) {
+        return true;   // uno NULL y el otro no -> distintos
     }
 
     if (strcmp(old_reqs->provider, new_reqs->provider) != 0)

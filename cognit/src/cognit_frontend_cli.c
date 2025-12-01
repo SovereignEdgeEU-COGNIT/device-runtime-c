@@ -317,7 +317,7 @@ int cfc_cli_upload_function_to_daas(cognit_frontend_cli_t* pt_cfc_cli, char* bis
     else
     {
         COGNIT_LOG_TRACE("JSON received size: %ld", t_http_config.t_http_response.size);
-        cfc_set_has_connection(pt_cfc_cli, false);
+        cfc_set_has_connection(pt_cfc_cli, true);
 
         // Copy the response json to the response struct
         fc_id = atoi((char*)t_http_config.t_http_response.ui8_response_data_buffer);
