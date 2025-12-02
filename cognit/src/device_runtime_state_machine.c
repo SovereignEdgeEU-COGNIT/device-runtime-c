@@ -192,10 +192,9 @@ e_status_code_t dr_sm_offload_function(device_runtime_sm_t* pt_dr_sm, faas_t* pt
     COGNIT_LOG_DEBUG("State is not READY. Handling transitions...");
     handle_transitions(pt_dr_sm);
 
-    if (pt_dr_sm->current_state == READY)
+    if (pt_dr_sm->current_state != READY)
     {
-        COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
-        e_status_code_t ret = exec_offload_func(pt_dr_sm, pt_faas, pt_exec_response);
+        return E_ST_CODE_ERROR;
     }
 
     COGNIT_LOG_DEBUG("Retrying function offload after state transitions...");
